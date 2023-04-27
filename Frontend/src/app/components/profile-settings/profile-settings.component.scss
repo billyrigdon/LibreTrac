@@ -1,0 +1,307 @@
+@import "../../../styles.scss";
+
+// #create-profile-card {
+// 	display: flex;
+// 	align-items: center;
+// 	flex-direction: column;
+// 	width: 40%;
+// 	margin-left: 30%;
+// 	min-height: 40%;
+// 	height: auto;
+// 	top: 3rem;
+
+// 	#profile-settings-form {
+// 		display: flex;
+// 		flex-direction: column;
+// 		width: 100%;
+
+// 		.create-profile-checkbox {
+// 			display: flex;
+// 			flex-direction: column;
+// 		}
+// 	}
+
+// 	mat-card-actions {
+// 		button {
+// 			background-color: $contrast-color;
+// 		}
+// 	}
+
+
+// }
+
+// @media only screen and (max-width: 900px) {
+// 	#create-profile-card {
+// 		display: flex;
+// 		align-items: center;
+// 		flex-direction: column;
+// 		width: 60%;
+// 		margin-left: 20%;
+// 		min-height: 40%;
+// 		height: auto;
+// 		top: 5rem;
+
+// 		#profile-settings-form {
+// 			display: flex;
+// 			flex-direction: column;
+// 			width: 100%;
+
+// 			.create-profile-checkbox {
+// 				display: flex;
+// 				flex-direction: column;
+// 			}
+// 		}
+
+// 		mat-card-actions {
+// 			button {
+// 				background-color: $contrast-color;
+// 			}
+// 		}
+
+
+// 	}
+// }
+
+.form-container {
+	display: flex;
+	width: 100%;
+	height: 100%;
+	overflow-y: scroll;
+	// margin-top: 20%;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+}
+
+h1,
+h2 {
+	margin: 12px;
+	margin-top: 36px;
+}
+
+#profile-settings-card {
+	width: 100%;
+	display: flex;
+	justify-content: flex-start;
+	flex-direction: column;
+	align-items: flex-start;
+
+	.profile-settings-form {
+		align-items: flex-start;
+		justify-content: flex-start;
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+
+		.checkbox-container {
+			display: flex;
+			align-items: center;
+			justify-content: flex-start;
+			width: 100%;
+
+			input {
+				margin-left: 12px;
+				width: 12px !important;
+				;
+			}
+
+			label {
+				margin-left: 8px;
+				color: #cccccc;
+				font-size: 16px;
+				font-weight: 500;
+			}
+		}
+
+
+	}
+}
+
+#update-email-card {
+	display: flex;
+	width: 100%;
+	// margin-top: 20%;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+
+	h1 {
+		width: 80%;
+		font-weight: bolder;
+		color: #f8f8f8;
+		margin: 36px;
+	}
+
+	form {
+		width: 100%;
+		height: 400px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: space-around;
+
+		input {
+			width: 80% !important;
+			color: #f8f8f8;
+			margin: 8px 0px 8px 0px;
+			background-color: $dark-grey;
+			padding: 12px !important;
+			border-radius: 8px;
+		}
+
+
+		button {
+			background-color: $main-color !important;
+			color: #f8f8f8 !important;
+			letter-spacing: 1px;
+			margin-top: 36px;
+			width: 50%;
+			border-radius: 8px;
+			padding: 12px;
+		}
+	}
+}
+
+#reset-password-card {
+	display: flex;
+	width: 100%;
+	// margin-top: 20%;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+
+	h1 {
+		width: 80%;
+		font-weight: bolder;
+		color: #f8f8f8;
+		margin: 36px;
+	}
+
+	form {
+		width: 100%;
+		height: 400px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: space-around;
+
+		input {
+			width: 80% !important;
+			color: #f8f8f8;
+			margin: 8px 0px 8px 0px;
+			background-color: $dark-grey;
+			padding: 12px !important;
+			border-radius: 8px;
+		}
+
+
+		button {
+			background-color: $main-color !important;
+			color: #f8f8f8 !important;
+			letter-spacing: 1px;
+			margin-top: 36px;
+			width: 50%;
+			border-radius: 8px;
+			padding: 12px;
+		}
+	}
+}
+
+.button-container {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+
+.add-drug {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	margin-top: 24px;
+	width: 100%;
+
+	.drug-form {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+
+		.option-container {
+			width: 100%;
+			display: flex;
+			flex-direction: column;
+
+			mat-select {
+				margin-top: 8px;
+				margin-left: 12.5%;
+				width: 75% !important;
+				padding: 10px !important;
+				border-radius: 8px !important;
+				background-color: $dark-grey !important;
+			}
+
+			label {
+				margin-left: 12px;
+				color: #cccccc;
+				font-weight: bold;
+			}
+
+			input {
+				margin-top: 8px;
+				margin-left: 12.5%;
+				width: 75% !important;
+				padding: 12px !important;
+			}
+		}
+
+		.add-drug-container {
+			width: 100%;
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: flex-start;
+
+			mat-select {
+				margin-top: 8px;
+				margin-left: 12.5%;
+				width: 75% !important;
+				padding: 10px !important;
+				border-radius: 8px !important;
+				background-color: $dark-grey !important;
+			}
+
+			p {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				margin-left: 0px;
+				color: #cccccc;
+				font-weight: bolder !important;
+				padding: 12px !important;
+				height: auto !important;
+			}
+
+			button {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: center;
+				background-color: transparent !important;
+				width: auto !important;
+				padding: 0px;
+				margin-top: 0px;
+				margin-left: 12px;
+			}
+
+			input {
+				margin-top: 8px;
+				margin-left: 12.5%;
+				width: 75% !important;
+				padding: 12px !important;
+			}
+		}
+	}
+}

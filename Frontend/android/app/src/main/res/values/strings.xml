@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">LibreTrac</string>
+    <string name="title_activity_main">LibreTrac</string>
+    <string name="package_name">tech.welledumacated.app.libretrac</string>
+    <string name="custom_url_scheme">tech.welledumacated.app.libretrac</string>
+</resources>

@@ -1,0 +1,25 @@
+@import '../node_modules/@angular/material/theming';
+@include mat-core();
+
+$primary-color: #2e2a2f;
+$secondary-color: #3d3545;
+$light-accent-color: #2b262d;
+$dark-accent-color: #b39cd0;
+//$contrast-color: #00C2A9;
+$main-color: #373241;
+$contrast-color: #766a7f;
+$light-grey: #b7afbb;
+$light-grey-button: #b7afbb;
+$light-grey-button-text: #3d3545;
+$dark-grey: #4b4453;
+$delete-red: #ff4d74;
+
+$custom-primary: mat-palette($main-color);
+$custom-accent: mat-palette($contrast-color, A200, A100, A400);
+
+$custom-theme: mat-light-theme(
+  $custom-primary,
+  $custom-accent
+);
+
+@include angular-material-theme($custom-theme);

@@ -1,0 +1,25 @@
+@import "../../../styles.scss";
+
+.tos-container {
+	overflow-y: scroll;
+	height: 100%;
+	width: 100%;
+	background-color: $light-accent-color;
+	border-radius: 12px !important;
+	h1 {
+		width: 100%;
+		text-align: center;
+	}
+
+	p {
+		text-align: justify;
+		margin: 16px;
+
+	}
+
+	a {
+		color: #fbfbfb !important;
+		margin: 8px;
+		text-align: center;
+	}
+}

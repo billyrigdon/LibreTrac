@@ -1,0 +1,10 @@
+<div id="thread-container" *ngFor="let comment of comments">
+	<div id="comment-container">
+		<app-comment
+			*ngIf="comment.parentCommentId == this.parentCommentId"
+			[userId]="userId"
+			[comment]="comment"
+			[comments]="this.comments"
+		></app-comment>
+	</div>
+</div>

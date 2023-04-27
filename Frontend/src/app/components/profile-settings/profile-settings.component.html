@@ -1,0 +1,104 @@
+<div class="form-container" #formContainer>
+	<h1>Settings.</h1>
+	<section id="profile-settings-card">
+		<form class="profile-settings-form" [formGroup]="form">
+			<div class="checkbox-container">
+				<input type="checkbox" name="covidVaccine" formControlName="covidVaccine">
+				<label>Vaccinated</label>
+			</div>
+			<div class="checkbox-container">
+				<input type="checkbox" name="smoker" formControlName="smoker">
+				<label>Smoker</label>
+			</div>
+			<div class="checkbox-container">
+				<input type="checkbox" name="drinker" formControlName="drinker">
+				<label for="">Drinker</label>
+			</div>
+			<div class="checkbox-container">
+				<input type="checkbox" name="optOut" formControlName="optOut">
+				<label for="">Opt out of public stories</label>
+			</div>
+			<div class="button-container">
+				<button (click)="updateProfile()">
+					Save
+				</button>
+			</div>
+		</form>
+	</section>
+	<h2>Reset Password.</h2>
+	<section id="reset-password-card">
+		<form [formGroup]="resetPasswordForm">
+			<input placeholder="Email" name="email" formControlName="email" />
+			<input placeholder="Old Password" type="password" name="oldPassword" formControlName="oldPassword" />
+			<input placeholder="Password" type="password" name="newPassword" formControlName="password" />
+			<input placeholder="Confirm Password" type="password" name="confirmPassword"
+				formControlName="confirmPassword" />
+			<div class="button-container">
+				<button (click)="resetPassword()">
+					Save
+				</button>
+			</div>
+		</form>
+	</section>
+	<h2>Update email.</h2>
+	<section id="update-email-card">
+		<form [formGroup]="updateEmailForm">
+			<input placeholder="Email" name="email" formControlName="email" />
+			<input placeholder="New Email" type="email" name="newEmail" formControlName="newEmail" />
+			<input placeholder="Password" type="password" name="password" formControlName="password" />
+			<div class="button-container">
+				<button (click)="updateEmail()">
+					Save
+				</button>
+			</div>
+		</form>
+	</section>
+</div>
+<!-- <h2>Add medication</h2>
+<section class="add-drug">
+	<form class="drug-form" (submit)="addDrug()" [formGroup]="drugForm"> -->
+<!-- <fieldset id="add-drug-form"> -->
+<!-- <mat-form-field class="full-width"> -->
+<!-- <div class="option-container">
+			<label>Drug Name</label>
+			<mat-select name="drugId" formControlName="drugId">
+				<mat-option *ngFor="let drug of drugs" value="{{ drug.drugId }}">
+					{{ drug.name }}
+				</mat-option>
+			</mat-select>
+		</div> -->
+<!-- </mat-form-field> -->
+<!-- <mat-form-field class="form-field"> -->
+
+<!-- <div class="option-container">
+			<label>Dosage</label>
+			<input name="dosage" formControlName="dosage" type="text" />
+		</div>
+		<div class="button-container">
+			<button type="submit">
+				Add Med
+			</button>
+		</div> -->
+
+
+<!-- <h2>Add problems.</h2>
+		<div class="option-container">
+			<label>Disorders</label>
+			<mat-select name="drugId" formControlName="drugId">
+				<mat-option *ngFor="let drug of drugs" value="{{ drug.drugId }}">
+					{{ drug.name }}
+				</mat-option>
+			</mat-select>
+		</div>
+		<div class="button-container">
+			<button type="submit">
+				Add Disorder
+			</button>
+		</div> -->
+<!-- </mat-form-field> -->
+<!-- <button type="submit" style="display:none">hidden submit</button> -->
+<!-- </fieldset> -->
+<!-- </form> -->
+
+<!-- <span (click)="goToDrugs()" rolw="button" id="add-drug" class="material-icons">medication</span> -->
+<!-- </section> -->

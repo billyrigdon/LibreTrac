@@ -1,0 +1,20 @@
+<div id="add-comment-container">
+	<mat-card id="add-comment-card">
+		<mat-card-content>
+			<p *ngIf="this.storyContent.length > 0">{{storyContent}}</p>
+			<p *ngIf="this.parentCommentContent.length > 0">{{parentCommentContent}}</p>
+			<form id="comment-form" [formGroup]="form" (submit)="addComment()">
+				<textarea id="comment-content" 
+					appAutofocus 
+					matInput 
+					name="content"
+					formControlName="content"
+					placeholder="Remember to be nice :)"></textarea>
+			</form>
+		</mat-card-content>
+		<mat-card-actions>
+			<button mat-raised-button (click)="addComment()">Comment</button>
+			<button mat-raised-button (click)="closeAddComment()">Close</button>
+		</mat-card-actions>
+	</mat-card>
+</div>

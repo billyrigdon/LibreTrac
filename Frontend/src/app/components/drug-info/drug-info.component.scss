@@ -1,0 +1,84 @@
+#drug-info-container {
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	
+	.mat-card {
+		box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+		width: 90%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: flex-start;
+		margin: 1rem;
+		padding: 1rem;
+		ul {
+			display: flex;
+			width: 100%;
+			flex-direction: row;
+			flex-wrap: wrap;
+			li {
+				margin: 0.5rem;
+				
+			}
+		}
+
+	}
+}
+
+// #drug-info-container {
+// 	display: flex;
+// 	justify-content: center;
+// 	align-items: center;
+// 	height: 90vh;
+// 	overflow-y: scroll;
+// 	margin-top: 10%;
+
+// 	mat-card {
+// 		height: 100%;
+// 		overflow-y: scroll;
+// 		width: 90%;
+// 		display: flex;
+// 		flex-direction: column;
+// 		justify-content: center;
+// 		align-items: center;
+	
+// 		mat-card-header {
+// 			mat-card-title {
+// 				margin-top: 1rem;
+// 				font-size: 2rem;
+// 			}
+// 		}
+	
+		h3 {
+			//text-align: center;
+			font-size: 1.5rem;
+			font-weight: 500;
+		}
+// 	  }
+	  
+// 	  ul {
+// 		display: flex;
+// 		flex-wrap: wrap;
+// 		width: 50%;
+// 		justify-content: center;
+// 		align-items: center;
+// 		margin: 0;
+// 		margin-left: 25%;
+// 		padding: 1rem;
+// 	  }
+	  
+// 	  li {
+// 		margin-right: 1rem;
+// 		//margin-bottom: 1rem;
+// 		text-align: center;
+// 		list-style-type: none;
+// 	  }
+
+//   }
+  
+  
+  

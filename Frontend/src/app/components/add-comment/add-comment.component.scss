@@ -1,0 +1,65 @@
+@import "../../../styles.scss";
+
+mat-dialog-container {
+	background-color: transparent !important;
+}
+
+#add-comment-container {
+	z-index: 98;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 30px;
+	background-color: $primary-color;
+	
+	#add-comment-card {
+		// min-height: 30rem;
+		// min-width: 22rem;
+		background-color: $primary-color;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		color: $dark-accent-color;
+		box-shadow: none;//0px 0px 4px 3px rgba(0, 0, 0, 0.25);
+
+		mat-card-content {
+			width: 100%;
+			p {
+				color: $dark-accent-color !important;
+			}
+		}
+
+		#comment-form {
+			width: 100%;
+			display: flex;
+
+			#comment-content {
+				width: 100%;
+				height: 10rem;
+				box-shadow: 0px 0px 4px 3px rgba(0, 0, 0, 0.25);
+				border: none;
+				margin-top: 1rem;
+				margin-bottom: 1rem;
+				padding: .5rem;
+				border-radius: 3px;
+			}
+		}
+
+		mat-card-actions {
+			display: flex;
+			width: 100%;
+			justify-content: center;
+			align-items: center;
+			button {
+				width: 50%;
+				margin: 12px;
+				background-color: $main-color;
+			}
+		}
+	}
+}

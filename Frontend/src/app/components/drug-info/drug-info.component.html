@@ -1,0 +1,44 @@
+<div id="drug-info-container">
+	<mat-card-title>{{ drugInfo?.name }}</mat-card-title>
+	<mat-card>
+		<h3>Effects:</h3>
+		<ul>
+		  <li *ngFor="let effect of drugInfo?.effects">{{ effect?.name }}</li>
+		</ul>
+	</mat-card>
+	<mat-card>
+		<h3>Tolerance:</h3>
+		<ul>
+		  <li>Full: {{ drugInfo?.tolerance?.full }}</li>
+		  <li>Half: {{ drugInfo?.tolerance?.half }}</li>
+		  <li>Zero: {{ drugInfo?.tolerance?.zero }}</li>
+		</ul>
+	</mat-card>
+	<mat-card>
+		<h3>ROA:</h3>
+		<ul>
+			<li>Units: {{ drugInfo?.roa?.oral?.dose?.units }}</li>
+			<li>Threshold: {{ drugInfo?.roa?.oral?.dose?.threshold }}</li>
+			<li>Heavy: {{ drugInfo?.roa?.oral?.dose?.heavy }}</li>
+			<li>Light: {{ drugInfo?.roa?.oral?.dose?.light?.min }} - {{ drugInfo?.roa?.oral?.dose?.light?.max }}</li>
+			<li>Common: {{ drugInfo?.roa?.oral?.dose?.common?.min }} - {{ drugInfo?.roa?.oral?.dose?.common?.max }}</li>
+			<li>Strong: {{ drugInfo?.roa?.oral?.dose?.strong?.min }} - {{ drugInfo?.roa?.oral?.dose?.strong?.max }}</li>
+		  </ul>
+	</mat-card>
+	<mat-card>
+		<h3>Uncertain Interactions:</h3>
+		<ul>
+		  <li *ngFor="let interaction of drugInfo?.uncertainInteractions">{{ interaction?.name }}</li>
+		</ul>
+		<h3>Unsafe Interactions:</h3>
+		<ul>
+		  <li *ngFor="let interaction of drugInfo?.unsafeInteractions">{{ interaction?.name }}</li>
+		</ul>
+		<h3>Dangerous Interactions:</h3>
+		<ul>
+		  <li *ngFor="let interaction of drugInfo?.dangerousInteractions">{{ interaction?.name }}</li>
+		</ul>
+	</mat-card>
+</div>
+
+  

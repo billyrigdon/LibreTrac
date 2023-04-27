@@ -1,0 +1,119 @@
+<!-- <div id="profile-page-container">
+	<div id="profile-container">
+		<mat-card id="profile-info-card" class="profile-card">
+				<div id="profile-pic-and-username">
+					<div id="profile-info">
+						<h1>Track your mood</h1>
+						<p>Reputation: {{ userProfile.reputation }}</p>
+					</div>
+					<button mat-flat-button (click)="goToSettings()">
+						<span class="material-icons">settings</span>
+					</button>
+				</div>
+			<app-mood-graph [userId]="userProfile.userId"></app-mood-graph>
+			<div class="profile-buttons">
+				<div class="profile-button" (click)="goToAddStory()">
+					<h4>Check In</h4>
+					<span class="material-icons">mood</span>
+				</div>
+			</div>
+
+		</mat-card>
+
+		<mat-card  class="profile-card">
+			<h2>My Meds</h2>
+			<ul>
+				<li *ngFor="let drug of userDrugs">
+					<div class="card-search-container">
+					<div (click)="goToDrugInfo(drug.drugName)" role="button" tabindex="0" aria-live="Go to drug information"  class="drug-container">
+						<p>{{ drug.drugName }} - {{ drug.dosage }}</p>
+						<div>
+							<span role="button" tabindex="0"  class="material-icons">
+							info
+							</span>
+						</div>
+					</div>
+					<span (click)="searchForDrug(drug.drugId)" id="search-button" role="button" tabindex=0  class="material-icons">
+						search
+					</span>
+					</div>
+					<div class="delete-search-actions">
+						<button role="button" tabindex=0 (click)="removeUserDrug(drug.drugId)">
+							X - Remove
+						</button>
+					</div>
+				</li>
+			</ul>
+			<br />
+			<span (click)="goToDrugs()" id="add-drug" class="material-icons">medication</span>
+
+		</mat-card>
+
+
+
+	</div>
+	
+</div> -->
+<div id="profile-container">
+	<div class="edit-container">
+		<h1 *ngIf="!this.isMonthView">This week.<span role="button" (click)="this.switchView(true)" class="material-icons">calendar_view_month</span></h1>
+		<h1 *ngIf="this.isMonthView">This month.<span role="button" (click)="this.switchView(false)" class="material-icons">calendar_view_week</span></h1>
+		<span (click)="goToSettings()" role="button" class="material-icons">
+			settings
+		</span>
+	</div>
+	<section id="mood-container">
+		<!-- <h1>My mood.</h1> -->
+		<app-mood-graph *ngIf="!this.mood.anxiety" [mood]="this.mood"></app-mood-graph>
+		<app-mood-graph *ngIf="this.mood.anxiety && !this.isMonthView" [mood]="this.mood"></app-mood-graph>
+		<app-mood-graph *ngIf="this.mood.anxiety && this.isMonthView" [mood]="this.mood"></app-mood-graph>
+		<div id="profile-button-container">
+			<button mat-raised-button (click)="goToAddStory()">
+				Check In
+				<span class="material-icons">chevron_right</span>
+			</button>
+		</div>
+	</section>
+	<div class="add-drug-row">
+		<h1>My meds.</h1>
+		<div class="add-drug-container">
+			<button mat-raised-button (click)="openBottomSheetDrug()"><span class="material-icons">add</span>Add Medication</button>
+		</div>
+	</div>
+	<section class="caro-container">
+		<div (click)="getSummary(drug.drugName, drug.drugId, true)" role="button" tabindex="0" aria-live="Go to drug information"
+			class="drug-card" *ngFor="let drug of userDrugs">
+			<!-- <div   class="drug-container"> -->
+			<p>{{ drug.drugName.split(' ')[0] }} </p>
+			<p>Dosage: {{ drug.dosage }}</p>
+			<div class="icon-container">
+				<span class="material-icons">
+					info
+				</span>
+			</div>
+			<!-- </div> -->
+		</div>
+	</section>
+	<div class="add-drug-row">
+		<h1>My problems.</h1>
+		<div class="add-drug-container">
+			<button mat-raised-button (click)="openBottomSheetProblem()"><span class="material-icons">add</span>Add Problem</button>
+		</div>
+	</div>
+	<section class="caro-container">
+		<div role="button" (click)="getSummary(disorder.disorderName, disorder.disorderId, false)" tabindex="0" class="drug-card" *ngFor="let disorder of userDisorders">
+			<!-- <div   class="drug-container"> -->
+			<p>{{ disorder.disorderName }} </p>
+			<!-- <p>Dosage: {{ illness }}</p> -->
+			<div class="icon-container">
+				<span class="material-icons">
+					info
+				</span>
+			</div>
+			<!-- </div> -->
+		</div>
+	</section>
+	<!-- <div id="story-container">
+		<app-stories *ngIf="this.stories.length > 0" [stories]="this.stories"></app-stories>
+	</div> -->
+</div>

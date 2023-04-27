@@ -1,0 +1,35 @@
+<div *ngIf="this.storyId" id="story-container">
+	<mat-card class="story">
+		<h1>{{ story.title }}</h1>
+		<button (click)="goBack()" class="back-button">
+			<p><span class="material-icons">arrow_back</span>Go back </p>
+		</button>
+		<br />
+		<span>{{ story.date}}</span>
+		<br />
+		<p>{{ story.journal }}</p>
+		<br />
+		<h3>Medications:</h3>
+		<ul id="story-drugs">
+			<li *ngFor="let drug of story.drugs">
+				{{ drug.drugName }} {{ drug.dosage }}
+			</li>
+		</ul>
+		<br />
+		<app-mood-graph *ngIf="this.mood.anxiety" [mood]="this.mood"></app-mood-graph>
+		<app-mood-graph *ngIf="!this.mood.anxiety" [mood]="this.mood"></app-mood-graph>
+		<mat-card-actions>
+			<button *ngIf="this.userId" mat-raised-button (click)="
+					upvoteStory({
+						storyId: story.storyId,
+						userId: this.userId
+					})
+				">
+				Upvote - {{story.votes}}
+			</button>
+			<button *ngIf="this.userId" mat-raised-button (click)="openAddComment()">Comment</button>
+			<button *ngIf="this.isUserStory" mat-raised-button (click)="deleteStory(story.storyId)">Delete</button>
+		</mat-card-actions>
+	</mat-card>
+	<app-comments [isUserStory]="isUserStory" [storyId]="storyId"></app-comments>
+</div>

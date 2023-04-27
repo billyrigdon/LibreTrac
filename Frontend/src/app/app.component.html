@@ -1,0 +1,8 @@
+<div id="scrollTop"></div>
+<app-notie-bar *ngIf="this.notiesOpen"></app-notie-bar>
+<div [style.height]="containerHeight + 'px'" id="app-container">
+	<app-loading *ngIf="isLoading | async"></app-loading>
+	<!-- <app-add-comment *ngIf="addCommentOpen | async"></app-add-comment> -->
+	<router-outlet></router-outlet>
+</div>
+<app-navbar></app-navbar>

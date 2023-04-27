@@ -1,0 +1,10 @@
+<div id="modal-container">
+	<div id="message-container">
+		<p>{{this.message}}</p>
+	</div>
+
+	<div id="close-container">
+		<button mat-flat-button *ngIf="confirmMessage" (click)="confirm()">{{this.confirmMessage}}</button>
+		<button mat-flat-button (click)="close()">{{this.buttonText}}</button>
+	</div>
+</div>
