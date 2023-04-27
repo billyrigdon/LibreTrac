@@ -1,26 +1,3 @@
-# Go defaults
-
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-
-# local files
-dist/
-.env
-node_modules/
-libretrac
-libretrac.log
-
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # Compiled output
@@ -63,4 +40,3 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
-Frontend/android/app/build
