@@ -24,6 +24,7 @@ jobs:
         repository: welledumacated/tracital
         path: ${GITHUB_WORKSPACE}/backend/
         ref: main
+        ssh_key: ${SSH_Key}
         
     - name: Set up Go
       uses: actions/setup-go@v4
