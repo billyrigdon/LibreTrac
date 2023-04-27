@@ -7,12 +7,41 @@ on:
     branches: [ "main" ]
 
 jobs:
-
-  build:
-
+  test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    - name: Clone LibreTrac Repo
+      uses: actions/checkout@v3
+
+    # This part here is cloning a second repository
+    # While cloning the repository:
+    #   - it clones the repo into the given `path`
+    #   - it checks out the branch defined at `ref`
+    - name: Clone supercharge docs repository
+      uses: actions/checkout@v3
+      with:
+        repository: welledumacated/tracital
+        path: ${{ GITHUB_WORKSPACE }}/backend/
+        ref: main
+        
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+    - name: Build Docker
+      run: |
+            #!/bin/bash
+            cd ../Frontend
+            npm install
+            ng build
+            rm -r ../Backend/dist
+            mv ./dist/libretrac ../Backend/dist
+            cd ../Backend
+            go get
+            go build .
+            cd ..
+            sudo docker build -t shulginio/shulgin:2.0.4 .
+            docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+            sudo docker push shulginio/shulgin:2.0.4
+
