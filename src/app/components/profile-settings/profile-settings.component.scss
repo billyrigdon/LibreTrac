@@ -10,11 +10,16 @@
 	flex-direction: column;
 	align-items: flex-start;
 	justify-content: flex-start;
+	h1 {
+		width: 80%;
+		font-weight: bolder;
+		color: #f8f8f8;
+	}
 }
 
 h1,
 h2 {
-	margin: 12px;
+	margin-left: 26px !important;
 	margin-top: 36px;
 }
 
@@ -24,6 +29,7 @@ h2 {
 	justify-content: flex-start;
 	flex-direction: column;
 	align-items: flex-start;
+	margin-top: 12px !important;
 
 	.profile-settings-form {
 		align-items: flex-start;
@@ -41,13 +47,12 @@ h2 {
 			input {
 				margin-left: 12px;
 				width: 12px !important;
-				;
 			}
 
 			label {
 				margin-left: 8px;
 				color: #cccccc;
-				font-size: 16px;
+				font-size: 14px;
 				font-weight: 500;
 			}
 		}
@@ -56,7 +61,7 @@ h2 {
 	}
 }
 
-#update-email-card {
+.update-card {
 	display: flex;
 	width: 100%;
 	// margin-top: 20%;
@@ -68,179 +73,93 @@ h2 {
 		width: 80%;
 		font-weight: bolder;
 		color: #f8f8f8;
-		margin: 36px;
+		// margin: 36px;
+	}
+
+	.update-email-button-container {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: flex-end;
+		width: 70%;
+		height: 15px;
+		.button-container {
+			width: auto !important;
+		}
+		button {
+			width: auto !important;
+		}
+		
 	}
 
 	form {
 		width: 100%;
-		height: 400px;
+		height: 350px;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		align-items: flex-start;
 		justify-content: space-around;
 
 		input {
-			width: 80% !important;
+			width: 60% !important;
 			color: #f8f8f8;
 			margin: 8px 0px 8px 0px;
+			margin-left: 26px;
+			// margin-right: 16px;
 			background-color: $dark-grey;
 			padding: 12px !important;
 			border-radius: 8px;
 		}
 
-
-		button {
-			background-color: $main-color !important;
-			color: #f8f8f8 !important;
-			letter-spacing: 1px;
-			margin-top: 36px;
-			width: 50%;
-			border-radius: 8px;
-			padding: 12px;
-		}
+		
 	}
 }
 
-#reset-password-card {
-	display: flex;
-	width: 100%;
-	// margin-top: 20%;
-	flex-direction: column;
-	align-items: center;
-	justify-content: flex-start;
-
-	h1 {
-		width: 80%;
-		font-weight: bolder;
-		color: #f8f8f8;
-		margin: 36px;
-	}
-
-	form {
-		width: 100%;
-		height: 400px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: space-around;
-
-		input {
-			width: 80% !important;
-			color: #f8f8f8;
-			margin: 8px 0px 8px 0px;
-			background-color: $dark-grey;
-			padding: 12px !important;
-			border-radius: 8px;
-		}
-
-
-		button {
-			background-color: $main-color !important;
-			color: #f8f8f8 !important;
-			letter-spacing: 1px;
-			margin-top: 36px;
-			width: 50%;
-			border-radius: 8px;
-			padding: 12px;
-		}
-	}
+a {
+	// text-decoration: underline;
+	font-weight: 400;
+	color: $dark-accent-color !important;
+	margin-left: 26px;
+	margin-bottom: 0px;
+	// padding: 4px;
+	// width: 200px !important;
+	// text-decoration-color: rgba(136, 118, 208, 0.5);
 }
 
 .button-container {
-	width: 100%;
+	width: 75%;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: flex-end !important;
+	button {
+		background-color: transparent !important;
+		padding: 4px !important;
+		margin: 0px !important;
+		margin-left: 26px !important;
+		margin-bottom: 16px !important;
+		width: auto !important;
+		font-size: 12px !important;
+	}
+}
+
+.settings-button-container {
+	width: 75%;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-end !important;
+	button {
+		background-color: transparent !important;
+		padding: 4px !important;
+		margin: 0px !important;
+		// margin-top: 12px !important;
+		// margin-right: 20px !important;
+		width: auto !important;
+		font-size: 12px !important;
+	}
 }
 
-.add-drug {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	margin-top: 24px;
-	width: 100%;
+#reset-password-button {
 
-	.drug-form {
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-
-		.option-container {
-			width: 100%;
-			display: flex;
-			flex-direction: column;
-
-			mat-select {
-				margin-top: 8px;
-				margin-left: 12.5%;
-				width: 75% !important;
-				padding: 10px !important;
-				border-radius: 8px !important;
-				background-color: $dark-grey !important;
-			}
-
-			label {
-				margin-left: 12px;
-				color: #cccccc;
-				font-weight: bold;
-			}
-
-			input {
-				margin-top: 8px;
-				margin-left: 12.5%;
-				width: 75% !important;
-				padding: 12px !important;
-			}
-		}
-
-		.add-drug-container {
-			width: 100%;
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			justify-content: flex-start;
-
-			mat-select {
-				margin-top: 8px;
-				margin-left: 12.5%;
-				width: 75% !important;
-				padding: 10px !important;
-				border-radius: 8px !important;
-				background-color: $dark-grey !important;
-			}
-
-			p {
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				margin-left: 0px;
-				color: #cccccc;
-				font-weight: bolder !important;
-				padding: 12px !important;
-				height: auto !important;
-			}
-
-			button {
-				display: flex;
-				flex-direction: row;
-				align-items: center;
-				justify-content: center;
-				background-color: transparent !important;
-				width: auto !important;
-				padding: 0px;
-				margin-top: 0px;
-				margin-left: 12px;
-			}
-
-			input {
-				margin-top: 8px;
-				margin-left: 12.5%;
-				width: 75% !important;
-				padding: 12px !important;
-			}
-		}
-	}
 }

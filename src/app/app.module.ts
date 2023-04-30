@@ -56,6 +56,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { NotieBarComponent } from './components/notie-bar/notie-bar.component';
 import { BottomSheetInfoComponent } from './components/bottom-sheet-info/bottom-sheet-info.component';
 import {BottomSheetDisorderComponent} from './components/bottom-sheet-disorder/bottom-sheet-disorder.component';
+import { PasswordResetModalComponent } from './components/password-reset-modal/password-reset-modal.component';
 @NgModule({
 	declarations: [
 		AppComponent,
@@ -87,6 +88,7 @@ import {BottomSheetDisorderComponent} from './components/bottom-sheet-disorder/b
   UserStoriesComponent,
   NotieBarComponent,
   BottomSheetInfoComponent,
+  PasswordResetModalComponent,
 	],
 	imports: [
 		BrowserModule,

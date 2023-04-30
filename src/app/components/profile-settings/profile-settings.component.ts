@@ -16,6 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug.component';
+import { PasswordResetModalComponent } from '../password-reset-modal/password-reset-modal.component';
 
 
 @Component({
@@ -40,6 +41,7 @@ export class ProfileSettingsComponent implements OnInit {
 		private drugService: DrugService,
 		private bottomSheet: MatBottomSheet,
 		private authService: AuthService,
+		private dialog: MatDialog,
 	) {
 		this.form = this.formBuilder.group({
 			covidVaccine: [false, Validators.required],
@@ -141,6 +143,14 @@ export class ProfileSettingsComponent implements OnInit {
 				alert('Failed to reset password');
 			}
 		});
+	}
+
+	openResetPasswordModal() {
+		const dialogRef = this.dialog.open(PasswordResetModalComponent, {
+			width: '500px',
+			height: '500px',
+		});
+		
 	}
 
 	updateEmail() {

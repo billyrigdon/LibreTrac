@@ -13,16 +13,6 @@
 					</mat-autocomplete>
 				</div>
 				
-
-				<!-- <mat-form-field class="select-input">
-					<mat-label>Drug 1</mat-label>
-					<mat-select  name="drugX" formControlName="drugX">
-						<mat-option *ngFor="let drug of drugs" value="{{ drug.drugId }}">
-							{{ drug.name }}
-						</mat-option>
-					</mat-select>
-				</mat-form-field> -->
-
 				<div class="select-input">
 					<input (ngModelChange)="filterOptions2()" type="text" placeholder="Drug 2" [(ngModel)]="filterTextDrug2" [ngModelOptions]="{standalone: true}" [matAutocomplete]="auto2">
 					<mat-autocomplete #auto2="matAutocomplete">
@@ -31,17 +21,6 @@
 					  </mat-option>
 					</mat-autocomplete>
 				</div>
-
-
-
-				<!-- <mat-form-field class="select-input">
-					<mat-label>Drug 2</mat-label>
-					<mat-select  name="drugY" formControlName="drugY">
-						<mat-option *ngFor="let drug of drugs" value="{{ drug.drugId }}">
-							{{ drug.name }}
-						</mat-option>
-					</mat-select>
-				</mat-form-field> -->
 			</form>
 		</mat-card-content>
 		<mat-card-actions>
