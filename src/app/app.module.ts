@@ -45,16 +45,17 @@ import { BifrostService } from './services/bifrost.service';
 import { DrugInfoComponent } from './components/drug-info/drug-info.component';
 import { WarningComponent } from './components/warning/warning.component';
 import { SearchModalComponent } from './components/search-modal/search-modal.component';
-import { BottomSheetDisorderComponent, ProfileSettingsComponent } from './components/profile-settings/profile-settings.component';
+import { ProfileSettingsComponent } from './components/profile-settings/profile-settings.component';
 import { TosComponent } from './components/tos/tos.component';
-import { BottomSheetDrugComponent } from './components/profile-settings/profile-settings.component';
+import { BottomSheetDrugComponent } from './components/bottom-sheet-drug/bottom-sheet-drug.component';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatListModule } from '@angular/material/list';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { UserStoriesComponent } from './components/user-stories/user-stories.component';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { NotieBarComponent } from './components/notie-bar/notie-bar.component';
-
+import { BottomSheetInfoComponent } from './components/bottom-sheet-info/bottom-sheet-info.component';
+import {BottomSheetDisorderComponent} from './components/bottom-sheet-disorder/bottom-sheet-disorder.component';
 @NgModule({
 	declarations: [
 		AppComponent,
@@ -85,6 +86,7 @@ import { NotieBarComponent } from './components/notie-bar/notie-bar.component';
   BottomSheetDisorderComponent,
   UserStoriesComponent,
   NotieBarComponent,
+  BottomSheetInfoComponent,
 	],
 	imports: [
 		BrowserModule,

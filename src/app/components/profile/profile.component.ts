@@ -16,13 +16,15 @@ import { ModalComponent } from '../modal/modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { WarningComponent } from '../warning/warning.component';
 import { FormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { BottomSheetDisorderComponent, BottomSheetDrugComponent, BottomSheetInfoComponent } from '../profile-settings/profile-settings.component';
+// import { BottomSheetDisorderComponent, BottomSheetDrugComponent, BottomSheetInfoComponent } from '../profile-settings/profile-settings.component';
+import { BottomSheetDisorderComponent } from '../bottom-sheet-disorder/bottom-sheet-disorder.component';
+import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug.component';
+import { BottomSheetInfoComponent } from '../bottom-sheet-info/bottom-sheet-info.component';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Drug } from 'src/app/types/drug';
 import { UserDisorder } from 'src/app/types/disorder';
 import { DisorderService } from 'src/app/services/disorder.service';
 import axios from 'axios';
-import cheerio from "cheerio";
 import { MoodService } from 'src/app/services/mood.service';
 
 interface DisorderInfo {

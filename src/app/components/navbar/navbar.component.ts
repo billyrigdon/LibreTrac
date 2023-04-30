@@ -145,9 +145,6 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
 		dialogRef.componentInstance.onSearchEvent.subscribe((searchTerm: string) => {
 			dialogRef.close();
-			// location.href = location.href;
-			// location.reload();
-			// window.location.reload();
 
 		});
 
@@ -162,33 +159,3 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 		this.router.navigateByUrl('/login');
 	}
 }
-
-
-//
-
-// // Modal for notifications
-// @Component({
-// 	selector: 'app-stories-modal',
-// 	template: `
-// 	<div *ngIf="data.stories?.length > 0" class="modal-wrapper">
-// 	  <h2>You have comments on these stories:</h2>
-// 	  <div fxLayout="row wrap" fxLayoutAlign="space-between center">
-// 		<button mat-flat-button class="story-card" *ngFor="let story of data.stories" (click)="onStoryClick(story.storyId)">
-// 		  <div class="story-name">{{ story.title }}<span class="material-icons">arrow_right</span></div>
-// 		</button>
-// 	  </div>
-// 	</div>
-// 	<div *ngIf="!data.stories" class="modal-wrapper">
-// 	  <h2>All caught up!</h2>
-// 	</div>
-// 	`,
-// 	`]
-// })
-// export class StoriesModalComponent {
-// 	constructor(private dialogRef: MatDialogRef<StoriesModalComponent>, @Inject(MAT_DIALOG_DATA) public data: any) {
-// 	}
-
-// 	onStoryClick(storyId: number): void {
-// 		this.dialogRef.close(storyId);
-// 	}
-// }

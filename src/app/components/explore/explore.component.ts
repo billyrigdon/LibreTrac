@@ -169,25 +169,5 @@ export class ExploreComponent implements OnInit {
 			});
 		}
 
-		// this.router.events.subscribe(event => {
-		// 	console.log(event);
-		// 	if (event instanceof NavigationStart) {
-		// 		if (event.url.toString().includes(this.currentUrl) && this.currentUrl.length < event.url.toString().length) 
-		// 		if (this.currentUrl.length < event.url.toString().length) {
-		// 			window.location.reload();
-		// 		}
-		// 	}
-		// });
-
-		// this.router.events.pipe(
-		// 	filter((event): event is NavigationStart => event instanceof NavigationStart)
-		// ).subscribe((event: NavigationStart) => {
-		// 	const urlTree = this.router.parseUrl(event.url)
-		// 	const queryParams = urlTree.queryParams;
-		// 	const queryKeys = Object.keys(queryParams);
-		// 	// if (queryKeys.length > 0) {
-		// 	// 	window.location.reload();
-		// 	// }
-		// })
 	}
 }

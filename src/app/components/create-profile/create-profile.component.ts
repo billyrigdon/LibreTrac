@@ -56,33 +56,4 @@ export class CreateProfileComponent implements OnInit {
 		// }
 	}
 
-
-	//Create new user_profile entry in database using fields from form and redirect to home page
-	// submitProfile() {
-	// 	let val = this.form.value;
-
-	// 	if (username !== null) {
-			
-	// 		// this.user.age = parseInt(val.age);
-	// 		// this.user.weight = parseInt(val.weight);
-	// 		// //this.user.country = val.country;
-	// 		// //this.user.avatar = val.avatar;
-	// 		// //this.user.status = val.status;
-	// 		// //this.user.funFact = val.funFact;
-	// 		this.user.covidVaccine = val.covidVaccine;
-	// 		this.user.smoker = val.smoker;
-	// 		this.user.drinker = val.drinker;
-	// 		this.user.optOutOfPublicStories = val.optOut;
-
-	// 		this.profileService.createProfile(this.user).subscribe((res) => {
-	// 			this.profileService.setProfile(res);
-	// 			this.store.dispatch(toggleAuth({ status: true }));
-	// 			this.router.navigateByUrl("/profile");
-	// 		},
-	// 		(err) => {
-	// 			const message = 'Failed to create profile.';
-  	// 			alert(message);
-	// 		});
-	// 	}
-	// }
 }

@@ -29,7 +29,7 @@ export class MoodGraphComponent implements OnInit, AfterViewInit {
 		this.moodBars = [
 			{
 				value: mood.energy ? mood.energy : 5,
-				color: '#b2a2c7', //8c82a6
+				color: '#b2a2c7', 
 				size: '',
 				legend: 'Energy',
 			},
@@ -43,7 +43,7 @@ export class MoodGraphComponent implements OnInit, AfterViewInit {
 
 			{
 				value: mood.creativity ? mood.creativity : 5,
-				color: '#685e85',//'#6c5d86',
+				color: '#685e85',
 				size: '',
 				legend: 'Creativity',
 			},
@@ -68,8 +68,6 @@ export class MoodGraphComponent implements OnInit, AfterViewInit {
 			}
 		];
 		this.moodBars.forEach((bar) => {
-			//Get the rem value to determine bar height by multiplying
-			//by the max height and dividing by the max value of 10
 			bar.size = (bar.value * 9.7) + 'vw';
 		});
 	}

@@ -1,30 +1,3 @@
-<!-- <mat-card id="login-container">
-	<mat-card-content>
-		<form (submit)="login()" [formGroup]="form">
-			<fieldset id="login-form">
-				<mat-form-field>
-					<mat-label>Email:</mat-label>
-					<input matInput name="email" formControlName="email" />
-				</mat-form-field>
-				<mat-form-field class="form-field">
-					<mat-label>Password:</mat-label>
-					<input
-						matInput
-						name="password"
-						formControlName="password"
-						type="password"
-					/>
-				</mat-form-field>
-				<button type="submit" style="display:none">hidden submit</button>
-			</fieldset>
-		</form>
-	</mat-card-content>
-	<mat-card-actions>
-		<button mat-raised-button (click)="login()">
-			Login
-		</button>
-	</mat-card-actions>
-</mat-card> -->
 <div class="form-container">
 	<h1>Welcome.</h1>
 	<form (submit)="login()" [formGroup]="form">
@@ -35,7 +8,6 @@
 		<fieldset>
 			<label for="password"></label>
 			<input placeholder="Password" type="password" name="password" formControlName="password"/>
-			<!-- <button type="submit" style="display:none">hidden submit</button> -->
 		</fieldset>
 		<button mat-raised-button type="submit">
 			LOGIN

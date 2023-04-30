@@ -137,11 +137,6 @@ export class NotieBarComponent implements OnInit {
     ).userId;
     this.getNotifications(this.userId);
 
-    // this.store.dispatch(
-    //   setNotifications({ notifications: [] })
-    // );
-
-
   }
 }
 
