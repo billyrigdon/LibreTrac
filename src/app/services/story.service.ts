@@ -31,6 +31,14 @@ export class StoryService {
 		);
 	}
 
+	updateUserStory(story: Story) {
+		return this.http.post(
+			API_URL + '/protected/story/update',
+			story,
+			headers
+		);
+	}
+
 	getAllStories(pageNumber: number) {
 		return this.http.get(API_URL + '/public/story/get?page=' + pageNumber, {
 			responseType: 'text',

@@ -6,6 +6,7 @@ import { CommentService } from 'src/app/services/comment.service';
 import { AppState } from 'src/app/store/app.state';
 import { toggleAddComment } from 'src/app/store/comments/comments.actions';
 import { getAddCommentsOpen, getAddCommentState } from 'src/app/store/comments/comments.selector';
+import { StoryComment } from 'src/app/types/comment';
 
 @Component({
 	selector: 'app-add-comment',
@@ -20,6 +21,7 @@ export class AddCommentComponent implements OnInit {
 	userId: number;
 	addCommentOpen: Observable<boolean>;
 	form: UntypedFormGroup;
+	commentForEdit?: StoryComment;
 	@Output() onClose = new EventEmitter();
 	@Output() onError = new EventEmitter();
 	
@@ -58,6 +60,29 @@ export class AddCommentComponent implements OnInit {
 	}
 
 
+	updateComment(comment: StoryComment) {
+		let content = this.form.value.content;
+
+		this.commentService
+			.updateComment({
+				commentId: comment.commentId,
+				storyId: comment.storyId,
+				parentCommentId: comment.parentCommentId,
+				userId: this.userId,
+				content: content,
+				username: comment.username,
+				updatedAt: comment.updatedAt,
+				votes: comment.votes,
+				dateCreated: comment.dateCreated,
+			})
+			.subscribe((res) => {
+				this.onClose.emit();
+			},
+			(err) => {
+				this.onError.emit();
+			});
+	}
+
 	
 	closeAddComment() {
 		this.onClose.emit();
@@ -73,6 +98,12 @@ export class AddCommentComponent implements OnInit {
 			this.storyContent = res.storyContent;
 			this.userId = res.isUserStory ? OP_USER_ID : JSON.parse(localStorage.getItem('userProfile') || '').userId  
 		})
+
+		if (this.commentForEdit) {
+			this.form.setValue({
+				content: this.commentForEdit.content,
+			});
+		}
 		
 	}
 }

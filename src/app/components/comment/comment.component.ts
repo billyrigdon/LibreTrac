@@ -82,6 +82,34 @@ export class CommentComponent implements OnInit {
 		});
 	}
 
+	openUpdateComment(comment: StoryComment) {
+		const dialogRef = this.dialog.open(AddCommentComponent, {
+			width: '500px',
+			height: '500px',
+		});
+		
+		dialogRef.componentInstance.commentForEdit = comment;
+
+		dialogRef.componentInstance.onError.subscribe((event: any) => {
+			dialogRef.close();
+			
+			const errorDialogRef = this.dialog.open(ModalComponent, {
+				width: '500px',
+				height: '500px',
+			});
+
+			errorDialogRef.componentInstance.message = "Unable to add comment. Please try again.";
+			errorDialogRef.componentInstance.onClose.subscribe((event: any) => {
+				errorDialogRef.close();
+			});
+			errorDialogRef.componentInstance.buttonText = "Close";
+		});
+
+		dialogRef.componentInstance.onClose.subscribe((event: any) => {
+			window.location.reload();
+			dialogRef.close();
+		});
+	}
 
 	ngOnInit(): void {
 		const OP_USER_ID = 2;

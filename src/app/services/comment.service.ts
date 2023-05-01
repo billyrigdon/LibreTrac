@@ -30,6 +30,14 @@ export class CommentService {
 		);
 	}
 
+	updateComment(comment: StoryComment): Observable<any> {
+		return this.http.post(
+			API_URL + '/protected/story/comment/update',
+			comment,
+			headers
+		);
+	}
+
 	deleteComment(commentId: number, storyId: number) {
 		return this.http.delete(
 			API_URL + '/protected/story/comment/delete?commentId=' + commentId + "&storyId=" + storyId,

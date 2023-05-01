@@ -42,6 +42,18 @@ export class DrugService {
 		);
 	}
 
+	updateUserDrug(userId: number, drugId: number, dosage: string) {
+		return this.http.post(
+			API_URL + '/user/drugs/update',
+			{
+				userId,
+				drugId,
+				dosage,
+			},
+			headers
+		);
+	}
+
 	removeUserDrug(drugId: number) {
 		return this.http.delete(
 			API_URL + '/user/drugs/remove' + '?drugId=' + drugId,

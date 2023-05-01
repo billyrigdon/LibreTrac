@@ -31,6 +31,13 @@
 					</button>
 					<button
 						*ngIf="this.canDelete"
+						id="Edit-button"
+						(click)="openUpdateComment(comment)"
+					>
+					<span  class="material-icons">edit</span>
+					</button>
+					<button
+						*ngIf="this.canDelete"
 						id="delete-button"
 						color="danger"
 						(click)="deleteComment(comment.commentId, comment.storyId)"

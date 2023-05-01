@@ -13,7 +13,8 @@
 			</form>
 		</mat-card-content>
 		<mat-card-actions>
-			<button mat-raised-button (click)="addComment()">Comment</button>
+			<button *ngIf="!this.commentForEdit" mat-raised-button (click)="addComment()">Comment</button>
+			<button *ngIf="this.commentForEdit" mat-raised-button (click)="updateComment(this.commentForEdit)">Update</button>
 			<button mat-raised-button (click)="closeAddComment()">Close</button>
 		</mat-card-actions>
 	</mat-card>
