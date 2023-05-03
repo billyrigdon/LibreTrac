@@ -1,0 +1,1 @@
+{"ast":null,"code":"export const initialState = {\n  isLoading: false,\n  isAuth: false,\n  userId: 0,\n  notiesOpen: false\n};","map":null,"metadata":{},"sourceType":"module","externalDependencies":[]}
