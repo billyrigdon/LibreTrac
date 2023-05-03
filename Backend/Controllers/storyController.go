@@ -567,15 +567,28 @@ func UpdateStory(context *gin.Context) {
 
 	sqlStatement := `
 		UPDATE stories
-		SET title = $1, journal = $2
-		WHERE storyId = $3
-		AND userId = $4
+		SET title = $1, 
+			journal = $2,
+			energy = $3,
+			focus =$4,
+			creativity =$5,
+			irritability =$6,
+			happiness = $7,
+			anxiety = $8
+		WHERE storyId = $9
+		AND userId = $10
 		RETURNING storyId;
 	`
 
 	err = db.QueryRow(sqlStatement,
 		story.Title,
 		story.Journal,
+		story.Energy,
+		story.Focus,
+		story.Creativity,
+		story.Irritability,
+		story.Happiness,
+		story.Anxiety,
 		story.StoryId,
 		userId).Scan(&story.StoryId)
 

@@ -42,4 +42,7 @@ testem.log
 Thumbs.db
 .env
 Backend/.env
+Frontend/node_modules/
 node_modules/
+.angular/
+Frontend/.angular/

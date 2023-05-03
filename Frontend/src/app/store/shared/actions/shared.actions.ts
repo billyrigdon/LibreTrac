@@ -1,4 +1,6 @@
 import { createAction, props } from '@ngrx/store';
+import { StoryDrug } from 'src/app/types/story';
+import { UserDrug } from 'src/app/types/userDrug';
 
 export const toggleLoading = createAction(
 	'TOGGLE_LOADING',
@@ -17,5 +19,7 @@ export const toggleNoties = createAction(
 
 export const setUserId = createAction('SET_USER', props<{ userId: number }>());
 
+export const setStoryToEdit = createAction('SET_STORY_TO_EDIT', props<{ story: StoryDrug }>());
 
+export const setDrugToEdit = createAction('SET_DRUG_TO_EDIT', props<{drug: UserDrug}>())
 

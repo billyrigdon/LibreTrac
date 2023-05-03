@@ -10,7 +10,7 @@ import { DrugService } from 'src/app/services/drug.service';
 import { DatePipe, formatDate } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/store/app.state';
-import { setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setDrugToEdit, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { getAuthState } from 'src/app/store/shared/selectors/shared.selector';
 import { ModalComponent } from '../modal/modal.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -87,6 +87,16 @@ export class ProfileComponent implements OnInit {
 	}
 
 	openBottomSheetDrug() {
+		this.store.dispatch(setDrugToEdit({drug: {} as UserDrug}))
+		const bottomSheetRef = this.bottomSheet.open(BottomSheetDrugComponent);
+
+
+		bottomSheetRef.afterDismissed().subscribe(() => {
+			console.log('Bottom sheet dismissed');
+		});
+	}
+
+	openBottomSheetDrugEdit() {
 		const bottomSheetRef = this.bottomSheet.open(BottomSheetDrugComponent);
 
 
@@ -103,13 +113,21 @@ export class ProfileComponent implements OnInit {
 		});
 	}
 
-	openBottomSheetInfo(summary: string, id: number, isDrug: boolean) {
+	openBottomSheetInfo(summary: string, url: string, id: number, isDrug: boolean, drug?: UserDrug) {
+		if (drug) {
+			this.store.dispatch(setDrugToEdit({drug}))
+		}
 		const bottomSheetRef: MatBottomSheetRef<BottomSheetInfoComponent> = this.bottomSheet.open(BottomSheetInfoComponent);
 		bottomSheetRef.instance.summary = summary;
 		bottomSheetRef.instance.id = id;
 		bottomSheetRef.instance.isDrug = isDrug;
+		bottomSheetRef.instance.url = url;
+		bottomSheetRef.instance.onEdit.subscribe(() => {
+			this.openBottomSheetDrugEdit();
+		})
 		bottomSheetRef.afterDismissed().subscribe(() => {
 			console.log('Bottom sheet dismissed');
+			// this.store.dispatch(setDrugToEdit({drug: {} as UserDrug}))
 		});
 	}
 
@@ -169,18 +187,18 @@ export class ProfileComponent implements OnInit {
 
 
 
-	async getSummary(name: string, id: number, isDrug: boolean): Promise<any> {
+	async getSummary(name: string, id: number, isDrug: boolean, drug?: UserDrug): Promise<any> {
 		const apiEndpoint = "https://en.wikipedia.org/api/rest_v1/page/summary/";
 		const encodedTitle = encodeURI(name);
 		const url = `${apiEndpoint}${encodedTitle}`;
-
+		const wikiUrl = `https://en.wikipedia.org/wiki/${encodedTitle}`;
 		try {
 			const response = await axios.get(url);
 			const summary = response.data.extract;
-			this.openBottomSheetInfo(summary, id, isDrug);
+			this.openBottomSheetInfo(summary, wikiUrl, id, isDrug, drug);
 			return { contents: summary };
 		} catch (error) {
-			this.openBottomSheetInfo('No information found', id, isDrug);
+			this.openBottomSheetInfo('No information found','', id, isDrug);
 			return null;
 		}
 	}

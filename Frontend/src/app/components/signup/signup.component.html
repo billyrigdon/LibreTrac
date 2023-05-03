@@ -2,10 +2,10 @@
 	<h1>Sign up.</h1>
 	<form (submit)="signup()" [formGroup]="form">
 		<fieldset>
-			<input placeholder="Username" name="username" formControlName="username"/>
-			<input placeholder="Email" name="email" formControlName="email"/>
-			<input placeholder="Password" type="password" name="password" formControlName="password"/>
-			<input placeholder="Confirm Password" type="password" name="password" formControlName="confirmPassword"/>
+			<input class="text-input" placeholder="Username" name="username" formControlName="username"/>
+			<input class="text-input" placeholder="Email" name="email" formControlName="email"/>
+			<input class="text-input" placeholder="Password" type="password" name="password" formControlName="password"/>
+			<input class="text-input" placeholder="Confirm Password" type="password" name="password" formControlName="confirmPassword"/>
 				<div class="checkbox-option">
 					<input type="checkbox" formControlName="covidVaccine"/>
 					<label>Vaccinated</label>

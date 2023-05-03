@@ -12,7 +12,7 @@ import { DisorderService } from 'src/app/services/disorder.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
 import { AuthService } from 'src/app/services/auth.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug.component';
 
@@ -22,8 +22,12 @@ import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug
 	template: `
     <div class="bottom-sheet-container">
        <p>{{summary}}</p>
+	   <p class="url">{{url}}</p>
     </div>
-	<span (click)="this.confirmDelete()" [style]="{color: '#b39cd0'}" role="button" class='material-icons'>delete</span>
+	<div class="button-actions">
+		<span (click)="this.confirmDelete()" [style]="{color: '#b39cd0'}" role="button" class='material-icons'>delete</span>
+		<span *ngIf="isDrug" (click)="this.edit()" [style]="{color: '#b39cd0'}" role="button" class='material-icons'>edit</span>
+	</div>
   `,
 	styles: [`
 	
@@ -46,16 +50,29 @@ import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug
 		padding: 12px !important;
 		height: 100%;
 	  }
-	  span {
-		position: sticky !important;
+	  .url {
+		margin-top: 36px !important;
 	  }
 	}
+	.button-actions {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+	}
+	span {
+		position: sticky !important;
+		padding: 12px !important;
+	  }
   `]
 })
 export class BottomSheetInfoComponent implements OnInit {
 	summary: string = ''
 	id: number = 0;
 	isDrug: boolean = false;
+	@Output() onEdit = new EventEmitter()
+	url: string = '';
 
 	constructor(private router: Router, private drugService: DrugService, private bottomSheetRef: MatBottomSheetRef<BottomSheetDrugComponent>, private disorderService: DisorderService, private dialog: MatDialog) { }
 
@@ -86,8 +103,12 @@ export class BottomSheetInfoComponent implements OnInit {
 		}
 	}
 
-	ngOnInit() {
+	edit() {
+		this.onEdit.emit()
+	}
 
+	ngOnInit() {
+		
 	}
 
 }

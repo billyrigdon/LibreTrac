@@ -3,7 +3,7 @@ import { SharedState } from '../shared.state';
 
 export const SHARED_STATE_NAME = 'shared';
 
-const getSharedState = createFeatureSelector<SharedState>(SHARED_STATE_NAME);
+export const getSharedState = createFeatureSelector<SharedState>(SHARED_STATE_NAME);
 
 export const getLoading = createSelector(getSharedState, (state) => {
 	return state.isLoading;
@@ -20,3 +20,4 @@ export const getUserId = createSelector(getSharedState, (state) => {
 export const getNotiesOpen = createSelector(getSharedState, (state) => {
 	return state.notiesOpen;
 });
+

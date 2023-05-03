@@ -1,1 +1,0 @@
-{"ast":null,"code":"export const initialState = {\n  addCommentOpen: false,\n  parentCommentId: 0,\n  storyId: 0,\n  storyContent: \"\",\n  parentCommentContent: \"\",\n  notifications: [],\n  isUserStory: false\n};","map":null,"metadata":{},"sourceType":"module","externalDependencies":[]}

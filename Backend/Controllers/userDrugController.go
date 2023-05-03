@@ -120,7 +120,6 @@ func AddUserDrug(context *gin.Context) {
 
 	err := context.ShouldBindJSON(&userDrug)
 
-
 	token := context.Request.Header.Get("Authorization")
 	tokenUserId := GetUserId(token)
 
@@ -298,7 +297,6 @@ func UpdateUserDrug(context *gin.Context) {
 
 	err := context.ShouldBindJSON(&userDrug)
 
-
 	token := context.Request.Header.Get("Authorization")
 	tokenUserId := GetUserId(token)
 
@@ -328,7 +326,6 @@ func UpdateUserDrug(context *gin.Context) {
 		return
 	}
 
-
 	db, dbErr := Utilities.ConnectPostgres()
 	defer db.Close()
 
@@ -338,11 +335,11 @@ func UpdateUserDrug(context *gin.Context) {
 	}
 
 	sqlStatement := `
-		UPDATE user_drugs set dosage = $1
-		WHERE userDrugId = $2
+		UPDATE user_drugs set dosage = $1, drugId = $2
+		WHERE userDrugId = $3
 		RETURNING userDrugId;
 	`
-	row := db.QueryRow(sqlStatement, userDrug.Dosage, userDrug.UserDrugId)
+	row := db.QueryRow(sqlStatement, userDrug.Dosage, userDrug.DrugId, userDrug.UserDrugId)
 	err = row.Scan(&userDrug.UserDrugId)
 	if err != nil {
 		log.Error(err)

@@ -2,6 +2,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { UserDrug } from '../types/userDrug';
 import { API_IP } from './url';
+import { Drug } from '../types/drug';
+import { Observable } from 'rxjs';
 
 const API_URL = API_IP + 'api/protected';
 const headers = {
@@ -13,6 +15,14 @@ const headers = {
 })
 export class DrugService {
 	constructor(private http: HttpClient) {}
+
+	addDrug(newDrug: Drug): Observable<any> {
+		return this.http.post(
+			API_URL + '/drug/create',
+			newDrug,
+			headers
+		);
+	}
 
 	getDrugs() {
 		return this.http.get(API_URL + '/drug', {
@@ -42,14 +52,10 @@ export class DrugService {
 		);
 	}
 
-	updateUserDrug(userId: number, drugId: number, dosage: string) {
+	updateUserDrug(userDrug: UserDrug) {
 		return this.http.post(
 			API_URL + '/user/drugs/update',
-			{
-				userId,
-				drugId,
-				dosage,
-			},
+			userDrug,
 			headers
 		);
 	}

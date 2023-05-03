@@ -14,6 +14,8 @@ import {
 	toggleLoading,
 	setUserId,
 	toggleNoties,
+	setStoryToEdit,
+	setDrugToEdit,
 } from '../actions/shared.actions';
 import { initialState, SharedState } from '../shared.state';
 
@@ -42,5 +44,17 @@ export const _sharedReducer = createReducer(
 			...state,
 			notiesOpen: action.open,
 			};
+	}),
+	on(setStoryToEdit, (state, action) => {
+		return {
+			...state,
+			storyToEdit: action.story,
+		};
+	}),
+	on(setDrugToEdit, (state, action) => {
+		return {
+			...state,
+			drugToEdit: action.drug
+		}
 	})
 );

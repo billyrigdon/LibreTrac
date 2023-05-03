@@ -28,6 +28,7 @@
 				Upvote - {{story.votes}}
 			</button>
 			<button *ngIf="this.userId" mat-raised-button (click)="openAddComment()">Comment</button>
+			<button *ngIf="this.isUserStory" mat-raised-button (click)="navigateToEditStory()">Edit</button>
 			<button *ngIf="this.isUserStory" mat-raised-button (click)="deleteStory(story.storyId)">Delete</button>
 		</mat-card-actions>
 	</mat-card>

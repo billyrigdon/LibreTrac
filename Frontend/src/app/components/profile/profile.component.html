@@ -24,7 +24,7 @@
 		</div>
 	</div>
 	<section class="caro-container">
-		<div (click)="getSummary(drug.drugName, drug.drugId, true)" role="button" tabindex="0" aria-live="Go to drug information"
+		<div (click)="getSummary(drug.drugName, drug.drugId, true, drug)" role="button" tabindex="0" aria-live="Go to drug information"
 			class="drug-card" *ngFor="let drug of userDrugs">
 			<p>{{ drug.drugName.split(' ')[0] }} </p>
 			<p>Dosage: {{ drug.dosage }}</p>

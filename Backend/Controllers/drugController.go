@@ -97,7 +97,7 @@ func GetDrug(context *gin.Context) {
 func AddDrug(context *gin.Context) {
 	var drug Models.Drug
 
-	drugId := context.Query("drugId")
+	// drugId := context.Query("drugId")
 
 	db, dbErr := Utilities.ConnectPostgres()
 	defer db.Close()
@@ -107,18 +107,18 @@ func AddDrug(context *gin.Context) {
 		log.Error(dbErr)
 	}
 
-	sqlStatement := `
-		SELECT drugid,name
-		FROM drugs
-		WHERE drugid = $1;
-	`
-	err := db.QueryRow(sqlStatement, drugId).Scan(&drug.DrugId, &drug.Name)
-	if err != nil {
-		log.Error(err)
-		return
-	}
+	// sqlStatement := `
+	// 	SELECT drugid,name
+	// 	FROM drugs
+	// 	WHERE drugid = $1;
+	// `
+	// err := db.QueryRow(sqlStatement, drugId).Scan(&drug.DrugId, &drug.Name)
+	// if err != nil {
+	// 	log.Error(err)
+	// 	return
+	// }
 
-	err = context.ShouldBindJSON(&drug)
+	err := context.ShouldBindJSON(&drug)
 	if err != nil {
 		log.Error(err)
 		context.JSON(400, gin.H{
@@ -130,7 +130,7 @@ func AddDrug(context *gin.Context) {
 	}
 
 
-	sqlStatement = `
+	sqlStatement := `
 		INSERT INTO drugs
 			(name) 
 		VALUES

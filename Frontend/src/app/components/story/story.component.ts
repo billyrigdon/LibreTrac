@@ -17,7 +17,7 @@ import {
 import { AddCommentComponent } from '../add-comment/add-comment.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
-import { toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setStoryToEdit, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { MoodService } from 'src/app/services/mood.service';
 
 @Component({
@@ -46,6 +46,11 @@ export class StoryComponent implements OnInit {
 		this.storyId = 0;
 		this.userId = 0;
 		this.isUserStory = false;
+	}
+
+	navigateToEditStory() {
+		this.store.dispatch(setStoryToEdit({ story: this.story }))
+		this.router.navigate(['/addStory']);
 	}
 
 	parseDate(input: string) {
