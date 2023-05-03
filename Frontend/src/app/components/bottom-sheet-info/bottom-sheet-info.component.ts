@@ -21,8 +21,7 @@ import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug
 	selector: 'app-bottom-sheet',
 	template: `
     <div class="bottom-sheet-container">
-       <p>{{summary}}</p>
-	   <p class="url">{{url}}</p>
+       <p>{{summary}} {{url}}</p>
     </div>
 	<div class="button-actions">
 		<span (click)="this.confirmDelete()" [style]="{color: '#b39cd0'}" role="button" class='material-icons'>delete</span>
@@ -48,10 +47,11 @@ import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug
 		margin-left: 5%;
 		width: 90% !important;
 		padding: 12px !important;
-		height: 100%;
+		height: 90%;
 	  }
 	  .url {
-		margin-top: 36px !important;
+		height: 10%;
+		/* margin-top: 36px !important; */
 	  }
 	}
 	.button-actions {

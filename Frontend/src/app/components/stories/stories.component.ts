@@ -21,7 +21,7 @@ export class StoriesComponent implements OnInit {
 	@Output() onScroll = new EventEmitter();
 	distance: number;
 	throttle: number;
-	@Input() summaries: Array<{summary: string, name: string}> = [];
+	@Input() summaries: Array<{summary: string, name: string, url: string}> = [];
 	constructor(
 		private storyService: StoryService,
 		private voteService: VoteService,

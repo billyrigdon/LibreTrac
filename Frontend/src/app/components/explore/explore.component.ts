@@ -30,7 +30,7 @@ export class ExploreComponent implements OnInit {
 	drugXSummary = '';
 	drugYSummary = '';
 	currentUrl = '';
-	summaries: Array<{summary: string, name: string}> = [];
+	summaries: Array<{summary: string, name: string, url: string}> = [];
 	isLoggedIn: Observable<boolean>;
 	constructor(
 		private storyService: StoryService,
@@ -98,12 +98,12 @@ export class ExploreComponent implements OnInit {
 		const apiEndpoint = "https://en.wikipedia.org/api/rest_v1/page/summary/";
 		const encodedTitle = encodeURI(name);
 		const url = `${apiEndpoint}${encodedTitle}`;
-		
 		try {
 		  const response = await axios.get(url);
 		  const summary = response.data.extract;
+		//   summary["url"] = response.data.content_urls.desktop.page;
 		//   this.openBottomSheetInfo(summary, id, isDrug);
-		  return { contents: summary };
+		  return { contents: summary, url: response.data.content_urls.desktop.page };
 		} catch (error) {
 			// this.openBottomSheetInfo('No information found', id, isDrug);
 		  return null;
@@ -133,7 +133,7 @@ export class ExploreComponent implements OnInit {
 						this.drugXName = res.name;
 						this.getSummary(this.drugXName, parseInt(this.drugX, 10), true).then((res) => {
 							this.drugXSummary = res.contents;
-							this.summaries.push({summary: this.drugXSummary, name: this.drugXName});
+							this.summaries.push({summary: this.drugXSummary, name: this.drugXName, url: res.url});
 						});
 					});
 				}
@@ -143,7 +143,7 @@ export class ExploreComponent implements OnInit {
 						this.drugYName = res.name;
 						this.getSummary(this.drugYName, parseInt(this.drugY, 10), true).then((res) => {
 							this.drugYSummary = res.contents;
-							this.summaries.push({summary: this.drugYSummary, name: this.drugYName})
+							this.summaries.push({summary: this.drugYSummary, name: this.drugYName, url: res.url})
 						});
 					});
 

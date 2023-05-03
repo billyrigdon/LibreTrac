@@ -11,6 +11,7 @@
 		<!-- <h5 id="date">{{ story.date!.split('T')[0] }}</h5> -->
 		<!-- <h5 id="upvotes">UPVOTES:{{ story.votes }}</h5> -->
 		<p>{{summary.summary}}</p>
+		<p>{{summary.url}}</p>
 	</mat-card>
 <!-- </ng-template> -->
 	<mat-card (click)="openStory(story.storyId)" class="story" *ngFor="let story of stories">

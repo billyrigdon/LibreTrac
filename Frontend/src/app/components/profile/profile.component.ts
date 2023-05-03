@@ -10,7 +10,7 @@ import { DrugService } from 'src/app/services/drug.service';
 import { DatePipe, formatDate } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/store/app.state';
-import { setDrugToEdit, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setDrugToEdit, setStoryToEdit, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { getAuthState } from 'src/app/store/shared/selectors/shared.selector';
 import { ModalComponent } from '../modal/modal.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -225,6 +225,7 @@ export class ProfileComponent implements OnInit {
 	}
 
 	goToAddStory() {
+		this.store.dispatch(setStoryToEdit({story: {} as StoryDrug}))
 		this.router.navigateByUrl('addStory');
 	}
 
