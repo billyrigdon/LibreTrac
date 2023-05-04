@@ -1,0 +1,27 @@
+<div class="form-container">
+	<h1>Profile Information.</h1>
+	<form [formGroup]="form">
+		<fieldset>
+			<input placeholder="Age" name="age" formControlName="username"/>
+			<div class="tos">
+				<input type="checkbox" formControlName="covidVaccine"/>
+				<label>Vaccinated</label>
+			</div>
+			<div class="tos">
+				<input type="checkbox" formControlName="smoker"/>
+				<label>Smoker</label>
+			</div>
+			<div class="tos">
+				<input type="checkbox" formControlName="drinker"/>
+				<label>Drinker</label>
+			</div>
+			<div class="tos">
+				<input type="checkbox" formControlName="optOut"/>
+				<label>Opt out of public journals</label>
+			</div>
+		</fieldset>
+		<button type="submit">
+			Create Profile
+		</button>
+	</form>
+</div>

@@ -1,0 +1,17 @@
+<div class="form-container">
+	<h1>Welcome.</h1>
+	<form (submit)="login()" [formGroup]="form">
+		<fieldset>
+			<label for="email"></label>
+			<input placeholder="Email" name="email" formControlName="email"/>
+		</fieldset>
+		<fieldset>
+			<label for="password"></label>
+			<input placeholder="Password" type="password" name="password" formControlName="password"/>
+		</fieldset>
+		<button mat-raised-button type="submit">
+			LOGIN
+		</button>
+	</form>
+	<a routerLink="/signup">New here?</a>
+</div>

@@ -8,5 +8,5 @@ cd ../Backend
 go get
 go build .
 cd ..
-sudo docker build -t shulginio/shulgin:2.0.4 .
-sudo docker push shulginio/shulgin:2.0.4
+docker build -t libretrac/libretrac:2.0.7 .
+docker push libretrac/libretrac:2.0.7

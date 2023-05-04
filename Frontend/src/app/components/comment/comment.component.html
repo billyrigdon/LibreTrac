@@ -1,0 +1,59 @@
+<div id="comment-container">
+	<div id="line-marker"></div>
+	<div>
+		<mat-card class="comment">
+			<mat-card-content id="comment-content">
+				<p>{{ comment.content }}</p>
+				<br />
+				<p>{{ comment.username }}</p>
+			</mat-card-content>
+			<mat-card-footer id="comment-footer">
+				<mat-card-actions>
+					<button
+						
+						*ngIf="this.userId"
+						
+						(click)="
+							upvote({
+								commentId: comment.commentId,
+								userId: this.userId
+							})
+						"
+					>
+						<span id="like-button" class="material-icons">thumb_up_off_alt</span> {{ comment.votes }}
+					</button>
+					<button
+						*ngIf="this.userId"
+						
+						(click)="openAddComment(comment.commentId)"
+					>
+						<span class="material-icons">comment</span>
+					</button>
+					<button
+						*ngIf="this.canDelete"
+						id="Edit-button"
+						(click)="openUpdateComment(comment)"
+					>
+					<span  class="material-icons">edit</span>
+					</button>
+					<button
+						*ngIf="this.canDelete"
+						id="delete-button"
+						color="danger"
+						(click)="deleteComment(comment.commentId, comment.storyId)"
+					>
+						<span  class="material-icons">delete</span>
+					</button>
+				</mat-card-actions>
+			</mat-card-footer>
+		</mat-card>
+		<div>
+			<app-comment-thread
+				class="subthread"
+				[comments]="comments"
+				[parentCommentId]="comment.commentId"
+				[userId]="userId"
+			></app-comment-thread>
+		</div>
+	</div>
+</div>

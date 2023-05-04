@@ -1,0 +1,48 @@
+<div *ngIf="this.story.storyId === 1" id="add-story-container">
+	<form (submit)="addStory()" [formGroup]="form">
+		<div *ngIf="!journalOpen" id="slider-form-container" [formGroup]="form">
+			<h1>Check in.</h1>
+			<div class="form-group" *ngFor="let controlName of controlNames">
+				<label [for]="controlName">{{ controlName }}</label>
+				<input min="1" max="10" type="range" class="form-control-range-mood" [id]="controlName"
+					[formControlName]="controlName">
+			</div>
+			<button (click)="openJournal()">Check in</button>
+		</div>
+		<div *ngIf="journalOpen" id="journal-card">
+			<h1>Check in.</h1>
+			<div>
+				<input formControlName="title" placeholder="Title" />
+				<textarea id="journal-content" matInput name="content" formControlName="journal"
+					placeholder="Journal Entry"></textarea>
+			</div>
+			<div class="button-container">
+				<button type="submit">Add Story</button>
+			</div>
+		</div>
+	</form>
+</div>
+<div *ngIf="this.story.storyId > 1" id="add-story-container">
+	<form (submit)="updateStory()" [formGroup]="form">
+		<div *ngIf="!journalOpen" id="slider-form-container" [formGroup]="form">
+			<h1>Check in.</h1>
+			<div class="form-group" *ngFor="let controlName of controlNames">
+				<label [for]="controlName">{{ controlName }}</label>
+				<input min="1" max="10" type="range" class="form-control-range-mood" [id]="controlName"
+					[formControlName]="controlName">
+			</div>
+			<button (click)="openJournal()">Check in</button>
+		</div>
+		<div *ngIf="journalOpen" id="journal-card">
+			<h1>Check in.</h1>
+			<div>
+				<input formControlName="title" placeholder="Title" />
+				<textarea id="journal-content" matInput name="content" formControlName="journal"
+					placeholder="Journal Entry"></textarea>
+			</div>
+			<div class="button-container">
+				<button type="submit">Update Story</button>
+			</div>
+		</div>
+	</form>
+</div>

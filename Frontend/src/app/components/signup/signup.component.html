@@ -1,0 +1,52 @@
+<div class="form-container">
+	<h1>Sign up.</h1>
+	<form (submit)="signup()" [formGroup]="form">
+		<fieldset>
+			<input class="text-input" placeholder="Username" name="username" formControlName="username"/>
+			<input class="text-input" placeholder="Email" name="email" formControlName="email"/>
+			<input class="text-input" placeholder="Password" type="password" name="password" formControlName="password"/>
+			<input class="text-input" placeholder="Confirm Password" type="password" name="password" formControlName="confirmPassword"/>
+				<div class="checkbox-option">
+					<input type="checkbox" formControlName="covidVaccine"/>
+					<label>Vaccinated</label>
+				</div>
+				<div class="checkbox-option">
+					<input type="checkbox" formControlName="smoker"/>
+					<label>Smoker</label>
+				</div>
+				<div class="checkbox-option">
+					<input type="checkbox" formControlName="drinker"/>
+					<label>Drinker</label>
+				</div>
+				<div class="checkbox-option">
+					<input type="checkbox" formControlName="optOut"/>
+					<label>Opt out of public journals</label>
+				</div>
+
+				<div class="tos">
+					<a tabindex="0" (click)="openTos()">Agree to terms?</a>
+					<input type="checkbox" formControlName="agreement"/>
+				</div>
+			<!-- <button type="submit" style="display:none">hidden submit</button> -->
+		</fieldset>
+		<button mat-raised-button type="submit">
+			SIGN UP
+		</button>
+	</form>
+	<a routerLink="/login">Need to login?</a>
+
+	<div class="error-container">
+		<div *ngIf="form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched)">
+			<p *ngIf="form.get('username')?.hasError">Usernames must be at least 4 characters</p>
+		</div>
+		<div *ngIf="form.get('email')?.invalid && (form.get('email')?.dirty || form.get('email')?.touched)">
+			<p *ngIf="form.get('email')?.errors">Please enter a valid email address.</p>
+		</div>
+		<div *ngIf="form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched)">
+			<p *ngIf="form.get('password')?.hasError('pattern')">Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character ($@#!%*?&).</p>
+		</div>
+		<p *ngIf="form.get('confirmPassword')?.errors">Passwords do not match.</p>
+		<p *ngIf="submitted && form.get('agreement')?.errors">Must agree to terms to use this application</p>
+	</div>
+</div>
+

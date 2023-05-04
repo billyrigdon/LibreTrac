@@ -1,0 +1,41 @@
+#drug-info-container {
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	
+	.mat-card {
+		box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+		width: 90%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: flex-start;
+		margin: 1rem;
+		padding: 1rem;
+		ul {
+			display: flex;
+			width: 100%;
+			flex-direction: row;
+			flex-wrap: wrap;
+			li {
+				margin: 0.5rem;
+				
+			}
+		}
+
+	}
+}
+
+	
+		h3 {
+			//text-align: center;
+			font-size: 1.5rem;
+			font-weight: 500;
+		}
+
+  
+  
+  

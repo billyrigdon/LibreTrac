@@ -1,0 +1,94 @@
+@import "../../../styles.scss";
+
+.form-container {
+	display: flex;
+	width: 100%;
+	height: 80%;
+	margin-top: 20%;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+
+	h1 {
+		width: 80%;
+		font-weight: bolder;
+		color: #f8f8f8;
+		margin: 36px;
+	}
+
+	form {
+		width: 80%;
+		// margin-right: 10%;
+		height: 400px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: space-around;
+		fieldset { 
+			width: 100%;
+			input {
+				width: 100% !important;
+				color:#f8f8f8 ;
+				margin: 8px 0px 8px 0px ;
+				background-color: $dark-grey;
+				padding: 12px;
+				border-radius: 8px;
+			}
+			.tos {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: flex-start;
+				a {
+					margin: 0;
+					text-decoration: underline;
+					cursor: pointer;
+				}
+				input {
+					width: auto !important;
+					margin: 0;
+					margin-left: 12px;
+				}
+			}
+			
+			
+		}
+		button {
+				background-color: $main-color !important;
+				color: #f8f8f8 !important;
+				letter-spacing: 1px;
+				margin-top: 36px;
+				width: 50%;
+				border-radius: 8px;
+				padding: 12px;
+		}
+	}
+
+	label {
+		color: #808080;
+		// margin-top: 36px;
+		font-weight: bold;
+		margin-left: 8px;
+	}
+
+}
+
+.error-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 12px;
+	p {
+		color: $delete-red;
+		text-align: center;
+		margin: 8px;
+	}
+	div {
+		p {
+			text-align: center;
+			margin: 8px;
+			color: $delete-red;
+		}
+	}
+}

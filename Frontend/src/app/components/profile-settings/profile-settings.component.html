@@ -1,0 +1,62 @@
+<div class="form-container" #formContainer>
+	<h2>Settings.</h2>
+	<section id="profile-settings-card">
+		<form class="profile-settings-form" [formGroup]="form">
+			<div class="checkbox-container">
+				<input type="checkbox" name="covidVaccine" formControlName="covidVaccine">
+				<label>Vaccinated</label>
+			</div>
+			<div class="checkbox-container">
+				<input type="checkbox" name="smoker" formControlName="smoker">
+				<label>Smoker</label>
+			</div>
+			<div class="checkbox-container">
+				<input type="checkbox" name="drinker" formControlName="drinker">
+				<label for="">Drinker</label>
+			</div>
+			<div class="checkbox-container">
+				<input type="checkbox" name="optOut" formControlName="optOut">
+				<label for="">Opt out of public stories</label>
+			</div>
+			<div class="settings-button-container">
+				<button (click)="updateProfile()">
+					Save
+				</button>
+			</div>
+		</form>
+	</section>
+	<h2>Update email.</h2>
+	<section class="update-card">
+		<form [formGroup]="updateEmailForm">
+			<input placeholder="Email" name="email" formControlName="email" />
+			<input placeholder="New Email" type="email" name="newEmail" formControlName="newEmail" />
+			<input placeholder="Password" type="password" name="password" formControlName="password" />
+			<!-- <div class="update-email-button-container"> -->
+
+				<a id="reset-password-button" (click)="openResetPasswordModal()">Reset Password?</a>
+				<div class="button-container">
+					<button (click)="updateEmail()">
+						Save
+					</button>
+				</div>
+			<!-- </div> -->
+		</form>
+	</section>
+
+	<!-- <h2>Reset Password.</h2>
+	<section class="update-card">
+		<form [formGroup]="resetPasswordForm">
+			<input placeholder="Email" name="email" formControlName="email" />
+			<input placeholder="Old Password" type="password" name="oldPassword" formControlName="oldPassword" />
+			<input placeholder="Password" type="password" name="newPassword" formControlName="password" />
+			<input placeholder="Confirm Password" type="password" name="confirmPassword"
+				formControlName="confirmPassword" />
+			<div class="button-container">
+				<button (click)="resetPassword()">
+					Save
+				</button>
+			</div>
+		</form>
+	</section> -->
+
+</div>

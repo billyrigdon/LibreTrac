@@ -1,0 +1,31 @@
+<div id="search-container">
+	<mat-card id="search-card">
+		<mat-card-content>
+			<form id="search-form" [formGroup]="form" (submit)="onSearch()">
+				
+				
+				<div class="select-input">
+					<input (ngModelChange)="filterOptions1()" type="text" placeholder="Drug 1" [(ngModel)]="filterTextDrug1" [ngModelOptions]="{standalone: true}" [matAutocomplete]="auto">
+					<mat-autocomplete #auto="matAutocomplete">
+					  <mat-option (onSelectionChange)="setDrug1(drug)" *ngFor="let drug of filteredDrugs1" [value]="drug.name">
+						{{ drug.name }}
+					  </mat-option>
+					</mat-autocomplete>
+				</div>
+				
+				<div class="select-input">
+					<input (ngModelChange)="filterOptions2()" type="text" placeholder="Drug 2" [(ngModel)]="filterTextDrug2" [ngModelOptions]="{standalone: true}" [matAutocomplete]="auto2">
+					<mat-autocomplete #auto2="matAutocomplete">
+					  <mat-option (onSelectionChange)="setDrug2(drug)" *ngFor="let drug of filteredDrugs2" [value]="drug.name">
+						{{ drug.name }}
+					  </mat-option>
+					</mat-autocomplete>
+				</div>
+			</form>
+		</mat-card-content>
+		<mat-card-actions>
+			<button mat-raised-button (click)="cancel()">Cancel</button>
+			<button mat-raised-button (click)="onSearch()">Search</button>
+		</mat-card-actions>
+	</mat-card>
+</div>

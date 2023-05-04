@@ -1,0 +1,54 @@
+<div id="profile-container">
+	<div class="edit-container">
+		<h1 *ngIf="!this.isMonthView">This week.<span role="button" (click)="this.switchView(true)" class="material-icons">calendar_view_month</span></h1>
+		<h1 *ngIf="this.isMonthView">This month.<span role="button" (click)="this.switchView(false)" class="material-icons">calendar_view_week</span></h1>
+		<span (click)="goToSettings()" role="button" class="material-icons">
+			settings
+		</span>
+	</div>
+	<section id="mood-container">
+		<app-mood-graph *ngIf="!this.mood.anxiety" [mood]="this.mood"></app-mood-graph>
+		<app-mood-graph *ngIf="this.mood.anxiety && !this.isMonthView" [mood]="this.mood"></app-mood-graph>
+		<app-mood-graph *ngIf="this.mood.anxiety && this.isMonthView" [mood]="this.mood"></app-mood-graph>
+		<div id="profile-button-container">
+			<button mat-raised-button (click)="goToAddStory()">
+				Check In
+				<span class="material-icons">chevron_right</span>
+			</button>
+		</div>
+	</section>
+	<div class="add-drug-row">
+		<h1>My meds.</h1>
+		<div class="add-drug-container">
+			<button mat-raised-button (click)="openBottomSheetDrug()"><span class="material-icons">add</span>Add Medication</button>
+		</div>
+	</div>
+	<section class="caro-container">
+		<div (click)="getSummary(drug.drugName, drug.drugId, true, drug)" role="button" tabindex="0" aria-live="Go to drug information"
+			class="drug-card" *ngFor="let drug of userDrugs">
+			<p>{{ drug.drugName.split(' ')[0] }} </p>
+			<p>Dosage: {{ drug.dosage }}</p>
+			<div class="icon-container">
+				<span class="material-icons">
+					info
+				</span>
+			</div>
+		</div>
+	</section>
+	<div class="add-drug-row">
+		<h1>My problems.</h1>
+		<div class="add-drug-container">
+			<button mat-raised-button (click)="openBottomSheetProblem()"><span class="material-icons">add</span>Add Problem</button>
+		</div>
+	</div>
+	<section class="caro-container">
+		<div role="button" (click)="getSummary(disorder.disorderName, disorder.disorderId, false)" tabindex="0" class="drug-card" *ngFor="let disorder of userDisorders">
+			<p>{{ disorder.disorderName }} </p>
+			<div class="icon-container">
+				<span class="material-icons">
+					info
+				</span>
+			</div>
+		</div>
+	</section>
+</div>
