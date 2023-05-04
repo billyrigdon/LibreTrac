@@ -10,6 +10,28 @@
 	-webkit-overflow-scrolling: touch;
 }
 
+.back-button {
+	position: absolute;
+	top:0;
+	right: 0;
+	width: auto;
+	background-color: transparent !important;
+	border: none !important;
+	padding: 8px !important;
+	display: flex !important;
+	flex-direction: row !important;
+	align-items: center !important;
+	justify-content: flex-start !important;	
+	margin: 0px !important;
+	p {
+		margin: 0px !important;
+		color: $dark-accent-color !important;
+		span {
+			color: $dark-accent-color;
+		}
+	}
+}
+
 form {
 	height: 100%;
 	width: 100%;

@@ -94,6 +94,10 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 		this.journalOpen = true;
 	}
 
+	closeJournal() {
+		this.journalOpen = false;
+	}
+
 	ngAfterViewInit(): void {
 		this.store.select(getSharedState).subscribe((state) => {
 			if (state.storyToEdit.storyId) {

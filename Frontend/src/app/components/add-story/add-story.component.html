@@ -11,6 +11,9 @@
 		</div>
 		<div *ngIf="journalOpen" id="journal-card">
 			<h1>Check in.</h1>
+			<button (click)="closeJournal()" class="back-button">
+				<span class="material-icons">arrow_back</span>
+			</button>
 			<div>
 				<input formControlName="title" placeholder="Title" />
 				<textarea id="journal-content" matInput name="content" formControlName="journal"
@@ -35,6 +38,9 @@
 		</div>
 		<div *ngIf="journalOpen" id="journal-card">
 			<h1>Check in.</h1>
+			<button (click)="closeJournal()" class="back-button">
+				<span class="material-icons">arrow_back</span>
+			</button>
 			<div>
 				<input formControlName="title" placeholder="Title" />
 				<textarea id="journal-content" matInput name="content" formControlName="journal"
