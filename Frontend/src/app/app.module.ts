@@ -21,10 +21,10 @@ import { ExploreComponent } from './components/explore/explore.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatToolbarModule } from '@angular/material/toolbar';
 // import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
-import {MatCardModule} from '@angular/material/card';
+import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import {MatInputModule } from '@angular/material/input';
+import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
@@ -55,8 +55,11 @@ import { UserStoriesComponent } from './components/user-stories/user-stories.com
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { NotieBarComponent } from './components/notie-bar/notie-bar.component';
 import { BottomSheetInfoComponent } from './components/bottom-sheet-info/bottom-sheet-info.component';
-import {BottomSheetDisorderComponent} from './components/bottom-sheet-disorder/bottom-sheet-disorder.component';
+import { BottomSheetDisorderComponent } from './components/bottom-sheet-disorder/bottom-sheet-disorder.component';
 import { PasswordResetModalComponent } from './components/password-reset-modal/password-reset-modal.component';
+import { CustomRouteReuseStrategy } from './services/custom-route-reuse-strategy';
+import { RouteReuseStrategy } from '@angular/router';
+import { UserStoriesScrollableComponent } from './components/user-stories-scrollable/user-stories-scrollable.component';
 @NgModule({
 	declarations: [
 		AppComponent,
@@ -78,17 +81,18 @@ import { PasswordResetModalComponent } from './components/password-reset-modal/p
 		StoriesComponent,
 		MoodGraphComponent,
 		ModalComponent,
-  DrugInfoComponent,
-  WarningComponent,
-  SearchModalComponent,
-  ProfileSettingsComponent,
-  TosComponent,
-  BottomSheetDrugComponent,
-  BottomSheetDisorderComponent,
-  UserStoriesComponent,
-  NotieBarComponent,
-  BottomSheetInfoComponent,
-  PasswordResetModalComponent,
+		DrugInfoComponent,
+		WarningComponent,
+		SearchModalComponent,
+		ProfileSettingsComponent,
+		TosComponent,
+		BottomSheetDrugComponent,
+		BottomSheetDisorderComponent,
+		UserStoriesComponent,
+		NotieBarComponent,
+		BottomSheetInfoComponent,
+		PasswordResetModalComponent,
+  UserStoriesScrollableComponent,
 	],
 	imports: [
 		BrowserModule,
@@ -114,7 +118,13 @@ import { PasswordResetModalComponent } from './components/password-reset-modal/p
 		MatBottomSheetModule,
 		MatAutocompleteModule
 	],
-	providers: [AuthInterceptorProviders, BifrostService, DatePipe, { provide: LocationStrategy, useClass: HashLocationStrategy }],
+	providers: [
+		AuthInterceptorProviders, 
+		BifrostService, 
+		DatePipe, 
+		{ provide: LocationStrategy, useClass: HashLocationStrategy },
+		{ provide: RouteReuseStrategy, useClass: CustomRouteReuseStrategy}
+	],
 	bootstrap: [AppComponent],
 })
 export class AppModule { }

@@ -1,10 +1,11 @@
 import { formatDate } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import axios from 'axios';
-import { Observable, filter } from 'rxjs';
+import { Observable, Subscription, filter } from 'rxjs';
 import { DrugService } from 'src/app/services/drug.service';
+import { ScrollPositionService } from 'src/app/services/scroll-position-service';
 import { StorageService } from 'src/app/services/storage.service';
 import { StoryService } from 'src/app/services/story.service';
 import { VoteService } from 'src/app/services/vote.service';
@@ -21,6 +22,7 @@ import { StoryVote } from 'src/app/types/vote';
 	styleUrls: ['./explore.component.scss'],
 })
 export class ExploreComponent implements OnInit {
+	@ViewChild('scrollableElement') scrollableElementRef!: ElementRef;
 	stories: Array<StoryDrug>;
 	pageNumber: number;
 	drugX = '';
@@ -39,12 +41,13 @@ export class ExploreComponent implements OnInit {
 		private router: Router,
 		private storageService: StorageService,
 		private route: ActivatedRoute,
-		private drugService: DrugService
+		private drugService: DrugService,
+		private scrollPositionService: ScrollPositionService
 	) {
 		this.stories = Array<StoryDrug>();
 		this.isLoggedIn = this.store.select(getAuthState);
 		this.pageNumber = 0;
-		this.currentUrl = location.toString()
+		this.currentUrl = location.toString();
 	}
 
 	setStoriesOnScroll(res: string) {
@@ -110,6 +113,9 @@ export class ExploreComponent implements OnInit {
 		}
 	}
 
+	ngAfterViewInit(): void {
+		
+	}
 
 	ngOnInit(): void {
 		this.store.dispatch(toggleLoading({status: true}));

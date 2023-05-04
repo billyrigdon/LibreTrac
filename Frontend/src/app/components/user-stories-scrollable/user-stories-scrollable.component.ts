@@ -14,11 +14,11 @@ import { ScrollPositionService } from 'src/app/services/scroll-position-service'
 import { debounceTime, filter } from 'rxjs';
 
 @Component({
-	selector: 'app-stories',
-	templateUrl: './stories.component.html',
-	styleUrls: ['./stories.component.scss'],
+	selector: 'app-user-stories-scrollable',
+	templateUrl: './user-stories-scrollable.component.html',
+	styleUrls: ['./user-stories-scrollable.component.scss'],
 })
-export class StoriesComponent implements OnInit {
+export class UserStoriesScrollableComponent implements OnInit {
 	@Input() stories!: Array<StoryDrug>;
 	@Output() onScroll = new EventEmitter();
 	distance: number;
@@ -94,8 +94,8 @@ export class StoriesComponent implements OnInit {
 		  )
       .subscribe((event) => {
         const currentRoute = this.router.url;
-		console.log(currentRoute);
-        if (currentRoute === '/explore') {
+		    console.log(currentRoute);
+        if (currentRoute === '/user-stories') {
           if (event instanceof NavigationStart) {
             // setTimeout(() => {
               const scrollPosition = this.scrollableElementRef.nativeElement.scrollTop;
