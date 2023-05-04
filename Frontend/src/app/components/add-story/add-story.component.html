@@ -1,4 +1,4 @@
-<div *ngIf="!this.story.storyId" id="add-story-container">
+<div *ngIf="this.story.storyId === 1" id="add-story-container">
 	<form (submit)="addStory()" [formGroup]="form">
 		<div *ngIf="!journalOpen" id="slider-form-container" [formGroup]="form">
 			<h1>Check in.</h1>
@@ -22,7 +22,7 @@
 		</div>
 	</form>
 </div>
-<div *ngIf="this.story.storyId" id="add-story-container">
+<div *ngIf="this.story.storyId > 1" id="add-story-container">
 	<form (submit)="updateStory()" [formGroup]="form">
 		<div *ngIf="!journalOpen" id="slider-form-container" [formGroup]="form">
 			<h1>Check in.</h1>
