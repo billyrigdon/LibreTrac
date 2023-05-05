@@ -5,7 +5,7 @@ import { AppState } from '@capacitor/app';
 import { Store } from '@ngrx/store';
 import { MoodService } from 'src/app/services/mood.service';
 import { StoryService } from 'src/app/services/story.service';
-import { setAverageMood, setExploreStories, setIsMonthView, setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setAverageMood, setExploreStories, setIsMonthView, setStoryMood, setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { SHARED_STATE_NAME, getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { Story, StoryDrug } from 'src/app/types/story';
 
@@ -75,10 +75,10 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 		this.store.dispatch(toggleLoading({ status: true }));
 		this.storyService.addUserStory(this.story).subscribe((res: any) => {
 			this.store.dispatch(setUserStories({ stories: [res, ...this.userStories] }));
-			this.store.dispatch(setExploreStories({ stories: [res, ...this.exploreStories]}));
-		
+			this.store.dispatch(setExploreStories({ stories: [res, ...this.exploreStories] }));
+
 			setTimeout(() => {
-				this.moodService.getAverageUserMood(this.userId).subscribe((mood: any) => {					
+				this.moodService.getAverageUserMood(this.userId).subscribe((mood: any) => {
 					this.store.dispatch(setAverageMood({ mood: JSON.parse(mood) }));
 					this.store.dispatch(setIsMonthView({ isMonthView: false }));
 					this.store.dispatch(toggleLoading({ status: false }));
@@ -88,8 +88,8 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 					this.store.dispatch(toggleLoading({ status: false }));
 					alert('Failed to fetch updated mood')
 				})
-			},500)
-		
+			}, 500)
+
 		}, (err) => {
 			this.store.dispatch(toggleLoading({ status: false }));
 			alert('Failed to add journal entry');
@@ -98,6 +98,7 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 
 	updateStory() {
 		const val = this.form.value;
+		// const story = {} as Story;
 		this.story.energy = parseInt(val.energy);
 		this.story.creativity = parseInt(val.creativity);
 		this.story.focus = parseInt(val.focus);
@@ -107,14 +108,17 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 		this.story.journal = val.journal;
 		this.story.title = val.title;
 		this.story.date = new Date();
-		this.story.userId = this.userId;
+		this.story.userId = this.userId;;
 		this.store.dispatch(toggleLoading({ status: true }));
 		this.storyService.updateUserStory(this.story).subscribe((res: any) => {
-			const filteredUserStories = this.userStories.filter((story) => story.storyId !== res.storyId);
-			const filteredExploreStories = this.exploreStories.filter((story) => story.storyId !== res.storyId);
-			this.store.dispatch(setUserStories({ stories: [res, ...filteredUserStories] }));
-			this.store.dispatch(setExploreStories({ stories: [res, ...filteredExploreStories]}));
-			setTimeout(() => {
+			const newStory = { ...res }
+			this.moodService.getAverageStoryMood(res.storyId).subscribe((mood: any) => {
+				this.store.dispatch(setStoryMood({ mood: JSON.parse(mood) }));
+				const filteredUserStories = this.userStories.filter((story) => story.storyId !== newStory.storyId);
+				const filteredExploreStories = this.exploreStories.filter((story) => story.storyId !== newStory.storyId);
+				this.store.dispatch(setUserStories({ stories: [res, ...filteredUserStories] }));
+				this.store.dispatch(setExploreStories({ stories: [res, ...filteredExploreStories] }));
+				// setTimeout(() => {
 				this.moodService.getAverageUserMood(this.userId).subscribe((mood: any) => {
 					this.store.dispatch(setIsMonthView({ isMonthView: false }));
 					this.store.dispatch(toggleLoading({ status: false }));
@@ -125,8 +129,14 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 					this.store.dispatch(toggleLoading({ status: false }));
 					alert('Failed to fetch updated mood')
 				});
-			},500)
-			
+				// },500)
+			}, (err) => {
+				this.store.dispatch(toggleLoading({ status: false }));
+				alert('Failed to fetch updated mood')
+			});
+
+
+
 		}, (err) => {
 			this.store.dispatch(toggleLoading({ status: false }));
 			alert('Failed to add journal entry');
@@ -158,7 +168,7 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 				});
 			}
 		})
-		
+
 	}
 
 	ngOnInit(): void {

@@ -500,7 +500,7 @@ func GetAllStories(context *Models.CustomContext) {
 
 func UpdateStory(context *Models.CustomContext) {
 	var story Models.Story
-
+	var storyDrug Models.StoryDrugs
 	//Get userId from token to verify that user owns the comment
 	token := context.Request.Header.Get("Authorization")
 	userId := GetUserId(token, context)
@@ -576,5 +576,21 @@ func UpdateStory(context *Models.CustomContext) {
 		return
 	}
 
-	context.JSON(200, story)
+	storyDrug.StoryId = story.StoryId
+	storyDrug.Drugs = GetStoryDrugs(story.StoryId, context)
+	storyDrug.Title = story.Title
+	storyDrug.Date = story.Date
+	storyDrug.Votes = 0
+	storyDrug.UserId = story.UserId
+	storyDrug.Journal = story.Journal
+	storyDrug.Anxiety = story.Anxiety
+	storyDrug.Creativity = story.Creativity
+	storyDrug.Energy = story.Energy
+	storyDrug.Focus = story.Focus
+	storyDrug.Happiness = story.Happiness
+	storyDrug.Irritability = story.Irritability
+	
+
+
+	context.JSON(200, storyDrug)
 }
