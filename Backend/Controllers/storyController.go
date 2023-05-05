@@ -121,10 +121,26 @@ func CreateStory(context *gin.Context) {
 		return
 	}
 
-	story.StoryId = storyId
+	// story.StoryId = storyId
+
+	var storyDrug Models.StoryDrugs
+
+	storyDrug.StoryId = storyId
+	storyDrug.Drugs = GetStoryDrugs(storyId)
+	storyDrug.Title = story.Title
+	storyDrug.Date = story.Date
+	storyDrug.Votes = 0
+	storyDrug.UserId = story.UserId
+	storyDrug.Journal = story.Journal
+	storyDrug.Anxiety = story.Anxiety
+	storyDrug.Creativity = story.Creativity
+	storyDrug.Energy = story.Energy
+	storyDrug.Focus = story.Focus
+	storyDrug.Happiness = story.Happiness
+	storyDrug.Irritability = story.Irritability
 
 	//Return created story including id and timestamp
-	context.JSON(200, story)
+	context.JSON(200, storyDrug)
 
 	return
 

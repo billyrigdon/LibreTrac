@@ -23,3 +23,10 @@ export const setStoryToEdit = createAction('SET_STORY_TO_EDIT', props<{ story: S
 
 export const setDrugToEdit = createAction('SET_DRUG_TO_EDIT', props<{drug: UserDrug}>())
 
+export const setUserStories = createAction('SET_USER_STORIES', props<{stories: StoryDrug[]}>())
+
+export const setExploreStories = createAction('SET_EXPLORE_STORIES', props<{stories: StoryDrug[]}>())
+
+export const setAverageMood = createAction('SET_AVERAGE_MOOD', props<{mood: StoryDrug}>())
+
+export const setIsMonthView = createAction('SET_IS_MONTH_VIEW', props<{isMonthView: boolean}>())

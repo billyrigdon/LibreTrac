@@ -10,8 +10,8 @@ import { DrugService } from 'src/app/services/drug.service';
 import { DatePipe, formatDate } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/store/app.state';
-import { setDrugToEdit, setStoryToEdit, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
-import { getAuthState } from 'src/app/store/shared/selectors/shared.selector';
+import { setAverageMood, setDrugToEdit, setIsMonthView, setStoryToEdit, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { getAuthState, getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { ModalComponent } from '../modal/modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { WarningComponent } from '../warning/warning.component';
@@ -132,25 +132,28 @@ export class ProfileComponent implements OnInit {
 	}
 
 	switchView(isMonth: boolean) {
-		this.mood = <StoryDrug>{}; // reset mood
-		this.isMonthView = isMonth;
+		// this.mood = <StoryDrug>{}; // reset mood
+		this.store.dispatch(setIsMonthView({isMonthView: isMonth}));
+
 		if (this.isMonthView) {
-			this.moodService.getAverageUserMoodForMonth(this.userId).subscribe((res) => {
+			this.moodService.getAverageUserMoodForMonth(this.userId).subscribe((res: any) => {
 				console.log(res);
-				this.mood = JSON.parse(res);
+				// this.mood = JSON.parse(res);
+				this.store.dispatch(setAverageMood({mood: JSON.parse(res)}))
 			},
 				(err) => {
-					this.mood = <StoryDrug>{};
+					this.store.dispatch(setAverageMood({mood: {} as StoryDrug}))
 				});
 		} else {
 			this.moodService
 					.getAverageUserMood(this.userId)
-					.subscribe((res) => {
+					.subscribe((res: any) => {
 						console.log(res);
-						this.mood = JSON.parse(res);
+						// this.mood = JSON.parse(res);
+						this.store.dispatch(setAverageMood({mood: JSON.parse(res)}))
 					},
 						(err) => {
-							this.mood = <StoryDrug>{};
+							this.store.dispatch(setAverageMood({mood: {} as StoryDrug}))
 						});
 		}
 	}
@@ -243,6 +246,13 @@ export class ProfileComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
+		this.store.select(getSharedState).subscribe((state) => {
+			console.log(this.mood);
+			this.mood = state.averageMood; // reset mood
+			this.isMonthView = state.isMonthView;
+			this.userId = state.userId;
+		});
+		
 		//Check if logged in and navigate to splash if not
 		if (this.storageService.getToken() && this.storageService.getUser()) {
 			//TODO: Move userprofile to shared state instead of handling it this way
@@ -256,7 +266,7 @@ export class ProfileComponent implements OnInit {
 					localStorage.getItem('userProfile') || ''
 				);
 
-				this.userId = this.userProfile.userId;
+				this.switchView(this.isMonthView);
 				// Get drugs for add-drug bottom sheet
 				this.drugService.getDrugs().subscribe((res) => {
 					this.drugs = JSON.parse(res);
