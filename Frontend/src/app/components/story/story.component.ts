@@ -170,16 +170,16 @@ export class StoryComponent implements OnInit {
 			this.exploreStories = [...state.exploreStories];
 			this.userId = state.userId;
 			this.mood = state.storyMood;
+			
 		})
 
 		this.route.queryParams.subscribe((params) => {
 			this.storyId = parseInt(params['storyId']);
-			console.log(this.storyId)
+			this.store.dispatch(setStoryId({ storyId: this.storyId }));
 			this.getStory();
 			this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any) => {
 				this.isUserStory = JSON.parse(res).result;
 				this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
-				this.store.dispatch(setStoryId({ storyId: this.storyId }));
 			});
 		});
 		

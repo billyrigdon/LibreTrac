@@ -11,7 +11,7 @@
 		</button>
 		<button aria-label="Show Notifications" id="notie-button" (click)="showNoties()">
 			<span class="material-icons">notifications</span>
-			<p>{{ this.noties.length }}</p>
+			<p>{{ this.noties ? this.noties.length : 0  }}</p>
 		</button>
 		<button (click)="signout()"><span class="nav-icon" class="material-icons">logout</span></button>
 	</div>

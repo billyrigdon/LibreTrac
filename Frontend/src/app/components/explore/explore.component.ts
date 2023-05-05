@@ -83,7 +83,8 @@ export class ExploreComponent implements OnInit {
 
 
 	setStoriesInit(res: string) {
-		let jsonStories = [...JSON.parse(res)]
+		if (res) {
+		let jsonStories = JSON.parse(res) ? [...JSON.parse(res)] : [];
 		// this.stories = jsonStories ? jsonStories : [];
 		if (jsonStories) {
 			for (let i = 0; i < jsonStories.length; i++) {
@@ -100,7 +101,7 @@ export class ExploreComponent implements OnInit {
 		} else {
 			this.store.dispatch(setExploreStories({ stories: [] }));
 		}
-
+	}
 	}
 
 	async getSummary(name: string, id: number, isDrug: boolean): Promise<any> {
@@ -115,7 +116,7 @@ export class ExploreComponent implements OnInit {
 			return { contents: summary, url: response.data.content_urls.desktop.page };
 		} catch (error) {
 			// this.openBottomSheetInfo('No information found', id, isDrug);
-			return null;
+			// return null;
 		}
 	}
 
@@ -146,8 +147,10 @@ export class ExploreComponent implements OnInit {
 					this.drugService.getDrug(parseInt(this.drugX, 10)).subscribe((res: any) => {
 						this.drugXName = res.name;
 						this.getSummary(this.drugXName, parseInt(this.drugX, 10), true).then((res) => {
-							this.drugXSummary = res.contents;
-							this.summaries.push({ summary: this.drugXSummary, name: this.drugXName, url: res.url });
+							this.drugXSummary = res?.contents;
+							this.summaries.push({ summary: this.drugXSummary, name: this.drugXName, url: res?.url });
+						}, (err) => {
+							this.drugXSummary = 'No information found.'	
 						});
 					});
 				}
