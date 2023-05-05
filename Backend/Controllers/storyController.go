@@ -11,15 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func VerifyIsUserStory(storyId string, userId string) bool {
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
-
+func VerifyIsUserStory(storyId string, userId string, context *Models.CustomContext) bool {
+	
 	sqlStatement := `
 		SELECT storyId
 		FROM stories
@@ -27,7 +20,7 @@ func VerifyIsUserStory(storyId string, userId string) bool {
 	`
 
 	var id int
-	err := db.QueryRow(sqlStatement, storyId, userId).Scan(&id)
+	err := context.DB.QueryRow(sqlStatement, storyId, userId).Scan(&id)
 
 	if err != nil {
 		log.Error(err)
@@ -37,17 +30,17 @@ func VerifyIsUserStory(storyId string, userId string) bool {
 	return true
 }
 
-func IsUserStory(context *gin.Context) {
+func IsUserStory(context *Models.CustomContext) {
 	userId := context.Query("userId")
 	storyId := context.Query("storyId")
 
-	result := VerifyIsUserStory(storyId, userId)
+	result := VerifyIsUserStory(storyId, userId, context)
 
 	context.JSON(200, gin.H{"result": result})
 }
 
 // Requires json object containing fields for user struct
-func CreateStory(context *gin.Context) {
+func CreateStory(context *Models.CustomContext) {
 
 	var story Models.Story
 	var storyId int
@@ -74,13 +67,6 @@ func CreateStory(context *gin.Context) {
 	//Timestamp in postgres format
 	story.Date = time.Now()
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	//Insert into database and add storyId to story object
 	sqlStatement := `
@@ -99,7 +85,7 @@ func CreateStory(context *gin.Context) {
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING storyId;
 		`
 
-	err = db.QueryRow(sqlStatement,
+	err = context.DB.QueryRow(sqlStatement,
 		story.UserId,
 		story.Title,
 		story.Energy,
@@ -126,7 +112,7 @@ func CreateStory(context *gin.Context) {
 	var storyDrug Models.StoryDrugs
 
 	storyDrug.StoryId = storyId
-	storyDrug.Drugs = GetStoryDrugs(storyId)
+	storyDrug.Drugs = GetStoryDrugs(storyId, context)
 	storyDrug.Title = story.Title
 	storyDrug.Date = story.Date
 	storyDrug.Votes = 0
@@ -147,7 +133,7 @@ func CreateStory(context *gin.Context) {
 }
 
 // Requires ?userId=, returns array of story Json objects
-func GetUserStories(context *gin.Context) {
+func GetUserStories(context *Models.CustomContext) {
 
 	var stories []Models.StoryDrugs
 	userId := context.Query("userId")
@@ -163,7 +149,7 @@ func GetUserStories(context *gin.Context) {
 	}
 
 	token := context.Request.Header.Get("Authorization")
-	tokenUserId := GetUserId(token)
+	tokenUserId := GetUserId(token, context)
 
 	if tokenUserId != userIdInt {
 		context.JSON(401, gin.H{
@@ -173,13 +159,6 @@ func GetUserStories(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT s.storyId,
@@ -191,7 +170,7 @@ func GetUserStories(context *gin.Context) {
 		ORDER BY date DESC;
 		`
 
-	rows, err := db.Query(sqlStatement, userId)
+	rows, err := context.DB.Query(sqlStatement, userId)
 
 	if err != nil {
 		log.Error(err)
@@ -223,7 +202,7 @@ func GetUserStories(context *gin.Context) {
 			return
 		}
 
-		story.Drugs = GetStoryDrugs(story.StoryId)
+		story.Drugs = GetStoryDrugs(story.StoryId, context)
 
 		stories = append(stories, story)
 	}
@@ -233,7 +212,7 @@ func GetUserStories(context *gin.Context) {
 }
 
 // Requires ?=storyId, returns story Json object
-func GetSingleStory(context *gin.Context) {
+func GetSingleStory(context *Models.CustomContext) {
 	var story Models.StoryDrugs
 	storyId := context.Query("storyId")
 
@@ -285,25 +264,17 @@ func GetSingleStory(context *gin.Context) {
 		return
 	}
 
-	story.Drugs = GetStoryDrugs(story.StoryId)
+	story.Drugs = GetStoryDrugs(story.StoryId, context)
 
 	context.JSON(200, story)
 }
 
 // Requires storyId?=, deletes storyId in Postgres, and returns success message
-func DeleteStory(context *gin.Context) {
+func DeleteStory(context *Models.CustomContext) {
 	storyId := context.Query("storyId")
 	//Get userId from token to verify that user owns the story
 	token := context.Request.Header.Get("Authorization")
-	userId := GetUserId(token)
-
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
+	userId := GetUserId(token, context)
 
 	sqlStatement := `
 		UPDATE stories
@@ -311,7 +282,7 @@ func DeleteStory(context *gin.Context) {
 		WHERE storyId = $1
 		AND userId = $2;
 	`
-	_, deleteErr := db.Exec(sqlStatement, storyId, userId)
+	_, deleteErr := context.DB.Exec(sqlStatement, storyId, userId)
 	if deleteErr != nil {
 		log.Error(deleteErr)
 		context.JSON(500, gin.H{
@@ -326,19 +297,12 @@ func DeleteStory(context *gin.Context) {
 
 }
 
-func GetAllStories(context *gin.Context) {
+func GetAllStories(context *Models.CustomContext) {
 	var storyDrugs []Models.StoryDrugs
 	drugX := context.Query("drugX")
 	drugY := context.Query("drugY")
 
 	pageNumber := context.Query("page")
-
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	// If no drugs are specified, return all stories
 	if drugX == "" && drugY == "" {
@@ -356,7 +320,7 @@ func GetAllStories(context *gin.Context) {
 			OFFSET $1;
 			`
 
-		rows, err := db.Query(sqlStatement, pageNumber)
+		rows, err := context.DB.Query(sqlStatement, pageNumber)
 
 		if err != nil {
 			log.Error(err)
@@ -389,7 +353,7 @@ func GetAllStories(context *gin.Context) {
 				return
 			}
 
-			storyDrug.Drugs = GetStoryDrugs(storyDrug.StoryId)
+			storyDrug.Drugs = GetStoryDrugs(storyDrug.StoryId, context)
 
 			storyDrugs = append(storyDrugs, storyDrug)
 		}
@@ -419,7 +383,7 @@ func GetAllStories(context *gin.Context) {
 	 	OFFSET $2;
 			`
 
-		rows, err := db.Query(sqlStatement, drugX, pageNumber)
+		rows, err := context.DB.Query(sqlStatement, drugX, pageNumber)
 
 		if err != nil {
 			log.Error(err)
@@ -452,7 +416,7 @@ func GetAllStories(context *gin.Context) {
 				return
 			}
 
-			storyDrug.Drugs = GetStoryDrugs(storyDrug.StoryId)
+			storyDrug.Drugs = GetStoryDrugs(storyDrug.StoryId, context)
 
 			storyDrugs = append(storyDrugs, storyDrug)
 		}
@@ -485,7 +449,7 @@ func GetAllStories(context *gin.Context) {
 	 	OFFSET $3;
 			`
 
-		rows, err := db.Query(sqlStatement, drugX, drugY, pageNumber)
+		rows, err := context.DB.Query(sqlStatement, drugX, drugY, pageNumber)
 
 		if err != nil {
 			log.Error(err)
@@ -518,7 +482,7 @@ func GetAllStories(context *gin.Context) {
 				return
 			}
 
-			storyDrug.Drugs = GetStoryDrugs(storyDrug.StoryId)
+			storyDrug.Drugs = GetStoryDrugs(storyDrug.StoryId, context)
 
 			storyDrugs = append(storyDrugs, storyDrug)
 		}
@@ -534,12 +498,12 @@ func GetAllStories(context *gin.Context) {
 	}
 }
 
-func UpdateStory(context *gin.Context) {
+func UpdateStory(context *Models.CustomContext) {
 	var story Models.Story
 
 	//Get userId from token to verify that user owns the comment
 	token := context.Request.Header.Get("Authorization")
-	userId := GetUserId(token)
+	userId := GetUserId(token, context)
 	err := context.ShouldBindJSON(&story)
 	if err != nil {
 		log.Error(err)
@@ -552,7 +516,7 @@ func UpdateStory(context *gin.Context) {
 	}
 
 	// Check if user owns the story and set userId to OP_USER_ID if they do
-	isUserStory := VerifyIsUserStory(strconv.Itoa(story.StoryId), strconv.Itoa(userId))
+	isUserStory := VerifyIsUserStory(strconv.Itoa(story.StoryId), strconv.Itoa(userId), context)
 
 	// Get the comment userId to compare to the token userId or OP_USER_ID
 
@@ -573,13 +537,7 @@ func UpdateStory(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
 
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		UPDATE stories
@@ -596,7 +554,7 @@ func UpdateStory(context *gin.Context) {
 		RETURNING storyId;
 	`
 
-	err = db.QueryRow(sqlStatement,
+	err = context.DB.QueryRow(sqlStatement,
 		story.Title,
 		story.Journal,
 		story.Energy,

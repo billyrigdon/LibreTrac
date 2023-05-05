@@ -2,14 +2,13 @@ package controllers
 
 import (
 	Models "libretrac/Models"
-	Utilities "libretrac/Utilities"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AddStoryVote(context *gin.Context) {
+func AddStoryVote(context *Models.CustomContext) {
 	var vote Models.StoryVote
 
 	err := context.ShouldBindJSON(&vote)
@@ -24,13 +23,6 @@ func AddStoryVote(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		INSERT INTO story_votes
@@ -39,7 +31,7 @@ func AddStoryVote(context *gin.Context) {
 			($1,$2)
 		RETURNING storyId;
 	`
-	err = db.QueryRow(sqlStatement, vote.StoryId, vote.UserId).Scan(&vote.StoryId)
+	err = context.DB.QueryRow(sqlStatement, vote.StoryId, vote.UserId).Scan(&vote.StoryId)
 	if err != nil {
 		log.Error(err)
 		context.JSON(400, gin.H{
@@ -54,7 +46,7 @@ func AddStoryVote(context *gin.Context) {
 	context.JSON(200, vote)
 }
 
-func RemoveStoryVote(context *gin.Context) {
+func RemoveStoryVote(context *Models.CustomContext) {
 	var vote Models.StoryVote
 
 	err := context.ShouldBindJSON(&vote)
@@ -68,13 +60,7 @@ func RemoveStoryVote(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
 
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		DELETE FROM story_votes
@@ -82,7 +68,7 @@ func RemoveStoryVote(context *gin.Context) {
 		AND userId = $2;
 		`
 
-	_, err = db.Exec(sqlStatement, vote.StoryId, vote.UserId)
+	_, err = context.DB.Exec(sqlStatement, vote.StoryId, vote.UserId)
 	if err != nil {
 		log.Error(err)
 		context.JSON(400, gin.H{
@@ -96,7 +82,7 @@ func RemoveStoryVote(context *gin.Context) {
 	context.JSON(200, vote)
 }
 
-func AddCommentVote(context *gin.Context) {
+func AddCommentVote(context *Models.CustomContext) {
 	var vote Models.CommentVote
 	err := context.ShouldBindJSON(&vote)
 	if err != nil {
@@ -109,13 +95,6 @@ func AddCommentVote(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		INSERT INTO comment_votes
@@ -123,7 +102,7 @@ func AddCommentVote(context *gin.Context) {
 		VALUES
 			($1,$2);
 	`
-	_, err = db.Exec(sqlStatement, vote.CommentId, vote.UserId)
+	_, err = context.DB.Exec(sqlStatement, vote.CommentId, vote.UserId)
 	if err != nil {
 		log.Error(err)
 		context.JSON(400, gin.H{
@@ -137,7 +116,7 @@ func AddCommentVote(context *gin.Context) {
 	context.JSON(200, vote)
 }
 
-func RemoveCommentVote(context *gin.Context) {
+func RemoveCommentVote(context *Models.CustomContext) {
 	var vote Models.CommentVote
 
 	err := context.ShouldBindJSON(&vote)
@@ -151,13 +130,6 @@ func RemoveCommentVote(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		DELETE FROM comment_votes
@@ -165,7 +137,7 @@ func RemoveCommentVote(context *gin.Context) {
 		AND userId = $2;
 		`
 
-	_, err = db.Exec(sqlStatement, vote.CommentId, vote.UserId)
+	_, err = context.DB.Exec(sqlStatement, vote.CommentId, vote.UserId)
 	if err != nil {
 		log.Error(err)
 		context.JSON(400, gin.H{

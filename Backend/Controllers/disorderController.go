@@ -2,24 +2,16 @@ package controllers
 
 import (
 	Models "libretrac/Models"
-	Utilities "libretrac/Utilities"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllDisorders(context *gin.Context) {
+func GetAllDisorders(context *Models.CustomContext) {
 
 	var disorders []Models.Disorder
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT disorderId,disorderName
@@ -27,7 +19,7 @@ func GetAllDisorders(context *gin.Context) {
 		ORDER BY disorderName;
 	`
 
-	rows, err := db.Query(sqlStatement)
+	rows, err := context.DB.Query(sqlStatement)
 
 	if err != nil {
 		log.Error(err)
@@ -63,24 +55,16 @@ func GetAllDisorders(context *gin.Context) {
 }
 
 // Requires ?disorderId= , returns disorder name and id
-func GetDisorder(context *gin.Context) {
+func GetDisorder(context *Models.CustomContext) {
 	var disorder Models.Disorder
 	disorderId := context.Query("disorderId")
-
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT disorderid,disordername
 		FROM disorders
 		WHERE disorderid = $1;
 	`
-	err := db.QueryRow(sqlStatement, disorderId).Scan(&disorder.DisorderId, &disorder.DisorderName)
+	err := context.DB.QueryRow(sqlStatement, disorderId).Scan(&disorder.DisorderId, &disorder.DisorderName)
 	if err != nil {
 		log.Error(err)
 		context.JSON(400, gin.H{
@@ -94,25 +78,18 @@ func GetDisorder(context *gin.Context) {
 }
 
 // requires "name" json object,inserts into database, and returns generated disorderId
-func AddDisorder(context *gin.Context) {
+func AddDisorder(context *Models.CustomContext) {
 	var disorder Models.Disorder
 
 	disorderId := context.Query("disorderId")
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT disorderId,disorderName
 		FROM disorders
 		WHERE disorderId = $1;
 	`
-	err := db.QueryRow(sqlStatement, disorderId).Scan(&disorder.DisorderId, &disorder.DisorderName)
+	err := context.DB.QueryRow(sqlStatement, disorderId).Scan(&disorder.DisorderId, &disorder.DisorderName)
 	if err != nil {
 		log.Error(err)
 		return
@@ -137,7 +114,7 @@ func AddDisorder(context *gin.Context) {
 			($1)
 		RETURNING disorderId;
 	`
-	err = db.QueryRow(sqlStatement, disorder.DisorderName).Scan(&disorder.DisorderId)
+	err = context.DB.QueryRow(sqlStatement, disorder.DisorderName).Scan(&disorder.DisorderId)
 	if err != nil {
 		log.Error(err)
 		context.JSON(400, gin.H{

@@ -2,14 +2,13 @@ package controllers
 
 import (
 	Models "libretrac/Models"
-	Utilities "libretrac/Utilities"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
 
-func UpdateUserProfile(context *gin.Context) {
+func UpdateUserProfile(context *Models.CustomContext) {
 	var user Models.UserProfile
 
 	err := context.ShouldBindJSON(&user)
@@ -25,7 +24,7 @@ func UpdateUserProfile(context *gin.Context) {
 	}
 
 	token := context.Request.Header.Get("Authorization")
-	userId := GetUserId(token)
+	userId := GetUserId(token, context)
 
 	if userId != user.UserId {
 		context.JSON(401, gin.H{
@@ -34,14 +33,7 @@ func UpdateUserProfile(context *gin.Context) {
 		context.Abort()
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
 
-	dbErr = db.Ping()
-
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 
@@ -53,7 +45,7 @@ func UpdateUserProfile(context *gin.Context) {
 		WHERE userId = $5;
 	`
 
-	_, err = db.Exec(sqlStatement, user.CovidVaccine, user.Smoker, user.Drinker, user.OptOutOfPublicStories, userId)
+	_, err = context.DB.Exec(sqlStatement, user.CovidVaccine, user.Smoker, user.Drinker, user.OptOutOfPublicStories, userId)
 
 	if err != nil {
 		log.Error(err)
@@ -67,18 +59,11 @@ func UpdateUserProfile(context *gin.Context) {
 	context.JSON(200, user)
 }
 
-func GetUserProfile(context *gin.Context) {
+func GetUserProfile(context *Models.CustomContext) {
 	token := context.Request.Header.Get("Authorization")
-	userId := GetUserId(token)
+	userId := GetUserId(token, context)
 	var user Models.UserProfile
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT 
@@ -107,7 +92,7 @@ func GetUserProfile(context *gin.Context) {
 		WHERE userId = $1;
 		`
 
-	row := db.QueryRow(sqlStatement, userId)
+	row := context.DB.QueryRow(sqlStatement, userId)
 
 	err := row.Scan(&user.UserId,
 		&user.Username,
@@ -132,7 +117,7 @@ func GetUserProfile(context *gin.Context) {
 
 }
 
-func CreateUserProfile(context *gin.Context) {
+func CreateUserProfile(context *Models.CustomContext) {
 	token := context.Request.Header.Get("Authorization")
 	var user Models.UserProfile
 
@@ -147,15 +132,8 @@ func CreateUserProfile(context *gin.Context) {
 		return
 	}
 
-	user.UserId = GetUserId(token)
+	user.UserId = GetUserId(token, context)
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		INSERT INTO user_profile 
@@ -182,7 +160,7 @@ func CreateUserProfile(context *gin.Context) {
 		);
 		`
 
-	db.Exec(sqlStatement,
+	context.DB.Exec(sqlStatement,
 		user.UserId,
 		user.Username,
 		user.CovidVaccine,
