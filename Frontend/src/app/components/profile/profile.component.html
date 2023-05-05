@@ -1,15 +1,15 @@
 <div id="profile-container">
 	<div class="edit-container">
-		<h1 *ngIf="!this.isMonthView">This week.<span role="button" (click)="this.switchView(true)" class="material-icons">calendar_view_month</span></h1>
-		<h1 *ngIf="this.isMonthView">This month.<span role="button" (click)="this.switchView(false)" class="material-icons">calendar_view_week</span></h1>
+		<h1 *ngIf="!this.isMonthView">This week's avg.<span role="button" (click)="this.switchView(true)" class="material-icons">calendar_view_month</span></h1>
+		<h1 *ngIf="this.isMonthView">This month's avg.<span role="button" (click)="this.switchView(false)" class="material-icons">calendar_view_week</span></h1>
 		<span (click)="goToSettings()" role="button" class="material-icons">
 			settings
 		</span>
 	</div>
 	<section id="mood-container">
-		<app-mood-graph *ngIf="!this.mood.anxiety" [mood]="this.mood"></app-mood-graph>
-		<app-mood-graph *ngIf="this.mood.anxiety && !this.isMonthView" [mood]="this.mood"></app-mood-graph>
-		<app-mood-graph *ngIf="this.mood.anxiety && this.isMonthView" [mood]="this.mood"></app-mood-graph>
+		<app-mood-graph></app-mood-graph>
+		<!-- <app-mood-graph *ngIf="this.mood.anxiety && !this.isMonthView" [mood]="this.mood"></app-mood-graph> -->
+		<!-- <app-mood-graph *ngIf="this.mood.anxiety && this.isMonthView" [mood]="this.mood"></app-mood-graph> -->
 		<div id="profile-button-container">
 			<button mat-raised-button (click)="goToAddStory()">
 				Check In

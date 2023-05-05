@@ -20,6 +20,7 @@ import {
 	setExploreStories,
 	setAverageMood,
 	setIsMonthView,
+	setStoryMood,
 } from '../actions/shared.actions';
 import { initialState, SharedState } from '../shared.state';
 
@@ -83,6 +84,12 @@ export const _sharedReducer = createReducer(
 		return {
 			...state,
 			isMonthView: action.isMonthView
+		}
+	}),
+	on(setStoryMood, (state, action) => {
+		return {
+			...state,
+			storyMood: action.mood
 		}
 	})
 );

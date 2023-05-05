@@ -7,12 +7,12 @@ import { GraphBar } from 'src/app/types/graph';
 import { Story, StoryDrug } from 'src/app/types/story';
 
 @Component({
-	selector: 'app-mood-graph',
-	templateUrl: './mood-graph.component.html',
-	styleUrls: ['./mood-graph.component.scss'],
+	selector: 'app-mood-graph-story',
+	templateUrl: './mood-graph-story.component.html',
+	styleUrls: ['./mood-graph-story.component.scss'],
 })
-export class MoodGraphComponent implements OnInit, AfterViewInit {
-	mood: StoryDrug;
+export class MoodGraphStoryComponent implements OnInit, AfterViewInit {
+	@Input() mood: StoryDrug;
 	@Input() userId?: number;
 	@Input() storyId?: number;
 	@Input() isMonth: boolean = false;
@@ -25,7 +25,7 @@ export class MoodGraphComponent implements OnInit, AfterViewInit {
 	}
 
 	ngAfterViewInit(): void {
-		this.buildGraph(this.mood);
+		// this.buildGraph(this.mood);z
 	}
 
 	buildGraph(mood: StoryDrug) {
@@ -76,10 +76,10 @@ export class MoodGraphComponent implements OnInit, AfterViewInit {
 	}
 
   	ngOnInit(): void {
-		this.store.select(getSharedState).subscribe((state) => {
-			this.mood = state.averageMood;
-			this.buildGraph(this.mood);
-		  }
-		);
+      this.store.select(getSharedState).subscribe((state) => {
+        this.mood = state.storyMood;
+        this.buildGraph(this.mood);
+      }
+    );
 	}
 }

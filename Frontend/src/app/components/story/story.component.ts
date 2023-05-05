@@ -17,7 +17,7 @@ import {
 import { AddCommentComponent } from '../add-comment/add-comment.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
-import { setAverageMood, setExploreStories, setStoryToEdit, setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setAverageMood, setExploreStories, setStoryMood, setStoryToEdit, setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { MoodService } from 'src/app/services/mood.service';
 import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 
@@ -81,10 +81,12 @@ export class StoryComponent implements OnInit {
 			this.moodService
 				.getAverageStoryMood(this.storyId)
 				.subscribe((res) => {
-					this.mood = JSON.parse(res);
+					console.log(res);
+					// this.mood = JSON.parse(res);
+					this.store.dispatch(setStoryMood({ mood: JSON.parse(res)}));
 					this.store.dispatch(toggleLoading({ status: false }));
 				}, (err) => {
-					this.mood = <StoryDrug>{};
+					this.store.dispatch(setStoryMood({mood: <StoryDrug>{}}));
 					this.store.dispatch(toggleLoading({ status: false }));
 				});
 		});
@@ -167,16 +169,20 @@ export class StoryComponent implements OnInit {
 			this.userStories = [...state.userStories];
 			this.exploreStories = [...state.exploreStories];
 			this.userId = state.userId;
+			this.mood = state.storyMood;
 		})
 
 		this.route.queryParams.subscribe((params) => {
 			this.storyId = parseInt(params['storyId']);
+			console.log(this.storyId)
 			this.getStory();
+			this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any) => {
+				this.isUserStory = JSON.parse(res).result;
+				this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
+				this.store.dispatch(setStoryId({ storyId: this.storyId }));
+			});
 		});
-		this.store.dispatch(setStoryId({ storyId: this.storyId }));
-		this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any) => {
-			this.isUserStory = JSON.parse(res).result;
-			this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
-		});
+		
+		
 	}
 }

@@ -5,7 +5,7 @@ export class CustomRouteReuseStrategy implements RouteReuseStrategy {
 
   shouldDetach(route: ActivatedRouteSnapshot): boolean {
     // Define the routes you want to cache
-    return route.routeConfig?.path !== 'route-to-not-cache';
+    return route.routeConfig?.path !== 'story:storyId' && route.routeConfig?.path !== 'addStory' && route.routeConfig?.path !== 'profileSettings';
   }
 
   store(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle): void {

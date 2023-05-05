@@ -23,7 +23,10 @@ export class UserStoriesComponent implements OnInit {
   ngOnInit(): void {
 
     this.store.select(getSharedState).subscribe((state) => {
-      let stories = [...state.userStories];
+      let stories: Array<StoryDrug> = [];
+      if (state.userStories.length > 0) {
+        stories = [...state.userStories];
+      }
       // for (let i = 0; i < this.stories.length; i++) {
       //   const storyDate = new Date(stories[i].date);
       //   const formattedDate = storyDate.toLocaleDateString('en-US', {

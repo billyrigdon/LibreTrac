@@ -60,6 +60,7 @@ import { PasswordResetModalComponent } from './components/password-reset-modal/p
 import { CustomRouteReuseStrategy } from './services/custom-route-reuse-strategy';
 import { RouteReuseStrategy } from '@angular/router';
 import { UserStoriesScrollableComponent } from './components/user-stories-scrollable/user-stories-scrollable.component';
+import { MoodGraphStoryComponent } from './components/mood-graph-story/mood-graph-story.component';
 @NgModule({
 	declarations: [
 		AppComponent,
@@ -93,6 +94,7 @@ import { UserStoriesScrollableComponent } from './components/user-stories-scroll
 		BottomSheetInfoComponent,
 		PasswordResetModalComponent,
   UserStoriesScrollableComponent,
+  MoodGraphStoryComponent,
 	],
 	imports: [
 		BrowserModule,

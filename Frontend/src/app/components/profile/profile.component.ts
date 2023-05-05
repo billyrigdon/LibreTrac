@@ -248,26 +248,11 @@ export class ProfileComponent implements OnInit {
 	ngOnInit(): void {
 		this.store.select(getSharedState).subscribe((state) => {
 			console.log(this.mood);
-			this.mood = state.averageMood; // reset mood
+			this.mood = state.averageMood;
 			this.isMonthView = state.isMonthView;
-			this.userId = state.userId;
-		});
-		
-		//Check if logged in and navigate to splash if not
-		if (this.storageService.getToken() && this.storageService.getUser()) {
-			//TODO: Move userprofile to shared state instead of handling it this way
-			if (localStorage.getItem('userProfile')) {
-				this.store.dispatch(toggleLoading({ status: true }));
-				this.profileService.getProfile().subscribe((res) => {
-					this.profileService.setProfile(res)
-				})
-				//Get user fields from user stored in local storage
-				this.userProfile = JSON.parse(
-					localStorage.getItem('userProfile') || ''
-				);
-
+			if (this.userId !== state.userId) {
+				this.userId = state.userId;
 				this.switchView(this.isMonthView);
-				// Get drugs for add-drug bottom sheet
 				this.drugService.getDrugs().subscribe((res) => {
 					this.drugs = JSON.parse(res);
 				});
@@ -288,8 +273,26 @@ export class ProfileComponent implements OnInit {
 					this.userDisorders = [];
 					this.store.dispatch(toggleLoading({ status: false }));
 				});
+			}
+			
+		});
+		
+		//Check if logged in and navigate to splash if not
+		if (this.storageService.getToken() && this.storageService.getUser()) {
+			//TODO: Move userprofile to shared state instead of handling it this way
+			if (localStorage.getItem('userProfile')) {
+				this.store.dispatch(toggleLoading({ status: true }));
+				this.profileService.getProfile().subscribe((res) => {
+					this.profileService.setProfile(res)
+				})
+				//Get user fields from user stored in local storage
+				this.userProfile = JSON.parse(
+					localStorage.getItem('userProfile') || ''
+				);
 
-				this.switchView(false);
+				// this.switchView(this.isMonthView);
+				// Get drugs for add-drug bottom sheet
+				
 				
 
 				//Get Profile if it does not exist in local storage

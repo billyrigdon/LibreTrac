@@ -30,3 +30,5 @@ export const setExploreStories = createAction('SET_EXPLORE_STORIES', props<{stor
 export const setAverageMood = createAction('SET_AVERAGE_MOOD', props<{mood: StoryDrug}>())
 
 export const setIsMonthView = createAction('SET_IS_MONTH_VIEW', props<{isMonthView: boolean}>())
+
+export const setStoryMood = createAction('SET_STORY_MOOD', props<{mood: StoryDrug}>())

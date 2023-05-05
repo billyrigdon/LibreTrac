@@ -16,8 +16,8 @@
 			</li>
 		</ul>
 		<br />
-		<app-mood-graph *ngIf="this.mood.anxiety" [mood]="this.mood"></app-mood-graph>
-		<app-mood-graph *ngIf="!this.mood.anxiety" [mood]="this.mood"></app-mood-graph>
+		<app-mood-graph-story></app-mood-graph-story>
+		<!-- <app-mood-graph *ngIf="!this.mood.anxiety" [mood]="this.mood"></app-mood-graph> -->
 		<mat-card-actions>
 			<button *ngIf="this.userId" mat-raised-button (click)="
 					upvoteStory({
@@ -32,5 +32,5 @@
 			<button *ngIf="this.isUserStory" mat-raised-button (click)="deleteStory(story.storyId)">Delete</button>
 		</mat-card-actions>
 	</mat-card>
-	<app-comments [isUserStory]="isUserStory" [storyId]="storyId"></app-comments>
+	<app-comments [storyId]="storyId"></app-comments>
 </div>

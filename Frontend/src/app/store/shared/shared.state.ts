@@ -12,6 +12,7 @@ export interface SharedState {
 	exploreStories: StoryDrug[];
 	averageMood: StoryDrug;
 	isMonthView: boolean;
+	storyMood: StoryDrug;
 }
 
 export const initialState: SharedState = {
@@ -25,4 +26,5 @@ export const initialState: SharedState = {
 	exploreStories: [],
 	averageMood: <StoryDrug>{},
 	isMonthView: false,
+	storyMood: <StoryDrug>{},
 };
