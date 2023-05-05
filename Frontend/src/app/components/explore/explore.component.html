@@ -1,6 +1,7 @@
 <h1>Explore.</h1>
 <h3 *ngIf="this.stories.length === 0">No results found</h3>
 <app-stories
+	#scrollableElement
 	[summaries]="this.summaries"
 	(onScroll)="onScroll()"
 	[stories]="this.stories"></app-stories>

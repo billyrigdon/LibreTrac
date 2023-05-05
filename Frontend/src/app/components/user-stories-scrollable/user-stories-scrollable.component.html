@@ -1,0 +1,33 @@
+<div #scrollableElement
+	infinite-scroll
+	[infiniteScrollDistance]="distance"
+	[infiniteScrollThrottle]="throttle"
+	(scrolled)="onPageScroll()"
+	[scrollWindow]="false"
+	id="story-container">
+	<!-- <<ng-template *ngIf="summaries.length"> -->
+	<mat-card class="drug-info" *ngFor="let summary of summaries">
+		<h2>{{ summary.name }}</h2>
+		<!-- <h5 id="date">{{ story.date!.split('T')[0] }}</h5> -->
+		<!-- <h5 id="upvotes">UPVOTES:{{ story.votes }}</h5> -->
+		<p>{{summary.summary}}</p>
+		<p>{{summary.url}}</p>
+	</mat-card>
+<!-- </ng-template> -->
+	<mat-card (click)="openStory(story.storyId)" class="story" *ngFor="let story of stories">
+		<h2>{{ story.title.toUpperCase() }}</h2>
+		<h5 id="date">{{ story.date!.split('T')[0] }}</h5>
+		<h5 id="upvotes">UPVOTES:{{ story.votes }}</h5>
+		<br />
+		<ul *ngIf="story.drugs" id="story-drugs">
+			<li *ngFor="let drug of story.drugs">
+				{{ drug.drugName }}
+			</li>
+		</ul>
+		<mat-card-actions>
+			<span class="material-icons" (click)="openStory(story.storyId)">
+				open_in_full
+			</span>
+		</mat-card-actions>
+	</mat-card>
+</div>

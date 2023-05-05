@@ -3,7 +3,6 @@ package controllers
 import (
 	Auth "libretrac/Auth"
 	Models "libretrac/Models"
-	Utilities "libretrac/Utilities"
 	"strings"
 	"time"
 
@@ -13,24 +12,16 @@ import (
 )
 
 // Uses token to get email, query the database, and return userId for accessing data
-func GetUserId(token string) int {
+func GetUserId(token string, context *Models.CustomContext) int {
 	var userId int
 	email, _ := Auth.GetTokenEmail(token)
-
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	getUserSql := `
 		SELECT userId
 		FROM users
 		WHERE email = $1;
 	`
-	err := db.QueryRow(getUserSql, email).Scan(&userId)
+	err := context.DB.QueryRow(getUserSql, email).Scan(&userId)
 	if err != nil {
 		return 0
 	}
@@ -38,7 +29,7 @@ func GetUserId(token string) int {
 	return userId
 }
 
-func UpdateEmail(context *gin.Context) {
+func UpdateEmail(context *Models.CustomContext) {
 	var user Models.User
 
 	err := context.ShouldBindJSON(&user)
@@ -64,7 +55,7 @@ func UpdateEmail(context *gin.Context) {
 		return
 	}
 
-	userId := GetUserId(token)
+	userId := GetUserId(token, context)
 
 	if len(user.NewEmail) > 128 {
 		context.JSON(400, gin.H{
@@ -74,14 +65,6 @@ func UpdateEmail(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		UPDATE users
@@ -90,7 +73,7 @@ func UpdateEmail(context *gin.Context) {
 		AND email = $3;
 	`
 
-	_, err = db.Exec(sqlStatement, strings.ToLower(user.NewEmail), userId, strings.ToLower(user.Email))
+	_, err = context.DB.Exec(sqlStatement, strings.ToLower(user.NewEmail), userId, strings.ToLower(user.Email))
 
 	if err != nil {
 		log.Error(err)
@@ -106,7 +89,7 @@ func UpdateEmail(context *gin.Context) {
 	})
 }
 
-func ResetPassword(context *gin.Context) {
+func ResetPassword(context *Models.CustomContext) {
 	var user Models.User
 
 	err := context.ShouldBindJSON(&user)
@@ -132,7 +115,7 @@ func ResetPassword(context *gin.Context) {
 		return
 	}
 
-	userId := GetUserId(token)
+	userId := GetUserId(token, context)
 
 	//Use bcrypt to generate password hash to save to database
 	err = user.HashPassword(user.Password)
@@ -154,14 +137,6 @@ func ResetPassword(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		UPDATE users
@@ -169,7 +144,7 @@ func ResetPassword(context *gin.Context) {
 		WHERE userId = $2;
 	`
 
-	_, err = db.Exec(sqlStatement, user.Password, userId)
+	_, err = context.DB.Exec(sqlStatement, user.Password, userId)
 
 	if err != nil {
 		log.Error(err)
@@ -187,7 +162,7 @@ func ResetPassword(context *gin.Context) {
 }
 
 // Requires JSON object containing username,email, and password
-func UserSignup(context *gin.Context) {
+func UserSignup(context *Models.CustomContext) {
 
 	var user Models.User
 
@@ -227,13 +202,6 @@ func UserSignup(context *gin.Context) {
 	//Timestamp in SQL format
 	user.DateCreated = time.Now()
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		INSERT INTO users (
@@ -245,7 +213,7 @@ func UserSignup(context *gin.Context) {
 		VALUES ($1,$2,$3,$4);
 		`
 
-	_, err = db.Exec(sqlStatement,
+	_, err = context.DB.Exec(sqlStatement,
 		user.Username,
 		user.Password,
 		email,
@@ -270,7 +238,7 @@ func UserSignup(context *gin.Context) {
 }
 
 // Requires email and password in json, returns login token
-func UserLogin(context *gin.Context) {
+func UserLogin(context *Models.CustomContext) {
 	var payload Models.LoginPayload
 	var user Models.User
 
@@ -295,13 +263,7 @@ func UserLogin(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
 
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	//Query db using email in payload
 	sqlStatement := `
@@ -309,7 +271,7 @@ func UserLogin(context *gin.Context) {
 		FROM users
 		WHERE email = $1;
 	`
-	row := db.QueryRow(sqlStatement, email)
+	row := context.DB.QueryRow(sqlStatement, email)
 
 	//Check username
 	err = row.Scan(&user.Username, &user.Password)

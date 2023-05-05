@@ -3,7 +3,6 @@ package controllers
 import (
 	Auth "libretrac/Auth"
 	Models "libretrac/Models"
-	Utilities "libretrac/Utilities"
 	"strconv"
 	"time"
 
@@ -12,20 +11,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetUserDisorders(context *gin.Context) {
+func GetUserDisorders(context *Models.CustomContext) {
 	var userDisorders []Models.UserDisorder
 	token := context.Request.Header.Get("Authorization")
-	userId := GetUserId(token)
+	userId := GetUserId(token, context)
 
-	
-
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT 
@@ -39,7 +29,7 @@ func GetUserDisorders(context *gin.Context) {
 		WHERE userId = $1;
 		`
 
-	rows, err := db.Query(sqlStatement, userId)
+	rows, err := context.DB.Query(sqlStatement, userId)
 
 	if err != nil {
 		log.Error(err)
@@ -79,15 +69,7 @@ func GetUserDisorders(context *gin.Context) {
 
 }
 
-func IsDuplicateDisorder(userId int, disorderId int) bool {
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
-
+func IsDuplicateDisorder(userId int, disorderId int, context *Models.CustomContext) bool {
 	sqlStatement := `
 		SELECT userDisorderId
 		FROM user_disorder
@@ -95,7 +77,7 @@ func IsDuplicateDisorder(userId int, disorderId int) bool {
 		AND disorderId = $2;
 		`
 
-	row := db.QueryRow(sqlStatement, userId, disorderId)
+	row := context.DB.QueryRow(sqlStatement, userId, disorderId)
 	userDisorderId := 0
 	err := row.Scan(&userDisorderId)
 	if err != nil {
@@ -111,7 +93,7 @@ func IsDuplicateDisorder(userId int, disorderId int) bool {
 	return false
 }
 
-func AddUserDisorder(context *gin.Context) {
+func AddUserDisorder(context *Models.CustomContext) {
 	var userDisorder Models.UserDisorder
 
 	err := context.ShouldBindJSON(&userDisorder)
@@ -126,7 +108,7 @@ func AddUserDisorder(context *gin.Context) {
 	}
 
 	token := context.Request.Header.Get("Authorization")
-	tokenUserId := GetUserId(token)
+	tokenUserId := GetUserId(token, context)
 
 	if tokenUserId != userDisorder.UserId {
 		context.JSON(401, gin.H{
@@ -136,7 +118,7 @@ func AddUserDisorder(context *gin.Context) {
 		return
 	}
 
-	if IsDuplicateDisorder(userDisorder.UserId, userDisorder.DisorderId) {
+	if IsDuplicateDisorder(userDisorder.UserId, userDisorder.DisorderId, context) {
 		context.JSON(400, gin.H{
 			"msg": "duplicate disorder",
 		})
@@ -147,20 +129,12 @@ func AddUserDisorder(context *gin.Context) {
 
 	// userDrug.DateStarted = time.Now()
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
-
 	sqlStatement := `
 		INSERT INTO user_disorders (userId,disorderId, diagnoseDate)
 		VALUES ($1,$2,$3)
 		RETURNING userDisorderId;
 	`
-	row := db.QueryRow(sqlStatement, userDisorder.UserId, userDisorder.DisorderId, time.Now())
+	row := context.DB.QueryRow(sqlStatement, userDisorder.UserId, userDisorder.DisorderId, time.Now())
 	err = row.Scan(&userDisorder.UserDisorderId)
 	if err != nil {
 		log.Error(err)
@@ -174,28 +148,20 @@ func AddUserDisorder(context *gin.Context) {
 	context.JSON(200, userDisorder)
 }
 
-func RemoveUserDisorder(context *gin.Context) {
+func RemoveUserDisorder(context *Models.CustomContext) {
 	var userId int
 	disorderId := context.Query("disorderId")
 
 	token := context.Request.Header.Get("Authorization")
 	email, _ := Auth.GetTokenEmail(token)
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-		return
-	}
 
 	getUserSql := `
 		SELECT userId
 		FROM users
 		WHERE email = $1;
 	`
-	err := db.QueryRow(getUserSql, email).Scan(&userId)
+	err := context.DB.QueryRow(getUserSql, email).Scan(&userId)
 	if err != nil {
 		log.Error(err)
 		context.JSON(400, gin.H{
@@ -212,7 +178,7 @@ func RemoveUserDisorder(context *gin.Context) {
 		AND disorderId = $2;
 	`
 
-	_, updateErr := db.Exec(sqlStatement, userId, disorderId)
+	_, updateErr := context.DB.Exec(sqlStatement, userId, disorderId)
 	if updateErr != nil {
 		log.Error(updateErr)
 		context.JSON(500, gin.H{
@@ -226,16 +192,8 @@ func RemoveUserDisorder(context *gin.Context) {
 	context.JSON(200, "DisorderId: "+disorderId+" removed for userId: "+strconv.Itoa(userId))
 }
 
-func GetStoryDisorders(storyId int) []Models.UserDisorder {
+func GetStoryDisorders(storyId int, context *Models.CustomContext) []Models.UserDisorder {
 	var disorders []Models.UserDisorder
-
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT 
@@ -250,7 +208,7 @@ func GetStoryDisorders(storyId int) []Models.UserDisorder {
 		and ud.diagnoseDate <= s.date;
 	`
 
-	rows, err := db.Query(sqlStatement, storyId)
+	rows, err := context.DB.Query(sqlStatement, storyId)
 
 	if err != nil {
 		log.Error(err)

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	Models "libretrac/Models"
-	Utilities "libretrac/Utilities"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -10,17 +9,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func CreateNotification(comment Models.StoryComment) {
+func CreateNotification(comment Models.StoryComment, context *Models.CustomContext) {
 	var notification Models.Notification
 	var userId int
 	// var parentCommentUserId int
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
 
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	// First get the userId of the story
 	storyUserIdSqlStatement := `
@@ -28,7 +21,7 @@ func CreateNotification(comment Models.StoryComment) {
 		WHERE storyId = $1;
 	`
 	log.Error("comment: ", comment)
-	err := db.QueryRow(storyUserIdSqlStatement, comment.StoryId).Scan(&userId)
+	err := context.DB.QueryRow(storyUserIdSqlStatement, comment.StoryId).Scan(&userId)
 
 	if err != nil {
 		log.Error(err)
@@ -40,7 +33,7 @@ func CreateNotification(comment Models.StoryComment) {
 			SELECT userId FROM story_comments
 			WHERE commentId = $1;
 		`
-		err := db.QueryRow(parentCommentUserIdSqlStatement, comment.ParentCommentId).Scan(&userId)
+		err := context.DB.QueryRow(parentCommentUserIdSqlStatement, comment.ParentCommentId).Scan(&userId)
 
 		if err != nil {
 			log.Error(err)
@@ -60,7 +53,7 @@ func CreateNotification(comment Models.StoryComment) {
 			RETURNING notificationId;
 	`
 
-	notieErr := db.QueryRow(sqlStatement,
+	notieErr := context.DB.QueryRow(sqlStatement,
 		comment.StoryId,
 		comment.ParentCommentId,
 		false,
@@ -72,16 +65,10 @@ func CreateNotification(comment Models.StoryComment) {
 	}
 }
 
-func ClearNotifications(context *gin.Context) {
+func ClearNotifications(context *Models.CustomContext) {
 	storyId := context.Query("storyId")
 	userId := context.Query("userId")
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
 
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		UPDATE notifications
@@ -94,7 +81,7 @@ func ClearNotifications(context *gin.Context) {
 		viewed = false;
 	`
 
-	_, err := db.Exec(sqlStatement, storyId, userId)
+	_, err := context.DB.Exec(sqlStatement, storyId, userId)
 
 	if err != nil {
 		log.Error(err)
@@ -110,7 +97,7 @@ func ClearNotifications(context *gin.Context) {
 	})
 }
 
-func GetNotifications(context *gin.Context) {
+func GetNotifications(context *Models.CustomContext) {
 	userId := context.Query("userId")
 
 	userIdInt, err := strconv.Atoi(userId)
@@ -124,7 +111,7 @@ func GetNotifications(context *gin.Context) {
 	}
 
 	token := context.Request.Header.Get("Authorization")
-	tokenUserId := GetUserId(token)
+	tokenUserId := GetUserId(token, context)
 
 	if tokenUserId != userIdInt {
 		context.JSON(401, gin.H{
@@ -134,13 +121,6 @@ func GetNotifications(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT notificationId, viewed, parentCommentId, storyId FROM notifications
@@ -150,7 +130,7 @@ func GetNotifications(context *gin.Context) {
 		viewed = false;
 	`
 
-	rows, err := db.Query(sqlStatement, userId)
+	rows, err := context.DB.Query(sqlStatement, userId)
 	if err != nil {
 		log.Error(err)
 	}
@@ -182,7 +162,7 @@ func GetNotifications(context *gin.Context) {
 	context.JSON(200, notifications)
 }
 
-func GetNotificationStories(context *gin.Context) {
+func GetNotificationStories(context *Models.CustomContext) {
 	userId := context.Query("userId")
 
 	userIdInt, err := strconv.Atoi(userId)
@@ -196,7 +176,7 @@ func GetNotificationStories(context *gin.Context) {
 	}
 
 	token := context.Request.Header.Get("Authorization")
-	tokenUserId := GetUserId(token)
+	tokenUserId := GetUserId(token, context)
 
 	if tokenUserId != userIdInt {
 		context.JSON(401, gin.H{
@@ -206,18 +186,6 @@ func GetNotificationStories(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		context.JSON(500, gin.H{
-			"msg": "Error getting stories",
-		})
-		context.Abort()
-
-		return
-	}
 
 	sqlStatement := `
 		SELECT storyId, title from stories WHERE storyId IN
@@ -230,7 +198,7 @@ func GetNotificationStories(context *gin.Context) {
 			);
 		`
 
-	rows, err := db.Query(sqlStatement, userId)
+	rows, err := context.DB.Query(sqlStatement, userId)
 	if err != nil {
 		context.JSON(500, gin.H{
 			"msg": "Error getting stories",

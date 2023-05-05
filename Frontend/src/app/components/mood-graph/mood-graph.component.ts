@@ -1,5 +1,8 @@
 import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { MoodService } from 'src/app/services/mood.service';
+import { AppState } from 'src/app/store/app.state';
+import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { GraphBar } from 'src/app/types/graph';
 import { Story, StoryDrug } from 'src/app/types/story';
 
@@ -9,14 +12,14 @@ import { Story, StoryDrug } from 'src/app/types/story';
 	styleUrls: ['./mood-graph.component.scss'],
 })
 export class MoodGraphComponent implements OnInit, AfterViewInit {
-	@Input() mood: StoryDrug;
+	mood: StoryDrug;
 	@Input() userId?: number;
 	@Input() storyId?: number;
 	@Input() isMonth: boolean = false;
 	moodBars: Array<GraphBar>;
 	
 	
-	constructor(private moodService: MoodService) {
+	constructor(private moodService: MoodService, private store: Store<AppState>) {
 		this.mood = <StoryDrug>{};
 		this.moodBars = Array<GraphBar>();
 	}
@@ -73,6 +76,10 @@ export class MoodGraphComponent implements OnInit, AfterViewInit {
 	}
 
   	ngOnInit(): void {
-		
+		this.store.select(getSharedState).subscribe((state) => {
+			this.mood = state.averageMood;
+			this.buildGraph(this.mood);
+		  }
+		);
 	}
 }

@@ -9,12 +9,14 @@ import { AppState } from 'src/app/store/app.state';
 import { setParentCommentContent, setStoryContent, toggleAddComment } from 'src/app/store/comments/comments.actions';
 import {
 	getAddCommentsOpen,
+	getCommentsState,
 	getParentCommentId,
 } from 'src/app/store/comments/comments.selector';
 import { StoryComment, NewStoryComment } from 'src/app/types/comment';
 import { CommentVote } from 'src/app/types/vote';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
 import { ModalComponent } from '../modal/modal.component';
+import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 
 @Component({
 	selector: 'app-comments',
@@ -23,7 +25,7 @@ import { ModalComponent } from '../modal/modal.component';
 })
 export class CommentsComponent implements OnInit {
 	@Input() storyId!: number;
-	@Input() isUserStory: boolean;
+	isUserStory: boolean;
 	parentCommentId: number;
 	comments: Array<StoryComment>;
 	addCommentOpen: Observable<boolean>;
@@ -45,26 +47,36 @@ export class CommentsComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
-		if (this.isUserStory) {
-			const OP_USER_ID = 2;
-			this.userId = OP_USER_ID;
-		}
-		//Get comments and sort them by upvotes
-		this.commentService
-			.getComments(this.storyId)
-			.subscribe((res: Array<StoryComment>) => {
-				if (res) {
-					this.comments = res.sort((a, b) => b.votes - a.votes);
-				} else {
-					this.comments = [];
-				}
-			},
-				(err) => {
-					this.comments = [];
-				});
-		if (localStorage.getItem('userProfile')) {
-			this.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
-		}
+		// if (this.isUserStory) {
+		// 	const OP_USER_ID = 2;
+		// 	this.userId = OP_USER_ID;
+		// }
+		this.store.select(getSharedState).subscribe(state => {
+			this.userId = state.userId;
+		})
+		this.store.select(getCommentsState).subscribe((state) => {
+			this.isUserStory = state.isUserStory;
+			this.storyId = state.storyId;
+			console.log(this.storyId);
+			//Get comments and sort them by upvotes
+			this.commentService
+				.getComments(this.storyId)
+				.subscribe((res: Array<StoryComment>) => {
+					if (res) {
+						this.comments = res.sort((a, b) => b.votes - a.votes);
+					} else {
+						this.comments = [];
+					}
+				},
+					(err) => {
+						this.comments = [];
+					});
+		})
+
+
+		// if (localStorage.getItem('userProfile')) {
+		// 	this.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
+		// }
 		//Get parentCommentId from store so that add-comment replies to the correct comment
 		//The state is updated by the reply button for comments and stories
 		this.store.select(getParentCommentId).subscribe((val) => {

@@ -6,10 +6,35 @@ import (
 	Controllers "libretrac/Controllers"
 	"os"
 
+	"time"
+
+	_ "github.com/lib/pq"
+
+	// "database/sql"
+	Models "libretrac/Models"
+	Utilities "libretrac/Utilities"
+
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
+
+// type CustomContext struct {
+// 	*gin.Context
+// 	DB *sql.DB
+// }
+
+var db, dbErr = Utilities.ConnectPostgres()
+
+func withDB(handler func(*Models.CustomContext)) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		cc := &Models.CustomContext{
+			Context: c,
+			DB:      db, // Assuming 'db' is your sql.DB instance
+		}
+		handler(cc)
+	}
+}
 
 func setupRouter() *gin.Engine {
 	//Configure logging
@@ -42,14 +67,14 @@ func setupRouter() *gin.Engine {
 
 		{
 			//Serve public login/signup routes
-			public.POST("login", Controllers.UserLogin)
-			public.POST("signup", Controllers.UserSignup)
+			public.POST("login", withDB(Controllers.UserLogin))
+			public.POST("signup", withDB(Controllers.UserSignup))
 
 			//Serve public explore page
-			public.GET("/story/get", Controllers.GetAllStories)
-			public.GET("/story/comment", Controllers.GetComments)
-			public.GET("/story", Controllers.GetSingleStory)
-			public.GET("/mood/get", Controllers.GetAverageStoryMood)
+			public.GET("/story/get", withDB(Controllers.GetAllStories))
+			public.GET("/story/comment", withDB(Controllers.GetComments))
+			public.GET("/story", withDB(Controllers.GetSingleStory))
+			public.GET("/mood/get", withDB(Controllers.GetAverageStoryMood))
 		}
 
 		//Serve routes that require valid jwt token
@@ -58,55 +83,55 @@ func setupRouter() *gin.Engine {
 		protected.Use(corsInterceptor())
 		{
 			//Serve user profile routes
-			protected.GET("/user", Controllers.GetUserProfile)
-			protected.POST("/user/create", Controllers.CreateUserProfile)
-			protected.POST("/user/update", Controllers.UpdateUserProfile)
-			protected.GET("/user/mood/get", Controllers.GetAverageUserMood)
-			protected.GET("user/mood/get/month", Controllers.GetAverageUserMoodForMonth)
-			protected.POST("/user/password/reset", Controllers.ResetPassword)
-			protected.POST("/user/email/update", Controllers.UpdateEmail)
+			protected.GET("/user", withDB(Controllers.GetUserProfile))
+			protected.POST("/user/create", withDB(Controllers.CreateUserProfile))
+			protected.POST("/user/update", withDB(Controllers.UpdateUserProfile))
+			protected.GET("/user/mood/get", withDB(Controllers.GetAverageUserMood))
+			protected.GET("user/mood/get/month", withDB(Controllers.GetAverageUserMoodForMonth))
+			protected.POST("/user/password/reset", withDB(Controllers.ResetPassword))
+			protected.POST("/user/email/update", withDB(Controllers.UpdateEmail))
 
 			// Serve story routes
-			protected.GET("/story/user", Controllers.GetUserStories)
-			protected.GET("/story/user/isUserStory", Controllers.IsUserStory)
-			protected.POST("/story/create", Controllers.CreateStory)
-			protected.POST("/story/update", Controllers.UpdateStory)
-			protected.DELETE("/story/delete", Controllers.DeleteStory)
-			protected.POST("/story/vote/add", Controllers.AddStoryVote)
-			protected.POST("/story/vote/remove", Controllers.RemoveStoryVote)
+			protected.GET("/story/user", withDB(Controllers.GetUserStories))
+			protected.GET("/story/user/isUserStory", withDB(Controllers.IsUserStory))
+			protected.POST("/story/create", withDB(Controllers.CreateStory))
+			protected.POST("/story/update", withDB(Controllers.UpdateStory))
+			protected.DELETE("/story/delete", withDB(Controllers.DeleteStory))
+			protected.POST("/story/vote/add", withDB(Controllers.AddStoryVote))
+			protected.POST("/story/vote/remove", withDB(Controllers.RemoveStoryVote))
 
 			//Serve comment routes
-			protected.POST("/story/comment/create", Controllers.AddComment)
-			protected.DELETE("/story/comment/delete", Controllers.DeleteComment)
-			protected.POST("/story/comment/update", Controllers.UpdateComment)
-			protected.POST("/story/comment/vote/add", Controllers.AddCommentVote)
-			protected.POST("/story/comment/vote/remove", Controllers.RemoveCommentVote)
+			protected.POST("/story/comment/create", withDB(Controllers.AddComment))
+			protected.DELETE("/story/comment/delete", withDB(Controllers.DeleteComment))
+			protected.POST("/story/comment/update", withDB(Controllers.UpdateComment))
+			protected.POST("/story/comment/vote/add", withDB(Controllers.AddCommentVote))
+			protected.POST("/story/comment/vote/remove", withDB(Controllers.RemoveCommentVote))
 
 			//Serve drug routes
-			protected.GET("/drug", Controllers.GetAllDrugs)
-			protected.POST("/drug/create", Controllers.AddDrug)
-			protected.GET("/drug/get", Controllers.GetDrug)
+			protected.GET("/drug", withDB(Controllers.GetAllDrugs))
+			protected.POST("/drug/create", withDB(Controllers.AddDrug))
+			protected.GET("/drug/get", withDB(Controllers.GetDrug))
 
 			//Serve user_drug routes
-			protected.GET("/user/drugs/get", Controllers.GetUserDrugs)
-			protected.POST("/user/drugs/add", Controllers.AddUserDrug)
-			protected.POST("/user/drugs/update", Controllers.UpdateUserDrug)
-			protected.DELETE("/user/drugs/remove", Controllers.RemoveUserDrug)
+			protected.GET("/user/drugs/get", withDB(Controllers.GetUserDrugs))
+			protected.POST("/user/drugs/add", withDB(Controllers.AddUserDrug))
+			protected.POST("/user/drugs/update", withDB(Controllers.UpdateUserDrug))
+			protected.DELETE("/user/drugs/remove", withDB(Controllers.RemoveUserDrug))
 
 			//Serve drug routes
-			protected.GET("/disorder", Controllers.GetAllDisorders)
-			protected.POST("/disorder/create", Controllers.AddDisorder)
-			protected.GET("/disorder/get", Controllers.GetDisorder)
+			protected.GET("/disorder", withDB(Controllers.GetAllDisorders))
+			protected.POST("/disorder/create", withDB(Controllers.AddDisorder))
+			protected.GET("/disorder/get", withDB(Controllers.GetDisorder))
 
 			//Serve user_drug routes
-			protected.GET("/user/disorders/get", Controllers.GetUserDisorders)
-			protected.POST("/user/disorders/add", Controllers.AddUserDisorder)
-			protected.DELETE("/user/disorders/remove", Controllers.RemoveUserDisorder)
+			protected.GET("/user/disorders/get", withDB(Controllers.GetUserDisorders))
+			protected.POST("/user/disorders/add", withDB(Controllers.AddUserDisorder))
+			protected.DELETE("/user/disorders/remove", withDB(Controllers.RemoveUserDisorder))
 
 			//Serve notification routes
-			protected.GET("/notifications/get", Controllers.GetNotifications)
-			protected.GET("/notifications/viewed", Controllers.ClearNotifications)
-			protected.GET("/notifications/get/stories", Controllers.GetNotificationStories)
+			protected.GET("/notifications/get", withDB(Controllers.GetNotifications))
+			protected.GET("/notifications/viewed", withDB(Controllers.ClearNotifications))
+			protected.GET("/notifications/get/stories", withDB(Controllers.GetNotificationStories))
 		}
 
 	}
@@ -146,6 +171,18 @@ func main() {
 	//Set logrus to use log file
 	logFile := OpenLogFile("libreTrac.log")
 	log.SetOutput(logFile)
+
+	// db, dbErr := Utilities.ConnectPostgres()
+	defer db.Close()
+
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(time.Minute * 30)
+
+	dbErr = db.Ping()
+	if dbErr != nil {
+		log.Error(dbErr)
+	}
 
 	//Create server
 	router := setupRouter()

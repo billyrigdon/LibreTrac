@@ -124,11 +124,13 @@ export class NotieBarComponent implements OnInit {
 				.subscribe((noties) => {
 					this.store.dispatch(
 						setNotifications({ notifications: noties ? noties : [] })
-					);
+          );
+          this.router.navigateByUrl('/story?storyId=' + storyId.toString());
+          this.store.dispatch(toggleNoties({ open: false }));
+					
 				});
       });
-    this.router.navigateByUrl('/story?storyId=' + storyId.toString());
-    this.store.dispatch(toggleNoties({ open: false }));
+    
   }
 
   ngOnInit(): void {

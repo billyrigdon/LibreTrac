@@ -20,12 +20,14 @@ import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug
 @Component({
 	selector: 'app-bottom-sheet',
 	template: `
+	<div class="button-actions-top">
+		<span *ngIf="isDrug" (click)="this.edit()" [style]="{color: '#b39cd0'}" role="button" class='material-icons'>edit</span>
+	</div>
     <div class="bottom-sheet-container">
        <p>{{summary}} {{url}}</p>
     </div>
-	<div class="button-actions">
-		<span (click)="this.confirmDelete()" [style]="{color: '#b39cd0'}" role="button" class='material-icons'>delete</span>
-		<span *ngIf="isDrug" (click)="this.edit()" [style]="{color: '#b39cd0'}" role="button" class='material-icons'>edit</span>
+	<div class="button-actions-bottom">
+		<span (click)="this.confirmDelete()" [style]="{color: '#FF0000'}" role="button" class='material-icons'>delete</span>
 	</div>
   `,
 	styles: [`
@@ -40,6 +42,7 @@ import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug
       padding: 16px;
       box-sizing: border-box;
 	  overflow-y: auto;
+	  overflow-x: hidden;
 	  /* margin: 24px; */
 	  p {
 		/* overflow-y: scroll !important; */
@@ -54,11 +57,18 @@ import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug
 		/* margin-top: 36px !important; */
 	  }
 	}
-	.button-actions {
+	.button-actions-top {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: flex-end;
+		width: 100%;
+	}
+	.button-actions-bottom {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-start;
 		width: 100%;
 	}
 	span {

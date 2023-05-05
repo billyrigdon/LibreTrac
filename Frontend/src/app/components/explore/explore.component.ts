@@ -1,16 +1,17 @@
 import { formatDate } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import axios from 'axios';
-import { Observable, filter } from 'rxjs';
+import { Observable, Subscription, filter } from 'rxjs';
 import { DrugService } from 'src/app/services/drug.service';
+import { ScrollPositionService } from 'src/app/services/scroll-position-service';
 import { StorageService } from 'src/app/services/storage.service';
 import { StoryService } from 'src/app/services/story.service';
 import { VoteService } from 'src/app/services/vote.service';
 import { AppState } from 'src/app/store/app.state';
-import { toggleLoading } from 'src/app/store/shared/actions/shared.actions';
-import { getAuthState, getUserId } from 'src/app/store/shared/selectors/shared.selector';
+import { setExploreStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { getAuthState, getSharedState, getUserId } from 'src/app/store/shared/selectors/shared.selector';
 import { Drug } from 'src/app/types/drug';
 import { StoryDrug } from 'src/app/types/story';
 import { StoryVote } from 'src/app/types/vote';
@@ -21,6 +22,7 @@ import { StoryVote } from 'src/app/types/vote';
 	styleUrls: ['./explore.component.scss'],
 })
 export class ExploreComponent implements OnInit {
+	@ViewChild('scrollableElement') scrollableElementRef!: ElementRef;
 	stories: Array<StoryDrug>;
 	pageNumber: number;
 	drugX = '';
@@ -30,7 +32,7 @@ export class ExploreComponent implements OnInit {
 	drugXSummary = '';
 	drugYSummary = '';
 	currentUrl = '';
-	summaries: Array<{summary: string, name: string, url: string}> = [];
+	summaries: Array<{ summary: string, name: string, url: string }> = [];
 	isLoggedIn: Observable<boolean>;
 	constructor(
 		private storyService: StoryService,
@@ -39,27 +41,28 @@ export class ExploreComponent implements OnInit {
 		private router: Router,
 		private storageService: StorageService,
 		private route: ActivatedRoute,
-		private drugService: DrugService
+		private drugService: DrugService,
+		private scrollPositionService: ScrollPositionService
 	) {
 		this.stories = Array<StoryDrug>();
 		this.isLoggedIn = this.store.select(getAuthState);
 		this.pageNumber = 0;
-		this.currentUrl = location.toString()
+		this.currentUrl = location.toString();
 	}
 
 	setStoriesOnScroll(res: string) {
-		const newStories = JSON.parse(res)
+		let newStories = [...JSON.parse(res)]
 		if (newStories) {
-			this.stories.push(...newStories);
-		}
-		for (let i = 0; i < this.stories.length; i++) {
-			const storyDate = new Date(this.stories[i].date);
-			const formattedDate = storyDate.toLocaleDateString('en-US', {
-				month: 'short',
-				day: 'numeric',
-				year: 'numeric',
-			});
-			this.stories[i].date = formattedDate;
+			for (let i = 0; i < newStories.length; i++) {
+				const storyDate = new Date(newStories[i].date);
+				const formattedDate = storyDate.toLocaleDateString('en-US', {
+					month: 'short',
+					day: 'numeric',
+					year: 'numeric',
+				});
+				newStories[i].date = formattedDate;
+			}
+			this.store.dispatch(setExploreStories({ stories: [...this.stories, ...newStories] }));
 		}
 	}
 
@@ -80,18 +83,25 @@ export class ExploreComponent implements OnInit {
 
 
 	setStoriesInit(res: string) {
-		const jsonStories = JSON.parse(res);
-		this.stories = jsonStories ? jsonStories : [];
-		for (let i = 0; i < this.stories.length; i++) {
-			const storyDate = new Date(this.stories[i].date);
-			const formattedDate = storyDate.toLocaleDateString('en-US', {
-				month: 'short',
-				day: 'numeric',
-				year: 'numeric',
+		if (res) {
+		let jsonStories = JSON.parse(res) ? [...JSON.parse(res)] : [];
+		// this.stories = jsonStories ? jsonStories : [];
+		if (jsonStories) {
+			for (let i = 0; i < jsonStories.length; i++) {
+				const storyDate = new Date(jsonStories[i].date);
+				const formattedDate = storyDate.toLocaleDateString('en-US', {
+					month: 'short',
+					day: 'numeric',
+					year: 'numeric',
 
-			});
-			this.stories[i].date = formattedDate;
+				});
+				jsonStories[i].date = formattedDate;
+			}
+			this.store.dispatch(setExploreStories({ stories: jsonStories }));
+		} else {
+			this.store.dispatch(setExploreStories({ stories: [] }));
 		}
+	}
 	}
 
 	async getSummary(name: string, id: number, isDrug: boolean): Promise<any> {
@@ -99,22 +109,27 @@ export class ExploreComponent implements OnInit {
 		const encodedTitle = encodeURI(name);
 		const url = `${apiEndpoint}${encodedTitle}`;
 		try {
-		  const response = await axios.get(url);
-		  const summary = response.data.extract;
-		//   summary["url"] = response.data.content_urls.desktop.page;
-		//   this.openBottomSheetInfo(summary, id, isDrug);
-		  return { contents: summary, url: response.data.content_urls.desktop.page };
+			const response = await axios.get(url);
+			const summary = response.data.extract;
+			//   summary["url"] = response.data.content_urls.desktop.page;
+			//   this.openBottomSheetInfo(summary, id, isDrug);
+			return { contents: summary, url: response.data.content_urls.desktop.page };
 		} catch (error) {
 			// this.openBottomSheetInfo('No information found', id, isDrug);
-		  return null;
+			// return null;
 		}
 	}
 
+	ngAfterViewInit(): void {
+
+	}
 
 	ngOnInit(): void {
-		this.store.dispatch(toggleLoading({status: true}));
+		this.store.dispatch(toggleLoading({ status: true }));
 
-
+		this.store.select(getSharedState).subscribe((state) => {
+			this.stories = [...state.exploreStories];
+		})
 
 		this.isLoggedIn.subscribe((loggedIn) => {
 			if (!loggedIn) {
@@ -132,8 +147,10 @@ export class ExploreComponent implements OnInit {
 					this.drugService.getDrug(parseInt(this.drugX, 10)).subscribe((res: any) => {
 						this.drugXName = res.name;
 						this.getSummary(this.drugXName, parseInt(this.drugX, 10), true).then((res) => {
-							this.drugXSummary = res.contents;
-							this.summaries.push({summary: this.drugXSummary, name: this.drugXName, url: res.url});
+							this.drugXSummary = res?.contents;
+							this.summaries.push({ summary: this.drugXSummary, name: this.drugXName, url: res?.url });
+						}, (err) => {
+							this.drugXSummary = 'No information found.'	
 						});
 					});
 				}
@@ -143,7 +160,7 @@ export class ExploreComponent implements OnInit {
 						this.drugYName = res.name;
 						this.getSummary(this.drugYName, parseInt(this.drugY, 10), true).then((res) => {
 							this.drugYSummary = res.contents;
-							this.summaries.push({summary: this.drugYSummary, name: this.drugYName, url: res.url})
+							this.summaries.push({ summary: this.drugYSummary, name: this.drugYName, url: res.url })
 						});
 					});
 
@@ -151,9 +168,9 @@ export class ExploreComponent implements OnInit {
 
 				this.storyService.getFilteredStories(this.pageNumber, this.drugX, this.drugY).subscribe((res) => {
 					this.setStoriesInit(res)
-					this.store.dispatch(toggleLoading({status: false}));
+					this.store.dispatch(toggleLoading({ status: false }));
 				}, (err) => {
-					this.store.dispatch(toggleLoading({status: false}));
+					this.store.dispatch(toggleLoading({ status: false }));
 					// alert('No search results found');
 				});
 			}
@@ -162,9 +179,9 @@ export class ExploreComponent implements OnInit {
 		if (!this.drugX && !this.drugY) {
 			this.storyService.getAllStories(this.pageNumber).subscribe((res) => {
 				this.setStoriesInit(res)
-				this.store.dispatch(toggleLoading({status: false}));
+				this.store.dispatch(toggleLoading({ status: false }));
 			}, (err) => {
-				this.store.dispatch(toggleLoading({status: false}));
+				this.store.dispatch(toggleLoading({ status: false }));
 				// alert('No search results found');
 			});
 		}

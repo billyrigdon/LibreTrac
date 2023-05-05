@@ -17,8 +17,9 @@ import {
 import { AddCommentComponent } from '../add-comment/add-comment.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
-import { setStoryToEdit, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setAverageMood, setExploreStories, setStoryMood, setStoryToEdit, setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { MoodService } from 'src/app/services/mood.service';
+import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 
 @Component({
 	selector: 'app-story',
@@ -31,6 +32,8 @@ export class StoryComponent implements OnInit {
 	storyId: number;
 	userId: number;
 	isUserStory: boolean;
+	userStories: StoryDrug[] = [];
+	exploreStories: StoryDrug[] = [];
 
 	constructor(
 		private storyService: StoryService,
@@ -62,7 +65,7 @@ export class StoryComponent implements OnInit {
 	}
 
 	getStory() {
-		this.store.dispatch(toggleLoading({status: true}));
+		this.store.dispatch(toggleLoading({ status: true }));
 		this.storyService.getStory(this.storyId).subscribe((res) => {
 			this.story = JSON.parse(res);
 			const storyDate = new Date(this.story.date);
@@ -76,16 +79,18 @@ export class StoryComponent implements OnInit {
 			});
 			this.story.date = formattedDate;
 			this.moodService
-						.getAverageStoryMood(this.storyId)
-						.subscribe((res) => {
-							this.mood = JSON.parse(res);
-							this.store.dispatch(toggleLoading({status: false}));
-						},(err) => {
-							this.mood = <StoryDrug>{};
-							this.store.dispatch(toggleLoading({status: false}));
-						});
+				.getAverageStoryMood(this.storyId)
+				.subscribe((res) => {
+					console.log(res);
+					// this.mood = JSON.parse(res);
+					this.store.dispatch(setStoryMood({ mood: JSON.parse(res)}));
+					this.store.dispatch(toggleLoading({ status: false }));
+				}, (err) => {
+					this.store.dispatch(setStoryMood({mood: <StoryDrug>{}}));
+					this.store.dispatch(toggleLoading({ status: false }));
+				});
 		});
-		
+
 	}
 
 	upvoteStory(vote: StoryVote) {
@@ -98,15 +103,15 @@ export class StoryComponent implements OnInit {
 		this.store.dispatch(setParentId({ parentId: 0 }));
 		this.store.dispatch(setStoryContent({ content: this.story.journal }))
 		this.store.dispatch(setParentCommentContent({ content: "" }))
-		
+
 		const dialogRef = this.dialog.open(AddCommentComponent, {
 			width: '600px',
 			height: '400px',
 		});
-		
+
 		dialogRef.componentInstance.onError.subscribe((event: any) => {
 			dialogRef.close();
-			
+
 			const errorDialogRef = this.dialog.open(ModalComponent, {
 				width: '500px',
 				height: '500px',
@@ -126,9 +131,32 @@ export class StoryComponent implements OnInit {
 	}
 
 	deleteStory(storyId: number) {
+		this.store.dispatch(toggleLoading({ status: true }));
 		this.storyService.deleteStory(storyId).subscribe((res) => {
-			this.router.navigateByUrl('/profile');
-		});
+			console.log(storyId);
+			const filteredUserStories = this.userStories.filter((story) => story.storyId !== storyId);
+			const filteredExploreStories = this.exploreStories.filter((story) => story.storyId !== storyId);
+			this.store.dispatch(setUserStories({ stories: filteredUserStories }));
+			this.store.dispatch(setExploreStories({ stories: filteredExploreStories }));
+			setTimeout(() => {
+				this.moodService.getAverageUserMood(this.userId).subscribe((mood: any) => {
+					this.store.dispatch(setAverageMood({ mood: JSON.parse(mood) }));
+					this.store.dispatch(toggleLoading({ status: false }));
+					alert('Story deleted successfully');
+					this.router.navigateByUrl('/user-stories');
+				}, (err) => {
+					this.store.dispatch(toggleLoading({ status: false }));
+					this.store.dispatch(setAverageMood({ mood: <StoryDrug>{} }));
+					alert('Story deleted successfully.');
+					this.router.navigateByUrl('/profile');
+				})
+			}, 200);
+			// this.store.dispatch(toggleLoading({status: false}));
+
+		}, (err) => {
+			this.store.dispatch(toggleLoading({ status: false }));
+			alert('Unable to delete story. Please try again.');
+		})
 	}
 
 	goBack() {
@@ -136,19 +164,25 @@ export class StoryComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
-		if (localStorage.getItem('userProfile')) {
-			this.userId = parseInt(
-				JSON.parse(localStorage.getItem('userProfile') || '').userId
-			);
-		}
+
+		this.store.select(getSharedState).subscribe((state) => {
+			this.userStories = [...state.userStories];
+			this.exploreStories = [...state.exploreStories];
+			this.userId = state.userId;
+			this.mood = state.storyMood;
+			
+		})
+
 		this.route.queryParams.subscribe((params) => {
 			this.storyId = parseInt(params['storyId']);
+			this.store.dispatch(setStoryId({ storyId: this.storyId }));
 			this.getStory();
+			this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any) => {
+				this.isUserStory = JSON.parse(res).result;
+				this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
+			});
 		});
-		this.store.dispatch(setStoryId({ storyId: this.storyId }));
-		this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any ) => {
-			this.isUserStory = JSON.parse(res).result;
-			this.store.dispatch(setIsUserStory({isUserStory: this.isUserStory}))
-		});
+		
+		
 	}
 }

@@ -16,6 +16,11 @@ import {
 	toggleNoties,
 	setStoryToEdit,
 	setDrugToEdit,
+	setUserStories,
+	setExploreStories,
+	setAverageMood,
+	setIsMonthView,
+	setStoryMood,
 } from '../actions/shared.actions';
 import { initialState, SharedState } from '../shared.state';
 
@@ -55,6 +60,36 @@ export const _sharedReducer = createReducer(
 		return {
 			...state,
 			drugToEdit: action.drug
+		}
+	}),
+	on(setUserStories, (state, action) => {
+		return {
+			...state,
+			userStories: action.stories
+		}
+	}),
+	on(setExploreStories, (state, action) => {
+		return {
+			...state,
+			exploreStories: action.stories
+		}
+	}),
+	on(setAverageMood, (state, action) => {
+		return {
+			...state,
+			averageMood: action.mood
+			}
+	}),	
+	on(setIsMonthView, (state, action) => {
+		return {
+			...state,
+			isMonthView: action.isMonthView
+		}
+	}),
+	on(setStoryMood, (state, action) => {
+		return {
+			...state,
+			storyMood: action.mood
 		}
 	})
 );

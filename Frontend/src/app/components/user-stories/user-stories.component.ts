@@ -4,7 +4,8 @@ import { Store } from '@ngrx/store';
 import { StorageService } from 'src/app/services/storage.service';
 import { StoryService } from 'src/app/services/story.service';
 import { AppState } from 'src/app/store/app.state';
-import { toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setExploreStories, setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { StoryDrug } from 'src/app/types/story';
 
 @Component({
@@ -20,6 +21,25 @@ export class UserStoriesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+
+    this.store.select(getSharedState).subscribe((state) => {
+      let stories: Array<StoryDrug> = [];
+      if (state.userStories.length > 0) {
+        stories = [...state.userStories];
+      }
+      // for (let i = 0; i < this.stories.length; i++) {
+      //   const storyDate = new Date(stories[i].date);
+      //   const formattedDate = storyDate.toLocaleDateString('en-US', {
+      //     month: 'short',
+      //     day: 'numeric',
+      //     year: 'numeric',
+
+      //   });
+      //   // stories[i].date = formattedDate;
+      // }
+      this.stories = stories;
+    })
+
     this.store.dispatch(toggleLoading({status: true}));
     if (this.storageService.getToken() && this.storageService.getUser()) {
       if (localStorage.getItem('userProfile')) {
@@ -30,20 +50,12 @@ export class UserStoriesComponent implements OnInit {
         this.storyService
           .getUserStories(userId)
           .subscribe((res) => {
-            this.stories = JSON.parse(res);
+            // this.stories = JSON.parse(res);
+            this.store.dispatch(setUserStories({stories: JSON.parse(res)}));
             if (!this.stories) {
-              this.stories = [];
+              this.store.dispatch(setUserStories({stories: []}));
             }
-            for (let i = 0; i < this.stories.length; i++) {
-              const storyDate = new Date(this.stories[i].date);
-              const formattedDate = storyDate.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-
-              });
-              this.stories[i].date = formattedDate;
-            }
+            
 
             this.store.dispatch(toggleLoading({status: false}));
           },

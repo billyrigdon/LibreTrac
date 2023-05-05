@@ -8,6 +8,11 @@ export interface SharedState {
 	notiesOpen: boolean;
 	storyToEdit: StoryDrug;
 	drugToEdit: UserDrug;
+	userStories: StoryDrug[];
+	exploreStories: StoryDrug[];
+	averageMood: StoryDrug;
+	isMonthView: boolean;
+	storyMood: StoryDrug;
 }
 
 export const initialState: SharedState = {
@@ -16,5 +21,10 @@ export const initialState: SharedState = {
 	userId: 0,
 	notiesOpen: false,
 	storyToEdit: <StoryDrug>{},
-	drugToEdit: <UserDrug>{}
+	drugToEdit: <UserDrug>{},
+	userStories: [],
+	exploreStories: [],
+	averageMood: <StoryDrug>{},
+	isMonthView: false,
+	storyMood: <StoryDrug>{},
 };

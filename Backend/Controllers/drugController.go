@@ -2,24 +2,16 @@ package controllers
 
 import (
 	Models "libretrac/Models"
-	Utilities "libretrac/Utilities"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllDrugs(context *gin.Context) {
+func GetAllDrugs(context *Models.CustomContext) {
 
 	var drugs []Models.Drug
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT drugid,name
@@ -27,7 +19,7 @@ func GetAllDrugs(context *gin.Context) {
 		ORDER BY name;
 	`
 
-	rows, err := db.Query(sqlStatement)
+	rows, err := context.DB.Query(sqlStatement)
 
 	if err != nil {
 		log.Error(err)
@@ -63,24 +55,17 @@ func GetAllDrugs(context *gin.Context) {
 }
 
 // Requires ?drugId= , returns drug name and id
-func GetDrug(context *gin.Context) {
+func GetDrug(context *Models.CustomContext) {
 	var drug Models.Drug
 	drugId := context.Query("drugId")
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT drugid,name
 		FROM drugs
 		WHERE drugid = $1;
 	`
-	err := db.QueryRow(sqlStatement, drugId).Scan(&drug.DrugId, &drug.Name)
+	err := context.DB.QueryRow(sqlStatement, drugId).Scan(&drug.DrugId, &drug.Name)
 	if err != nil {
 		log.Error(err)
 		context.JSON(400, gin.H{
@@ -94,18 +79,11 @@ func GetDrug(context *gin.Context) {
 }
 
 // requires "name" json object,inserts into database, and returns generated drugId
-func AddDrug(context *gin.Context) {
+func AddDrug(context *Models.CustomContext) {
 	var drug Models.Drug
 
 	// drugId := context.Query("drugId")
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	// sqlStatement := `
 	// 	SELECT drugid,name
@@ -137,7 +115,7 @@ func AddDrug(context *gin.Context) {
 			($1)
 		RETURNING drugId;
 	`
-	err = db.QueryRow(sqlStatement, drug.Name).Scan(&drug.DrugId)
+	err = context.DB.QueryRow(sqlStatement, drug.Name).Scan(&drug.DrugId)
 	if err != nil {
 		log.Error(err)
 		context.JSON(400, gin.H{

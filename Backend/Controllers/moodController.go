@@ -2,7 +2,6 @@ package controllers
 
 import (
 	Models "libretrac/Models"
-	Utilities "libretrac/Utilities"
 
 	"strconv"
 
@@ -11,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func GetAverageUserMood(context *gin.Context) {
+func GetAverageUserMood(context *Models.CustomContext) {
 	var story Models.Story
 	userId := context.Query("userId")
 	userIdInt, err := strconv.Atoi(userId)
@@ -25,7 +24,7 @@ func GetAverageUserMood(context *gin.Context) {
 	}
 
 	token := context.Request.Header.Get("Authorization")
-	tokenUserId := GetUserId(token)
+	tokenUserId := GetUserId(token, context)
 
 	if tokenUserId != userIdInt {
 		context.JSON(401, gin.H{
@@ -35,13 +34,6 @@ func GetAverageUserMood(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT   
@@ -55,7 +47,7 @@ func GetAverageUserMood(context *gin.Context) {
 		WHERE userId = $1 AND s.date >= NOW() - INTERVAL '7 days';
 		`
 
-	row := db.QueryRow(sqlStatement, userId)
+	row := context.DB.QueryRow(sqlStatement, userId)
 
 	err = row.Scan(&story.Energy,
 		&story.Focus,
@@ -76,7 +68,7 @@ func GetAverageUserMood(context *gin.Context) {
 	context.JSON(200, story)
 }
 
-func GetAverageUserMoodForMonth(context *gin.Context) {
+func GetAverageUserMoodForMonth(context *Models.CustomContext) {
 	var story Models.Story
 	userId := context.Query("userId")
 
@@ -91,7 +83,7 @@ func GetAverageUserMoodForMonth(context *gin.Context) {
 	}
 
 	token := context.Request.Header.Get("Authorization")
-	tokenUserId := GetUserId(token)
+	tokenUserId := GetUserId(token, context)
 
 	if tokenUserId != userIdInt {
 		context.JSON(401, gin.H{
@@ -101,13 +93,6 @@ func GetAverageUserMoodForMonth(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT   
@@ -121,7 +106,7 @@ func GetAverageUserMoodForMonth(context *gin.Context) {
 		WHERE userId = $1 AND s.date >= NOW() - INTERVAL '30 days';
 		`
 
-	row := db.QueryRow(sqlStatement, userId)
+	row := context.DB.QueryRow(sqlStatement, userId)
 
 	err = row.Scan(&story.Energy,
 		&story.Focus,
@@ -142,17 +127,10 @@ func GetAverageUserMoodForMonth(context *gin.Context) {
 	context.JSON(200, story)
 }
 
-func GetAverageStoryMood(context *gin.Context) {
+func GetAverageStoryMood(context *Models.CustomContext) {
 	var story Models.Story
 	storyId := context.Query("storyId")
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT   
@@ -166,7 +144,7 @@ func GetAverageStoryMood(context *gin.Context) {
 		WHERE storyId = $1;
 		`
 
-	row := db.QueryRow(sqlStatement, storyId)
+	row := context.DB.QueryRow(sqlStatement, storyId)
 
 	err := row.Scan(&story.Energy,
 		&story.Focus,

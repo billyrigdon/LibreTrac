@@ -44,7 +44,6 @@ export class SearchModalComponent implements OnInit {
 			this.filteredDrugs1 = this.drugs.slice();
 			this.filteredDrugs2 = this.drugs.slice();
 		});
-
 	}
 
 	filterOptions1() {

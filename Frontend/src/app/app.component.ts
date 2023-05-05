@@ -138,9 +138,11 @@ export class AppComponent implements OnInit {
 			}
 		}
 
-		if (localStorage.getItem('user')) {
+		if (localStorage.getItem('userProfile')) {
 			//Get userId from user stored in local storage
-			this.userId = JSON.parse(localStorage.getItem('user') || '').userId;
+			this.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
+
+			// this.store.dispatch(setUserId({ userId: this.userId }));
 
 			//Set global userId
 			this.store.dispatch(setUserId({ userId: this.userId }));

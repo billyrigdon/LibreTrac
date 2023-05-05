@@ -2,28 +2,18 @@ package controllers
 
 import (
 	Models "libretrac/Models"
-	Utilities "libretrac/Utilities"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
-
 	"github.com/gin-gonic/gin"
 )
 
 var REDACTED_USER_ID int = 1
 var OP_USER_ID int = 2
 
-func GetComments(context *gin.Context) {
+func GetComments(context *Models.CustomContext) {
 	var comments []Models.StoryComment
 	storyId := context.Query("storyId")
-
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		SELECT 
@@ -40,7 +30,7 @@ func GetComments(context *gin.Context) {
 		LEFT JOIN users u on u.userId = sc.userId
 		WHERE sc.storyId = $1;
 	`
-	rows, err := db.Query(sqlStatement, storyId)
+	rows, err := context.DB.Query(sqlStatement, storyId)
 
 	if err != nil {
 		log.Error(err)
@@ -83,18 +73,8 @@ func GetComments(context *gin.Context) {
 	context.JSON(200, comments)
 }
 
-func GetCommentUserId(commentId int) int {
+func GetCommentUserId(commentId int, context *Models.CustomContext) int {
 	var userId int
-
-	db, dbErr := Utilities.ConnectPostgres()
-
-	dbErr = db.Ping()
-
-	if dbErr != nil {
-
-		log.Error(dbErr)
-
-	}
 
 	sqlStatement := `
 		SELECT
@@ -103,7 +83,7 @@ func GetCommentUserId(commentId int) int {
 		WHERE sc.commentId = $1;
 	`
 
-	row := db.QueryRow(sqlStatement, commentId)
+	row := context.DB.QueryRow(sqlStatement, commentId)
 
 	err := row.Scan(&userId)
 
@@ -111,12 +91,11 @@ func GetCommentUserId(commentId int) int {
 		log.Error(err)
 	}
 
-	defer db.Close()
 
 	return userId
 }
 
-func AddComment(context *gin.Context) {
+func AddComment(context *Models.CustomContext) {
 	var comment Models.StoryComment
 
 	err := context.ShouldBindJSON(&comment)
@@ -139,14 +118,6 @@ func AddComment(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
-
 	sqlStatementNoParent := `
 		INSERT INTO story_comments
 			(storyId,userId,content)
@@ -164,7 +135,7 @@ func AddComment(context *gin.Context) {
 	`
 
 	if comment.ParentCommentId > 0 {
-		err := db.QueryRow(sqlStatementParent,
+		err := context.DB.QueryRow(sqlStatementParent,
 			comment.StoryId,
 			comment.UserId,
 			comment.ParentCommentId,
@@ -181,12 +152,12 @@ func AddComment(context *gin.Context) {
 
 		//Don't create notification if user is replying to their own comment or if comment is deleted
 		if comment.UserId != REDACTED_USER_ID && comment.UserId != OP_USER_ID {
-			CreateNotification(comment)
+			CreateNotification(comment, context)
 		}
 
 		context.JSON(200, comment)
 	} else {
-		err := db.QueryRow(sqlStatementNoParent,
+		err := context.DB.QueryRow(sqlStatementNoParent,
 			comment.StoryId,
 			comment.UserId,
 			comment.Content).Scan(&comment.CommentId)
@@ -203,7 +174,7 @@ func AddComment(context *gin.Context) {
 		comment.ParentCommentId = 0
 
 		if comment.UserId != REDACTED_USER_ID && comment.UserId != OP_USER_ID {
-			CreateNotification(comment)
+			CreateNotification(comment, context)
 		}
 
 		context.JSON(200, comment)
@@ -211,12 +182,12 @@ func AddComment(context *gin.Context) {
 
 }
 
-func UpdateComment(context *gin.Context) {
+func UpdateComment(context *Models.CustomContext) {
 	var comment Models.StoryComment
 
 	//Get userId from token to verify that user owns the comment
 	token := context.Request.Header.Get("Authorization")
-	userId := GetUserId(token)
+	userId := GetUserId(token, context)
 	origUserId := userId
 	err := context.ShouldBindJSON(&comment)
 	if err != nil {
@@ -230,7 +201,7 @@ func UpdateComment(context *gin.Context) {
 	}
 
 	// Check if user owns the story and set userId to OP_USER_ID if they do
-	isUserStory := VerifyIsUserStory(strconv.Itoa(comment.StoryId), strconv.Itoa(userId))
+	isUserStory := VerifyIsUserStory(strconv.Itoa(comment.StoryId), strconv.Itoa(userId), context)
 
 	if isUserStory {
 		userId = OP_USER_ID
@@ -255,13 +226,6 @@ func UpdateComment(context *gin.Context) {
 		return
 	}
 
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
 
 	sqlStatement := `
 		UPDATE story_comments
@@ -271,7 +235,7 @@ func UpdateComment(context *gin.Context) {
 		RETURNING updatedAt;
 	`
 
-	err = db.QueryRow(sqlStatement,
+	err = context.DB.QueryRow(sqlStatement,
 		comment.Content,
 		comment.CommentId,
 		userId).Scan(&comment.UpdatedAt)
@@ -289,16 +253,16 @@ func UpdateComment(context *gin.Context) {
 	context.JSON(200, comment)
 }
 
-func DeleteComment(context *gin.Context) {
+func DeleteComment(context *Models.CustomContext) {
 	storyId := context.Query("storyId")
 	commentId := context.Query("commentId")
 
 	//Get userId from token to verify that user is authorized to delete the comment
 	token := context.Request.Header.Get("Authorization")
-	origUserId := GetUserId(token)
+	origUserId := GetUserId(token, context)
 	userId := origUserId
 	// Check if user owns the story and set userId to OP_USER_ID if they do
-	isUserStory := VerifyIsUserStory(storyId, strconv.Itoa(userId))
+	isUserStory := VerifyIsUserStory(storyId, strconv.Itoa(userId), context)
 
 	if isUserStory {
 		userId = OP_USER_ID
@@ -316,7 +280,7 @@ func DeleteComment(context *gin.Context) {
 	}
 
 	// Get the comment userId to compare to the token userId or OP_USER_ID
-	commentUserId := GetCommentUserId(commentIdInt)
+	commentUserId := GetCommentUserId(commentIdInt, context)
 
 	if commentUserId != origUserId && (commentUserId != OP_USER_ID && !isUserStory) {
 		context.JSON(401, gin.H{
@@ -327,15 +291,6 @@ func DeleteComment(context *gin.Context) {
 		return
 	}
 
-	// Redact comment
-	db, dbErr := Utilities.ConnectPostgres()
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		log.Error(dbErr)
-	}
-
 	sqlStatement := `
 		UPDATE story_comments
 		SET content = '[ redacted ]',userId = 1
@@ -344,7 +299,7 @@ func DeleteComment(context *gin.Context) {
 		OR userId = $3);
 	`
 
-	_, deleteErr := db.Exec(sqlStatement, commentId, origUserId, userId)
+	_, deleteErr := context.DB.Exec(sqlStatement, commentId, origUserId, userId)
 	if deleteErr != nil {
 		log.Error(deleteErr)
 		context.JSON(500, gin.H{
