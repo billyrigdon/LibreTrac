@@ -294,18 +294,18 @@ export class ProfileComponent implements OnInit {
 		
 		});
 
-		this.switchView(this.isMonthView);
-		
-		this.getUserDrugs();
-		this.getUserDisorders();
-		
-		this.drugService.getDrugs().subscribe((res) => {
-			this.drugs = JSON.parse(res);
-			this.store.dispatch(toggleLoading({ status: false }));
-		});
 
 		//Check if logged in and navigate to splash if not
 		if (this.storageService.getToken() && this.storageService.getUser()) {
+			this.switchView(this.isMonthView);
+		
+			this.getUserDrugs();
+			this.getUserDisorders();
+			
+			this.drugService.getDrugs().subscribe((res) => {
+				this.drugs = JSON.parse(res);
+				this.store.dispatch(toggleLoading({ status: false }));
+			});
 			//TODO: Move userprofile to shared state instead of handling it this way
 			if (localStorage.getItem('userProfile')) {
 				this.store.dispatch(toggleLoading({ status: true }));
@@ -317,11 +317,6 @@ export class ProfileComponent implements OnInit {
 					localStorage.getItem('userProfile') || ''
 				);
 
-				// this.switchView(this.isMonthView);
-				// Get drugs for add-drug bottom sheet
-
-
-
 				//Get Profile if it does not exist in local storage
 			} else {
 				this.profileService.getProfile().subscribe((res) => {
@@ -330,18 +325,16 @@ export class ProfileComponent implements OnInit {
 					//If user profile successfully saved, reload page
 					if (localStorage.getItem('userProfile')) {
 						window.location.reload();
-
 						//If couldn't get user profile, navigate to createProfile page
-					} else {
-						this.router.navigateByUrl('/createProfile');
-					}
+					} 
 				});
 			}
 		} else {
 			this.storageService.signout();
 			this.store.dispatch(toggleAuth({ status: false }));
 			this.router.navigateByUrl('/login');
-			window.location.reload();
 		}
+
+		
 	}
 }

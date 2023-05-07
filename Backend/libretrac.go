@@ -70,11 +70,6 @@ func setupRouter() *gin.Engine {
 			public.POST("login", withDB(Controllers.UserLogin))
 			public.POST("signup", withDB(Controllers.UserSignup))
 
-			//Serve public explore page
-			public.GET("/story/get", withDB(Controllers.GetAllStories))
-			public.GET("/story/comment", withDB(Controllers.GetComments))
-			public.GET("/story", withDB(Controllers.GetSingleStory))
-			public.GET("/mood/get", withDB(Controllers.GetAverageStoryMood))
 		}
 
 		//Serve routes that require valid jwt token
@@ -82,6 +77,12 @@ func setupRouter() *gin.Engine {
 		//TODO:remove for prod
 		protected.Use(corsInterceptor())
 		{
+			//Serve public explore page
+			protected.GET("/story/get", withDB(Controllers.GetAllStories))
+			protected.GET("/story/comment", withDB(Controllers.GetComments))
+			protected.GET("/story", withDB(Controllers.GetSingleStory))
+			protected.GET("/mood/get", withDB(Controllers.GetAverageStoryMood))
+
 			//Serve user profile routes
 			protected.GET("/user", withDB(Controllers.GetUserProfile))
 			protected.POST("/user/create", withDB(Controllers.CreateUserProfile))

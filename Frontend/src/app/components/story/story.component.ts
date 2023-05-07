@@ -248,7 +248,9 @@ export class StoryComponent implements OnInit, AfterViewInit {
 	ngOnInit(): void {
 
 		this.store.select(getSharedState).subscribe((state) => {
-			this.userStories = [...state.userStories];
+			if (state.userStories) {
+				this.userStories = [...state.userStories];
+			}
 			this.exploreStories = [...state.exploreStories];
 			this.userId = state.userId;
 			this.mood = state.storyMood;

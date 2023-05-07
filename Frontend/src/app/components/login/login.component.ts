@@ -57,6 +57,7 @@ export class LoginComponent implements OnInit {
 						this.store.dispatch(toggleLoading({ status: false }));
 
 						this.router.navigateByUrl('/profile');
+						window.location.reload();
 					});
 				},
 					(err) => {

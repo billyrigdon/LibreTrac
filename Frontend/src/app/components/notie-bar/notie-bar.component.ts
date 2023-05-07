@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { NotificationService } from 'src/app/services/notification.service';
 import { AppState } from 'src/app/store/app.state';
 import { setNotifications } from 'src/app/store/comments/comments.actions';
-import { toggleNoties } from 'src/app/store/shared/actions/shared.actions';
+import { setNotificationStories, toggleNoties } from 'src/app/store/shared/actions/shared.actions';
 import { getSharedState, getUserId } from 'src/app/store/shared/selectors/shared.selector';
 import { NotificationStory } from 'src/app/types/story';
 
@@ -120,14 +120,31 @@ export class NotieBarComponent implements OnInit {
       .clearNotifications(this.userId, storyId)
       .subscribe((res) => {
         this.notificationService
-				.getUserNotifications(this.userId)
-				.subscribe((noties) => {
-					this.store.dispatch(
-						setNotifications({ notifications: noties ? noties : [] })
-          );
-          this.router.navigateByUrl('/story?storyId=' + storyId.toString() + '&commentId=' + commentId.toString());
-          this.store.dispatch(toggleNoties({ open: false }));
-				});
+          .getUserNotifications(this.userId)
+          .subscribe((noties) => {
+            this.store.dispatch(
+              setNotifications({ notifications: noties ? noties : [] })
+            );
+            this.notificationService.getNotificationStories(this.userId).subscribe((stories) => {
+              if (stories) {
+                let notieArray = [...stories];
+                notieArray.forEach((notie) => {
+                  notie.title = notie.title.length > 18 ? notie.title.slice(0, 18) + '...' : notie.title;
+                  notie.content = notie.content.length > 12 ? notie.content.slice(0, 12) + '...' : notie.content;
+                })
+                this.store.dispatch(setNotificationStories({
+                  notificationStories: notieArray
+                }))
+              } else {
+                this.store.dispatch(setNotificationStories({
+                  notificationStories: []
+                }))
+              }
+              this.router.navigateByUrl('/story?storyId=' + storyId.toString() + '&commentId=' + commentId.toString());
+              this.store.dispatch(toggleNoties({ open: false }));
+            
+            });
+          });
       });
   }
 

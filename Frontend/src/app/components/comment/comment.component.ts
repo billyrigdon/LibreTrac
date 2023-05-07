@@ -4,6 +4,7 @@ import { CommentService } from 'src/app/services/comment.service';
 import { VoteService } from 'src/app/services/vote.service';
 import { AppState } from 'src/app/store/app.state';
 import {
+	setComments,
 	setParentCommentContent,
 	setParentId,
 	setStoryContent,
@@ -15,6 +16,8 @@ import { CommentVote } from 'src/app/types/vote';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
 import {  MatDialog } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
+import { toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 
 @Component({
 	selector: 'app-comment',
@@ -25,6 +28,7 @@ export class CommentComponent implements OnInit {
 	@Input() comment!: StoryComment;
 	@Input() comments!: Array<StoryComment>;
 	@Input() userId!: number;
+	storyId = 0;
 	
 	canDelete = false;
 	constructor(
@@ -48,7 +52,20 @@ export class CommentComponent implements OnInit {
 
 	deleteComment(commentId: number, storyId: number) {
 		this.commentService.deleteComment(commentId, storyId).subscribe((res) => {
-			window.location.reload();
+			this.commentService
+				.getComments(this.storyId)
+				.subscribe((res: Array<StoryComment>) => {
+					if (res) {
+						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
+					} else {
+						this.store.dispatch(setComments({ comments: [] }));
+					}
+					this.store.dispatch(toggleLoading({ status: false }));
+				},
+					(err) => {
+						this.store.dispatch(toggleLoading({ status: false }));
+						this.store.dispatch(setComments({ comments: [] }));
+					});
 		});
 	}
 
@@ -78,7 +95,20 @@ export class CommentComponent implements OnInit {
 		});
 
 		dialogRef.componentInstance.onClose.subscribe((event: any) => {
-			window.location.reload();
+			this.commentService
+				.getComments(this.storyId)
+				.subscribe((res: Array<StoryComment>) => {
+					if (res) {
+						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
+					} else {
+						this.store.dispatch(setComments({ comments: [] }));
+					}
+					this.store.dispatch(toggleLoading({ status: false }));
+				},
+					(err) => {
+						this.store.dispatch(toggleLoading({ status: false }));
+						this.store.dispatch(setComments({ comments: [] }));
+					});
 			dialogRef.close();
 		});
 	}
@@ -107,7 +137,20 @@ export class CommentComponent implements OnInit {
 		});
 
 		dialogRef.componentInstance.onClose.subscribe((event: any) => {
-			window.location.reload();
+			this.commentService
+				.getComments(this.storyId)
+				.subscribe((res: Array<StoryComment>) => {
+					if (res) {
+						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
+					} else {
+						this.store.dispatch(setComments({ comments: [] }));
+					}
+					this.store.dispatch(toggleLoading({ status: false }));
+				},
+					(err) => {
+						this.store.dispatch(toggleLoading({ status: false }));
+						this.store.dispatch(setComments({ comments: [] }));
+					});
 			dialogRef.close();
 		});
 	}
@@ -115,6 +158,7 @@ export class CommentComponent implements OnInit {
 	ngOnInit(): void {
 		const OP_USER_ID = 2;
 		this.store.select(getAddCommentState).subscribe((state) => {
+			this.storyId = state.storyId;
 			this.canDelete = (state.isUserStory && this.comment.userId === 2) || (this.comment.userId === this.userId);
 		})
 	}

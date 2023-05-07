@@ -73,6 +73,9 @@ export class AppComponent implements OnInit {
 
 		this.isLoggedIn.subscribe((res) => {
 			this.loggedIn = res;
+			if (!this.loggedIn) {
+				this.router.navigateByUrl('/login');
+			}
 		})
 	}
 

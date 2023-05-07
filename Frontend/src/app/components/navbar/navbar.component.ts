@@ -58,30 +58,33 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 			// if (res) {
 			// this.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
 			//Get initial notifications
-			this.notificationService
-				.getUserNotifications(this.userId)
-				.subscribe((noties) => {
-					this.store.dispatch(
-						setNotifications({ notifications: noties ? noties : [] })
-					);
-					if (noties && noties.length !== this.notificationStories.length) {
-						this.getNotifications(this.userId);
-					}
-				});
-
-			// Get new notifications every 30 seconds
+			if (this.userId > 0) {
+				this.notificationService
+					.getUserNotifications(this.userId)
+					.subscribe((noties) => {
+						this.store.dispatch(
+							setNotifications({ notifications: noties ? noties : [] })
+						);
+						if (noties && noties.length !== this.notificationStories.length) {
+							this.getNotifications(this.userId);
+						}
+					});
+			}
+			// Get new notifications every 15 seconds
 			// if (res) {
 				setInterval(() => {
-					this.notificationService
-						.getUserNotifications(this.userId)
-						.subscribe((noties) => {
-							this.store.dispatch(
-								setNotifications({ notifications: noties ? noties : [] })
-							);
-							if (noties && noties.length !== this.notificationStories.length) {
-								this.getNotifications(this.userId);
-							}
-						});
+					if (this.userId > 0) {
+						this.notificationService
+							.getUserNotifications(this.userId)
+							.subscribe((noties) => {
+								this.store.dispatch(
+									setNotifications({ notifications: noties ? noties : [] })
+								);
+								if (noties && noties.length !== this.notificationStories.length) {
+									this.getNotifications(this.userId);
+								}
+							});
+					}
 				}, 15000);
 			// }
 
@@ -187,6 +190,9 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 		this.store.dispatch(setUserId({userId: 0}));
 		this.store.dispatch(toggleAuth({ status: false }));
 		this.router.navigateByUrl('/login');
-		window.location.reload();
+		setTimeout(() => {
+			window.location.reload();
+		},300)
+		
 	}
 }

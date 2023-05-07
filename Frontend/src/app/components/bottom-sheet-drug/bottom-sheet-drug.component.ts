@@ -34,8 +34,8 @@ import { UserDrug } from 'src/app/types/userDrug';
     </div>
 	<div *ngIf="this.drugToEdit?.drugId" class="bottom-sheet-container">
 		<mat-list>
-    	    <mat-list-item (click)="setDrug(option)"  *ngFor="let option of filteredDrugs">
-    	      {{ option.name }}
+    	    <mat-list-item>
+    	      {{ this.filterTextDrug }}
     	    </mat-list-item>
     	</mat-list>
 		<input placeholder="Dosage" name="dosage" [(ngModel)]="dosage" type="text" />
