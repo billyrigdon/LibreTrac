@@ -47,16 +47,13 @@ export class LoginComponent implements OnInit {
 				.subscribe((res) => {
 					this.storageService.saveUser(res.username);
 					this.storageService.saveToken(res.token);
+					this.store.dispatch(
+						setUserId({ userId: res.userId})
+					);
 					this.profileService.getProfile().subscribe((res) => {
 						this.profileService.setProfile(res);
 						this.store.dispatch(toggleAuth({ status: true }));
-						this.store.dispatch(
-							setUserId({
-								userId: JSON.parse(
-									localStorage.getItem('userProfile') || ''
-								).userId,
-							})
-						);
+						
 						this.store.dispatch(toggleLoading({ status: false }));
 
 						this.router.navigateByUrl('/profile');

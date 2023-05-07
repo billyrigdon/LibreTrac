@@ -25,6 +25,7 @@ export class CommentComponent implements OnInit {
 	@Input() comment!: StoryComment;
 	@Input() comments!: Array<StoryComment>;
 	@Input() userId!: number;
+	
 	canDelete = false;
 	constructor(
 		private voteService: VoteService,

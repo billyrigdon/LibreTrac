@@ -179,13 +179,14 @@ export class ProfileComponent implements OnInit {
 	}
 
 	addDrug() {
+		
 		if (localStorage.getItem('userProfile')) {
 			let user = JSON.parse(localStorage.getItem('userProfile') || '');
-			const userId = user.userId;
+			// const userId = user.userId;
 			const val = this.drugForm.value;
 
 			this.drugService
-				.addUserDrug(userId, parseInt(val.drugId), val.dosage)
+				.addUserDrug(this.userId, parseInt(val.drugId), val.dosage)
 				.subscribe((res) => {
 					// this.router.navigateByUrl('/profile');
 					window.location.reload();

@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { StoryDrug } from 'src/app/types/story';
+import { NotificationStory, StoryDrug } from 'src/app/types/story';
 import { UserDrug } from 'src/app/types/userDrug';
 
 export const toggleLoading = createAction(
@@ -32,3 +32,5 @@ export const setAverageMood = createAction('SET_AVERAGE_MOOD', props<{mood: Stor
 export const setIsMonthView = createAction('SET_IS_MONTH_VIEW', props<{isMonthView: boolean}>())
 
 export const setStoryMood = createAction('SET_STORY_MOOD', props<{mood: StoryDrug}>())
+
+export const setNotificationStories = createAction('SET_NOTIFICATION_STORIES', props<{notificationStories: NotificationStory[]}>())

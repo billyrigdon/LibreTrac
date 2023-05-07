@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { CommentNotification } from 'src/app/types/comment';
+import { CommentNotification, StoryComment } from 'src/app/types/comment';
 
 export const toggleAddComment = createAction(
 	'TOGGLE_ADD_COMMENT',
@@ -34,4 +34,9 @@ export const setNotifications = createAction(
 export const setIsUserStory = createAction(
 	'[Comment] SET_IS_USER_STORY',
 	props<{ isUserStory: boolean}>()
+)
+
+export const setComments = createAction(
+	'[Comment] SET_COMMENTS',
+	props<{ comments: StoryComment[] }>()
 )
