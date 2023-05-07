@@ -57,19 +57,20 @@ export class AppComponent implements OnInit {
 
 	ngAfterViewInit(): void {
 		// this.addEventListenersToInputs();
-		if (localStorage.getItem('user')) {
-			//Get userId from user stored in local storage
-			this.userId = JSON.parse(localStorage.getItem('user') || '').userId;
-			//Set global userId
-			this.store.dispatch(setUserId({ userId: this.userId }));
-			this.notificationService
-				.getUserNotifications(this.userId)
-				.subscribe((noties) => {
-					this.store.dispatch(
-						setNotifications({ notifications: noties })
-					);
-				});
-		}
+		// if (localStorage.getItem('user')) {
+		// 	//Get userId from user stored in local storage
+		// 	this.userId = JSON.parse(localStorage.getItem('user') || '').userId;
+		// 	//Set global userId
+		// 	console.log(this.userId)
+		// 	this.store.dispatch(setUserId({ userId: this.userId }));
+		// 	this.notificationService
+		// 		.getUserNotifications(this.userId)
+		// 		.subscribe((noties) => {
+		// 			this.store.dispatch(
+		// 				setNotifications({ notifications: noties })
+		// 			);
+		// 		});
+		// }
 
 		this.isLoggedIn.subscribe((res) => {
 			this.loggedIn = res;
@@ -144,7 +145,7 @@ export class AppComponent implements OnInit {
 		if (localStorage.getItem('userProfile')) {
 			//Get userId from user stored in local storage
 			this.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
-
+			console.log(this.userId);
 			// this.store.dispatch(setUserId({ userId: this.userId }));
 
 			//Set global userId

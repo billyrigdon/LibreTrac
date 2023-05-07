@@ -18,7 +18,7 @@ import { toggleAuth } from 'src/app/store/shared/actions/shared.actions';
 })
 export class PasswordResetModalComponent {
   resetPasswordForm: any;
-  formContainer: any;
+//   formContainer: any;
 
   constructor(private formBuilder: UntypedFormBuilder,
 		private profileService: ProfileService,
@@ -41,7 +41,7 @@ export class PasswordResetModalComponent {
    }
 
   resetPassword() {
-		this.formContainer.nativeElement.style.marginTop = '0';
+		// this.formContainer.nativeElement.style.marginTop = '0';
 		const val = this.resetPasswordForm.value;
 		if (val.password !== val.confirmPassword) {
 			alert('Passwords do not match');

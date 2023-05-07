@@ -148,7 +148,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 	}
 
 	goToExplore() {
-		this.router.navigateByUrl('/explore');
+		this.router.navigateByUrl('/explore?drugX=&drugY=');
 	}
 
 	reloadWhenSearch() {
