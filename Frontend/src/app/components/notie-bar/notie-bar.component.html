@@ -6,6 +6,7 @@
 	<ul>
 		<li *ngFor="let story of this.stories">
 			<a (click)="this.goToStory(story.storyId)">{{story.title}}</a>
+			<p>{{story.content}}</p>
 		</li>
 	</ul>
 </div>

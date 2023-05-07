@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { AppState } from '../store/app.state';
 import { setNotifications } from '../store/comments/comments.actions';
 import { CommentNotification } from '../types/comment';
-import { Story } from '../types/story';
+import { NotificationStory, Story } from '../types/story';
 import { API_IP } from './url';
 
 const API_URL = API_IP + 'api';
@@ -23,8 +23,8 @@ export class NotificationService {
 		return this.http.get<CommentNotification[]>(API_URL + '/protected/notifications/get?userId=' + userId.toString());
 	}
 
-	getNotificationStories(userId: number): Observable<Story[]> {
-		return this.http.get<Story[]>(
+	getNotificationStories(userId: number): Observable<NotificationStory[]> {
+		return this.http.get<NotificationStory[]>(
 			API_URL + '/protected/notifications/get/stories?userId=' + userId.toString()
 		);
 	}

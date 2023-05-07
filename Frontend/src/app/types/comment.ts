@@ -22,4 +22,6 @@ export type CommentNotification = {
 	storyId: number;
 	viewed: boolean;
 	parentCommentId: number;
+	commentId: number;
 };
+

@@ -7,6 +7,7 @@ import { AppState } from 'src/app/store/app.state';
 import { setNotifications } from 'src/app/store/comments/comments.actions';
 import { toggleNoties } from 'src/app/store/shared/actions/shared.actions';
 import { getUserId } from 'src/app/store/shared/selectors/shared.selector';
+import { NotificationStory } from 'src/app/types/story';
 
 @Component({
   selector: 'app-notie-bar',
@@ -14,7 +15,7 @@ import { getUserId } from 'src/app/store/shared/selectors/shared.selector';
   styleUrls: ['./notie-bar.component.scss']
 })
 export class NotieBarComponent implements OnInit {
-  stories: any[] = [];
+  stories: NotificationStory[] = [];
   notiesAvaialble = false;
   userId: number = 0;
   constructor(private notificationService: NotificationService, private store: Store<AppState>, private router: Router, private elementRef: ElementRef) {
@@ -102,7 +103,8 @@ export class NotieBarComponent implements OnInit {
         if (res) {
           this.stories = res.map((story: any) => ({
             ...story,
-            title: story.title.slice(0, 18) + '...',
+            title: story.title.length > 18 ? story.title.slice(0, 18) + '...' : story.title,
+            content: story.content.length > 12 ? story.content.slice(0, 12) + '...' : story.content,
           }));
         }
       });

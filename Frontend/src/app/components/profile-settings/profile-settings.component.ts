@@ -217,6 +217,7 @@ export class ProfileSettingsComponent implements OnInit {
 
 		this.profileService.updateProfile(this.userProfile).subscribe((res) => {
 			this.profileService.setProfile(res);
+			alert('Profile updated successfully');
 			this.router.navigate(['/profile']);
 		}, (err) => {
 			alert('Failed to update profile');
