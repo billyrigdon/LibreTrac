@@ -10,7 +10,7 @@ import { DrugService } from 'src/app/services/drug.service';
 import { DatePipe, formatDate } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/store/app.state';
-import { setAverageMood, setDrugToEdit, setIsMonthView, setStoryToEdit, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setAverageMood, setDrugToEdit, setIsMonthView, setStoryToEdit, setUserDisorders, setUserDrugs, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { getAuthState, getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { ModalComponent } from '../modal/modal.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -88,26 +88,26 @@ export class ProfileComponent implements OnInit {
 
 	@HostListener('touchstart', ['$event'])
 	onTouchStart(event: TouchEvent) {
-	  this.startY = event.touches[0].clientY;
+		this.startY = event.touches[0].clientY;
 	}
-  
+
 	@HostListener('touchend', ['$event'])
 	onTouchEnd(event: TouchEvent) {
-	  const endY = event.changedTouches[0].clientY;
-	  if (this.startY !== null && this.startY < endY && this.scrollableElementRef.nativeElement.scrollTop === 0) {
-		const swipeDistance = endY - this.startY;
-		const threshold = 100; // Set a threshold to consider it as a swipe down
-  
-		if (swipeDistance > threshold) {
-		  console.log('Swipe down at the top of the container');
-		  window.location.reload();
+		const endY = event.changedTouches[0].clientY;
+		if (this.startY !== null && this.startY < endY && this.scrollableElementRef.nativeElement.scrollTop === 0) {
+			const swipeDistance = endY - this.startY;
+			const threshold = 100; // Set a threshold to consider it as a swipe down
+
+			if (swipeDistance > threshold) {
+				console.log('Swipe down at the top of the container');
+				window.location.reload();
+			}
 		}
-	  }
-	  this.startY = null;
+		this.startY = null;
 	}
 
 	openBottomSheetDrug() {
-		this.store.dispatch(setDrugToEdit({drug: {} as UserDrug}))
+		this.store.dispatch(setDrugToEdit({ drug: {} as UserDrug }))
 		const bottomSheetRef = this.bottomSheet.open(BottomSheetDrugComponent);
 
 
@@ -135,7 +135,7 @@ export class ProfileComponent implements OnInit {
 
 	openBottomSheetInfo(summary: string, url: string, id: number, isDrug: boolean, drug?: UserDrug) {
 		if (drug) {
-			this.store.dispatch(setDrugToEdit({drug}))
+			this.store.dispatch(setDrugToEdit({ drug }))
 		}
 		const bottomSheetRef: MatBottomSheetRef<BottomSheetInfoComponent> = this.bottomSheet.open(BottomSheetInfoComponent);
 		bottomSheetRef.instance.summary = summary;
@@ -153,33 +153,33 @@ export class ProfileComponent implements OnInit {
 
 	switchView(isMonth: boolean) {
 		// this.mood = <StoryDrug>{}; // reset mood
-		this.store.dispatch(setIsMonthView({isMonthView: isMonth}));
+		this.store.dispatch(setIsMonthView({ isMonthView: isMonth }));
 
 		if (this.isMonthView) {
 			this.moodService.getAverageUserMoodForMonth(this.userId).subscribe((res: any) => {
 				console.log(res);
 				// this.mood = JSON.parse(res);
-				this.store.dispatch(setAverageMood({mood: JSON.parse(res)}))
+				this.store.dispatch(setAverageMood({ mood: JSON.parse(res) }))
 			},
 				(err) => {
-					this.store.dispatch(setAverageMood({mood: {} as StoryDrug}))
+					this.store.dispatch(setAverageMood({ mood: {} as StoryDrug }))
 				});
 		} else {
 			this.moodService
-					.getAverageUserMood(this.userId)
-					.subscribe((res: any) => {
-						console.log(res);
-						// this.mood = JSON.parse(res);
-						this.store.dispatch(setAverageMood({mood: JSON.parse(res)}))
-					},
-						(err) => {
-							this.store.dispatch(setAverageMood({mood: {} as StoryDrug}))
-						});
+				.getAverageUserMood(this.userId)
+				.subscribe((res: any) => {
+					console.log(res);
+					// this.mood = JSON.parse(res);
+					this.store.dispatch(setAverageMood({ mood: JSON.parse(res) }))
+				},
+					(err) => {
+						this.store.dispatch(setAverageMood({ mood: {} as StoryDrug }))
+					});
 		}
 	}
 
 	addDrug() {
-		
+
 		if (localStorage.getItem('userProfile')) {
 			let user = JSON.parse(localStorage.getItem('userProfile') || '');
 			// const userId = user.userId;
@@ -188,8 +188,7 @@ export class ProfileComponent implements OnInit {
 			this.drugService
 				.addUserDrug(this.userId, parseInt(val.drugId), val.dosage)
 				.subscribe((res) => {
-					// this.router.navigateByUrl('/profile');
-					window.location.reload();
+					this.getUserDrugs();
 				});
 		}
 	}
@@ -203,8 +202,7 @@ export class ProfileComponent implements OnInit {
 			this.disorderService
 				.addUserDisorder(userId, parseInt(val.disorderId))
 				.subscribe((res) => {
-					// this.router.navigateByUrl('/profile');
-					window.location.reload();
+					this.getUserDisorders();
 				});
 		}
 	}
@@ -222,7 +220,7 @@ export class ProfileComponent implements OnInit {
 			this.openBottomSheetInfo(summary, wikiUrl, id, isDrug, drug);
 			return { contents: summary };
 		} catch (error) {
-			this.openBottomSheetInfo('No information found','', id, isDrug);
+			this.openBottomSheetInfo('No information found', '', id, isDrug);
 			return null;
 		}
 	}
@@ -249,7 +247,7 @@ export class ProfileComponent implements OnInit {
 	}
 
 	goToAddStory() {
-		this.store.dispatch(setStoryToEdit({story: {} as StoryDrug}))
+		this.store.dispatch(setStoryToEdit({ story: {} as StoryDrug }))
 		this.router.navigateByUrl('addStory');
 	}
 
@@ -266,38 +264,46 @@ export class ProfileComponent implements OnInit {
 		this.router.navigateByUrl('/drugInfo?drugName=' + drugName)
 	}
 
-	ngOnInit(): void {
-		this.store.select(getSharedState).subscribe((state) => {
-			console.log(this.mood);
-			this.mood = state.averageMood;
-			this.isMonthView = state.isMonthView;
-			if (this.userId !== state.userId) {
-				this.userId = state.userId;
-				this.switchView(this.isMonthView);
-				this.drugService.getDrugs().subscribe((res) => {
-					this.drugs = JSON.parse(res);
-				});
+	getUserDrugs() {
+		this.drugService.getUserDrugs().subscribe((res) => {
+			this.store.dispatch(setUserDrugs({userDrugs: JSON.parse(res) })) ;
+		}, (err) => {
+			console.log(err);
+			this.store.dispatch(setUserDrugs({userDrugs: [] })) ;
+		});
+	}
 
-				//Get list of drugs that user is taking
-				this.drugService.getUserDrugs().subscribe((res) => {
-					this.userDrugs = JSON.parse(res);
-				}, (err) => {
-					console.log(err);
-					this.userDrugs = [];
-				});
-
-				this.disorderService.getUserDisorders().subscribe((res) => {
-					this.userDisorders = JSON.parse(res);
-					this.store.dispatch(toggleLoading({ status: false }));
-				}, (err) => {
-					console.log(err);
-					this.userDisorders = [];
-					this.store.dispatch(toggleLoading({ status: false }));
-				});
-			}
+	getUserDisorders() {
+		this.disorderService.getUserDisorders().subscribe((res) => {
+			this.store.dispatch(setUserDisorders({userDisorders: JSON.parse(res) })) ;
+			
+		}, (err) => {
+			console.log(err);
+			this.store.dispatch(setUserDisorders({userDisorders: []})) ;
 			
 		});
+	}
+
+	ngOnInit(): void {
+		this.store.select(getSharedState).subscribe((state) => {
+			this.userDrugs = state.userDrugs;
+			this.userDisorders = state.userDisorders;
+			this.mood = state.averageMood;
+			this.isMonthView = state.isMonthView;
+			this.userId = state.userId;
 		
+		});
+
+		this.switchView(this.isMonthView);
+		
+		this.getUserDrugs();
+		this.getUserDisorders();
+		
+		this.drugService.getDrugs().subscribe((res) => {
+			this.drugs = JSON.parse(res);
+			this.store.dispatch(toggleLoading({ status: false }));
+		});
+
 		//Check if logged in and navigate to splash if not
 		if (this.storageService.getToken() && this.storageService.getUser()) {
 			//TODO: Move userprofile to shared state instead of handling it this way
@@ -313,8 +319,8 @@ export class ProfileComponent implements OnInit {
 
 				// this.switchView(this.isMonthView);
 				// Get drugs for add-drug bottom sheet
-				
-				
+
+
 
 				//Get Profile if it does not exist in local storage
 			} else {
@@ -335,6 +341,7 @@ export class ProfileComponent implements OnInit {
 			this.storageService.signout();
 			this.store.dispatch(toggleAuth({ status: false }));
 			this.router.navigateByUrl('/login');
+			window.location.reload();
 		}
 	}
 }

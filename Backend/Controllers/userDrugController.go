@@ -16,8 +16,6 @@ func GetUserDrugs(context *Models.CustomContext) {
 	token := context.Request.Header.Get("Authorization")
 	userId := GetUserId(token, context)
 
-
-
 	sqlStatement := `
 		SELECT 
 			ud.userDrugId,
@@ -100,6 +98,33 @@ func IsDuplicateDrug(userId int, drugId int, context *Models.CustomContext) bool
 	return false
 }
 
+func IsDuplicateDrugUpdate(userId int, drugId int, userDrugId int, context *Models.CustomContext) bool {
+	sqlStatement := `
+		SELECT userDrugId
+		FROM user_drugs
+		WHERE userId = $1
+		AND drugId = $2
+		AND userDrugId != $3
+		AND dateEnded IS NULL;
+		`
+
+	row := context.DB.QueryRow(sqlStatement, userId, drugId, userDrugId)
+
+	var userDrugIdInt int
+	err := row.Scan(&userDrugIdInt)
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if userDrugIdInt != 0 {
+		log.Error("Duplicate")
+		return true
+	}
+
+	return false
+}
+
 func AddUserDrug(context *Models.CustomContext) {
 	var userDrug Models.UserDrug
 
@@ -144,7 +169,6 @@ func AddUserDrug(context *Models.CustomContext) {
 	}
 
 	userDrug.DateStarted = time.Now()
-
 
 	sqlStatement := `
 		INSERT INTO user_drugs (userId,drugId,dosage,dateStarted)
@@ -288,6 +312,14 @@ func UpdateUserDrug(context *Models.CustomContext) {
 		return
 	}
 
+	if IsDuplicateDrugUpdate(userDrug.UserId, userDrug.DrugId, userDrug.UserDrugId, context) {
+		context.JSON(400, gin.H{
+			"msg": "duplicate drug",
+		})
+		context.Abort()
+
+		return
+	}
 
 	sqlStatement := `
 		UPDATE user_drugs set dosage = $1, drugId = $2

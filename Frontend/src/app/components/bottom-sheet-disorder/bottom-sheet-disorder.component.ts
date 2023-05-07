@@ -3,7 +3,7 @@
 import { Store } from '@ngrx/store';
 import { ProfileService } from 'src/app/services/profile.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setUserDisorders, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { UserProfile } from 'src/app/types/user';
 import { AppState } from 'src/app/store/app.state';
 import { DrugService } from 'src/app/services/drug.service';
@@ -65,7 +65,7 @@ export class BottomSheetDisorderComponent implements OnInit {
 
 
 
-	constructor(private router: Router, private disorderService: DisorderService, private bottomSheetRef: MatBottomSheetRef<BottomSheetDrugComponent>) { }
+	constructor(private router: Router, private disorderService: DisorderService, private bottomSheetRef: MatBottomSheetRef<BottomSheetDrugComponent>, private store: Store<AppState>) { }
 
 
 
@@ -78,13 +78,29 @@ export class BottomSheetDisorderComponent implements OnInit {
 			this.disorderService
 				.addUserDisorder(userId, disorderId)
 				.subscribe((res) => {
-					window.location.reload();
+					this.getUserDisorders();
 				}, (err) => {
 					alert('Failed to add disorder. Is this a duplicate?')
 				});
 		}
 	}
 
+	getUserDisorders() {
+		this.store.dispatch(toggleLoading({ status: true }));
+		this.disorderService.getUserDisorders().subscribe((res) => {
+			this.store.dispatch(setUserDisorders({userDisorders: JSON.parse(res) })) ;
+			this.store.dispatch(toggleLoading({ status: false }));
+			this.bottomSheetRef.dismiss();
+			alert('Disorder added successfully')
+			
+		}, (err) => {
+			console.log(err);
+			this.store.dispatch(setUserDisorders({userDisorders: []})) ;
+			this.store.dispatch(toggleLoading({ status: false }));
+			this.bottomSheetRef.dismiss();
+			alert('Failed to fetch updated disorders.')
+		});
+	}
 
 	ngOnInit() {
 		this.disorderService.getDisorders().subscribe((res) => {

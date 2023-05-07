@@ -22,6 +22,8 @@ import {
 	setIsMonthView,
 	setStoryMood,
 	setNotificationStories,
+	setUserDrugs,
+	setUserDisorders,
 } from '../actions/shared.actions';
 import { initialState, SharedState } from '../shared.state';
 
@@ -97,6 +99,18 @@ export const _sharedReducer = createReducer(
 		return {
 			...state,
 			notificationStories: action.notificationStories
+		}
+	}),
+	on(setUserDrugs, (state, action) => {
+		return {
+			...state,
+			userDrugs: action.userDrugs
+		}
+	}),
+	on(setUserDisorders, (state, action) => {
+		return {
+			...state,
+			userDisorders: action.userDisorders
 		}
 	})
 );

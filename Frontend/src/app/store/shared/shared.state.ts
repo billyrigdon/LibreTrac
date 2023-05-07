@@ -1,3 +1,4 @@
+import { UserDisorder } from "src/app/types/disorder";
 import { NotificationStory, StoryDrug } from "src/app/types/story";
 import { UserDrug } from "src/app/types/userDrug";
 
@@ -14,6 +15,8 @@ export interface SharedState {
 	isMonthView: boolean;
 	storyMood: StoryDrug;
 	notificationStories: Array<NotificationStory>;
+	userDrugs: Array<UserDrug>;
+	userDisorders: Array<UserDisorder>;
 }
 
 export const initialState: SharedState = {
@@ -29,4 +32,6 @@ export const initialState: SharedState = {
 	isMonthView: false,
 	storyMood: <StoryDrug>{},
 	notificationStories: [],
+	userDrugs: [],
+	userDisorders: []
 };

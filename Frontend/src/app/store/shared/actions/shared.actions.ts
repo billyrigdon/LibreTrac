@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { UserDisorder } from 'src/app/types/disorder';
 import { NotificationStory, StoryDrug } from 'src/app/types/story';
 import { UserDrug } from 'src/app/types/userDrug';
 
@@ -34,3 +35,7 @@ export const setIsMonthView = createAction('SET_IS_MONTH_VIEW', props<{isMonthVi
 export const setStoryMood = createAction('SET_STORY_MOOD', props<{mood: StoryDrug}>())
 
 export const setNotificationStories = createAction('SET_NOTIFICATION_STORIES', props<{notificationStories: NotificationStory[]}>())
+
+export const setUserDrugs = createAction('SET_USER_DRUGS', props<{userDrugs: UserDrug[]}>())
+
+export const setUserDisorders = createAction('SET_USER_DISORDERS', props<{userDisorders: UserDisorder[]}>())
