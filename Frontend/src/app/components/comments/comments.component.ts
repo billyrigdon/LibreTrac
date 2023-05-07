@@ -47,36 +47,15 @@ export class CommentsComponent implements OnInit, AfterViewInit {
 	}
 
 
-	// public scrollToElement(elementId: string, smoothScroll: boolean = true): void {
-	// 	const element = document.getElementById(elementId);
-
-	// 	if (element) {
-	// 		element.scrollIntoView({
-	// 			behavior: smoothScroll ? 'smooth' : 'auto',
-	// 			block: 'start',
-	// 			inline: 'nearest'
-	// 		});
-	// 	} else {
-	// 		console.warn(`Element with ID '${elementId}' not found.`);
-	// 	}
-	// }
+	
 
 	ngAfterViewInit(): void {
-		// if (this.commentId) {
-			// console.log('test');
-		console.log('init');
-		// setTimeout(() => {
-		// 	this.scrollToElement('comment-number-' + this.commentId?.toString(), false);
-		// }, 1000);
-		// }
+
 	}
 	
 
 	ngOnInit(): void {
-		// if (this.isUserStory) {
-		// 	const OP_USER_ID = 2;
-		// 	this.userId = OP_USER_ID;
-		// }
+
 		this.store.select(getSharedState).subscribe(state => {
 			this.userId = state.userId;
 		})
@@ -84,13 +63,9 @@ export class CommentsComponent implements OnInit, AfterViewInit {
 			this.isUserStory = state.isUserStory;
 			this.storyId = state.storyId;
 			this.comments = state.comments;
-			// console.log('init');
 			
 		})
 
-		// if (localStorage.getItem('userProfile')) {
-		// 	this.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
-		// }
 		//Get parentCommentId from store so that add-comment replies to the correct comment
 		//The state is updated by the reply button for comments and stories
 		this.store.select(getParentCommentId).subscribe((val) => {

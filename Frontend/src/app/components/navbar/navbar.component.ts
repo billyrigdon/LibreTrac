@@ -45,7 +45,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 	buttonRoutes = {
 		profile: '/profile',
 		explore: '/explore',
-		userStories: '/user-stories'
+		userStories: '/user-stories',
 	}
 
 	isRouteActive(route: string): boolean {

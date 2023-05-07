@@ -22,19 +22,39 @@ export class NotieBarComponent implements OnInit {
     this.noties = [
       // {
       //   "title": "Story notificaton 1 a really long title",
-      //   "storyId": 1
+      //   "storyId": 1,
+      //   "commentId": 1,
+      //   "content": 'sdfsdkljflskdfjsldkjds',
+      //   "notificationId": 1,
+      //   "parentCommentId": 1,
+      //   "viewed": false
       // },
       // {
       //   "title": "Another really long title for a story hahahahahahahahahahahahah",
-      //   "storyId": 2
+      //   "storyId": 2,
+      //   "commentId": 1,
+      //   "content": 'sdfsdkljflskdfjsldkjds',
+      //   "notificationId": 1,
+      //   "parentCommentId": 1,
+      //   "viewed": false
       // },
       // {
       //   "title": "Story notificaton 3",
-      //   "storyId": 3
+      //   "storyId": 3,
+      //   "commentId": 1,
+      //   "content": 'sdfsdkljflskdfjsldkjds',
+      //   "notificationId": 1,
+      //   "parentCommentId": 1,
+      //   "viewed": false
       // },
       // {
       //   "title": "Story notificaton 1 a really long title",
-      //   "storyId": 1
+      //   "storyId": 1,
+      //   "commentId": 1,
+      //   "content": 'sdfsdkljflskdfjsldkjds',
+      //   "notificationId": 1,
+      //   "parentCommentId": 1,
+      //   "viewed": false
       // },
       // {
       //   "title": "Another really long title for a story hahahahahahahahahahahahah",
@@ -95,16 +115,6 @@ export class NotieBarComponent implements OnInit {
     }
   }
 
-
-  
-
-  ngOnDestroy(): void {
-    // this.store.dispatch(
-    //   setNotifications({ notifications: [] })
-    // );
-  }
-
-
   goToStory(storyId: number, commentId: number) {
     this.notificationService
       .clearNotifications(this.userId, storyId)
@@ -119,13 +129,11 @@ export class NotieBarComponent implements OnInit {
           this.store.dispatch(toggleNoties({ open: false }));
 				});
       });
-    
   }
 
   ngOnInit(): void {
     this.store.select(getSharedState).subscribe((res) => {
       this.userId = res.userId;
-      // this.getNotifications(this.userId);
       this.noties = res.notificationStories;
     })
   }

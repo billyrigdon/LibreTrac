@@ -5,8 +5,7 @@
 	<p *ngIf="this.noties.length > 0">You have comments:</p>
 	<ul>
 		<li *ngFor="let story of this.noties">
-			<a (click)="this.goToStory(story.storyId, story.commentId)">{{story.title}}</a>
-			<p>{{story.content}}</p>
+			<a (click)="this.goToStory(story.storyId, story.commentId)">{{story.content}}</a>
 		</li>
 	</ul>
 </div>

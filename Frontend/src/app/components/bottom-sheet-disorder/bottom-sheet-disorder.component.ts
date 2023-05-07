@@ -74,7 +74,6 @@ export class BottomSheetDisorderComponent implements OnInit {
 			let user = JSON.parse(localStorage.getItem('userProfile') || '');
 			const userId = user.userId;
 
-
 			this.disorderService
 				.addUserDisorder(userId, disorderId)
 				.subscribe((res) => {

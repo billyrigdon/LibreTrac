@@ -186,11 +186,9 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 			this.userId = state.userId;
 		});
 
-		if (localStorage.getItem('userProfile')) {
-			//Get user fields from user stored in local storage
-			// this.story.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
-		} else {
+		if (!localStorage.getItem('userProfile')) {
 			this.router.navigateByUrl('/login');
+			window.location.reload();
 		}
 	}
 }
