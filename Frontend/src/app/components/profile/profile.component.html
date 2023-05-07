@@ -1,4 +1,4 @@
-<div id="profile-container">
+<div #scrollable id="profile-container">
 	<div class="edit-container">
 		<h1 *ngIf="!this.isMonthView">This week's avg.<span role="button" (click)="this.switchView(true)" class="material-icons">calendar_view_month</span></h1>
 		<h1 *ngIf="this.isMonthView">This month's avg.<span role="button" (click)="this.switchView(false)" class="material-icons">calendar_view_week</span></h1>

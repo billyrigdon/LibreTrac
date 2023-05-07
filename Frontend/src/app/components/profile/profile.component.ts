@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProfileService } from 'src/app/services/profile.service';
 import { StoryService } from 'src/app/services/story.service';
@@ -49,7 +49,7 @@ export class ProfileComponent implements OnInit {
 	profilePic: string;
 	drugs: Array<Drug>;
 	isMonthView: boolean = false;
-
+	private startY: number | null = null;
 	illnesses = [
 		{ name: 'Bipolar Disorder Type I' },
 		{ name: 'Attention Deficit Hyperactive Disorder - Combined' },
@@ -59,7 +59,7 @@ export class ProfileComponent implements OnInit {
 	drugForm: UntypedFormGroup;
 	userId: number = 0;
 	mood: StoryDrug = <StoryDrug>{};
-
+	@ViewChild('scrollable') scrollableElementRef!: ElementRef;
 	constructor(
 		private storyService: StoryService,
 		private router: Router,
@@ -84,6 +84,26 @@ export class ProfileComponent implements OnInit {
 			drugId: [0],
 			dosage: ['', Validators.required],
 		});
+	}
+
+	@HostListener('touchstart', ['$event'])
+	onTouchStart(event: TouchEvent) {
+	  this.startY = event.touches[0].clientY;
+	}
+  
+	@HostListener('touchend', ['$event'])
+	onTouchEnd(event: TouchEvent) {
+	  const endY = event.changedTouches[0].clientY;
+	  if (this.startY !== null && this.startY < endY && this.scrollableElementRef.nativeElement.scrollTop === 0) {
+		const swipeDistance = endY - this.startY;
+		const threshold = 100; // Set a threshold to consider it as a swipe down
+  
+		if (swipeDistance > threshold) {
+		  console.log('Swipe down at the top of the container');
+		  window.location.reload();
+		}
+	  }
+	  this.startY = null;
 	}
 
 	openBottomSheetDrug() {

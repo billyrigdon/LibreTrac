@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -23,6 +23,7 @@ export class UserStoriesScrollableComponent implements OnInit {
 	@Output() onScroll = new EventEmitter();
 	distance: number;
 	throttle: number;
+	private startY: number | null = null;
 	@Input() summaries: Array<{ summary: string, name: string, url: string }> = [];
 	@ViewChild('scrollableElement') scrollableElementRef!: ElementRef;
 	constructor(
@@ -36,6 +37,26 @@ export class UserStoriesScrollableComponent implements OnInit {
 		this.distance = 0.1;
 		this.throttle = 0;
 	}
+
+	@HostListener('touchstart', ['$event'])
+  onTouchStart(event: TouchEvent) {
+    this.startY = event.touches[0].clientY;
+  }
+
+  @HostListener('touchend', ['$event'])
+  onTouchEnd(event: TouchEvent) {
+    const endY = event.changedTouches[0].clientY;
+    if (this.startY !== null && this.startY < endY && this.scrollableElementRef.nativeElement.scrollTop === 0) {
+      const swipeDistance = endY - this.startY;
+      const threshold = 100; // Set a threshold to consider it as a swipe down
+
+      if (swipeDistance > threshold) {
+        console.log('Swipe down at the top of the container');
+        window.location.reload();
+      }
+    }
+    this.startY = null;
+  }
 
 	onPageScroll() {
 		console.log("scrolled")
