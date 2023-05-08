@@ -32,7 +32,7 @@ export class AddCommentComponent implements OnInit {
 	) {
 		this.addCommentOpen = this.store.select(getAddCommentsOpen);
 		this.form = this.formBuilder.group({
-			content: ['', Validators.required],
+			content: ['', Validators.required, Validators.minLength(1)],
 		});
 		this.storyId = 0;
 		this.parentCommentContent = "";
@@ -42,6 +42,9 @@ export class AddCommentComponent implements OnInit {
 	}
 
 	addComment() {
+		if (this.form.invalid) {
+			return;
+		}
 		let content = this.form.value.content;
 
 		this.commentService
@@ -61,6 +64,11 @@ export class AddCommentComponent implements OnInit {
 
 
 	updateComment(comment: StoryComment) {
+
+		if (this.form.invalid) {
+			return;
+		}
+
 		let content = this.form.value.content;
 
 		this.commentService

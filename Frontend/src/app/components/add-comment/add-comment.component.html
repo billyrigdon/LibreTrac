@@ -11,6 +11,11 @@
 					formControlName="content"
 					placeholder="Remember to be nice :)"></textarea>
 			</form>
+			<div class="error-container">
+				<div *ngIf="form.get('content')?.invalid && (form.get('content')?.dirty || form.get('content')?.touched)">
+					<p *ngIf="form.get('content')?.hasError">Comments cannot be blank</p>
+				</div>
+			</div>
 		</mat-card-content>
 		<mat-card-actions>
 			<button *ngIf="!this.commentForEdit" mat-raised-button (click)="addComment()">Comment</button>

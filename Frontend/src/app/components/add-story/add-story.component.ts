@@ -40,8 +40,8 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 			irritability: [1, Validators.required],
 			happiness: [1, Validators.required],
 			anxiety: [1, Validators.required],
-			title: ['', Validators.required],
-			journal: ['', Validators.required],
+			title: ['', Validators.required, Validators.minLength(1)],
+			journal: ['', Validators.required]
 		});
 		this.story = {
 			title: '',
@@ -61,6 +61,9 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	}
 
 	addStory() {
+		if (this.form.invalid) {
+			return;
+		}
 		const val = this.form.value;
 		this.story.energy = parseInt(val.energy);
 		this.story.creativity = parseInt(val.creativity);
@@ -97,6 +100,9 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	}
 
 	updateStory() {
+		if (this.form.invalid) {
+			return;
+		}
 		const val = this.form.value;
 		// const story = {} as Story;
 		this.story.energy = parseInt(val.energy);

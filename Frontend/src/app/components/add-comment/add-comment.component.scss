@@ -29,6 +29,26 @@ mat-dialog-container {
 
 		mat-card-content {
 			width: 100%;
+			.error-container {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				padding: 12px;
+				p {
+					color: $delete-red !important;
+					text-align: center;
+					margin: 8px;
+				}
+				div {
+					p {
+						text-align: center;
+						margin: 8px;
+						color: $delete-red !important;
+					}
+				}
+			}
+			
 			p {
 				color: $dark-accent-color !important;
 			}
@@ -60,6 +80,26 @@ mat-dialog-container {
 				margin: 12px;
 				background-color: $main-color;
 			}
+		}
+	}
+}
+
+.error-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 12px;
+	p {
+		color: $delete-red !important;
+		text-align: center;
+		margin: 8px;
+	}
+	div {
+		p {
+			text-align: center;
+			margin: 8px;
+			color: $delete-red !important;
 		}
 	}
 }
