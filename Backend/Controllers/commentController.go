@@ -4,8 +4,8 @@ import (
 	Models "libretrac/Models"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 var REDACTED_USER_ID int = 1
@@ -91,7 +91,6 @@ func GetCommentUserId(commentId int, context *Models.CustomContext) int {
 		log.Error(err)
 	}
 
-
 	return userId
 }
 
@@ -151,10 +150,9 @@ func AddComment(context *Models.CustomContext) {
 		}
 
 		//Don't create notification if user is replying to their own comment or if comment is deleted
-		if comment.UserId != REDACTED_USER_ID && comment.UserId != OP_USER_ID {
-			CreateNotification(comment, context)
-		}
-
+		// if comment.UserId != REDACTED_USER_ID && comment.UserId != OP_USER_ID {
+		CreateNotification(comment, context)
+		// }
 		context.JSON(200, comment)
 	} else {
 		err := context.DB.QueryRow(sqlStatementNoParent,
@@ -225,7 +223,6 @@ func UpdateComment(context *Models.CustomContext) {
 		context.Abort()
 		return
 	}
-
 
 	sqlStatement := `
 		UPDATE story_comments
