@@ -88,12 +88,10 @@ export class StoriesComponent implements OnInit {
       .subscribe((event) => {
         const currentRoute = this.router.url;
 		console.log(currentRoute);
-        if (currentRoute === '/explore') {
+        if (currentRoute.includes('/explore')) {
           if (event instanceof NavigationStart) {
-            // setTimeout(() => {
               const scrollPosition = this.scrollableElementRef.nativeElement.scrollTop;
               this.scrollPositionService.saveScrollPosition(currentRoute, scrollPosition);
-            // }, 100);
           } else if (event instanceof NavigationEnd) {
             this.restoreScrollPosition(currentRoute);
           }
