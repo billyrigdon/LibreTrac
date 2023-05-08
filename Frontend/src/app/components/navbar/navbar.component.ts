@@ -163,6 +163,9 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 	}
 
 	showSearch() {
+
+		this.store.dispatch(toggleNoties({open: false}))
+
 		const dialogRef = this.dialog.open(SearchModalComponent, {
 			data: {},
 			width: '95%',

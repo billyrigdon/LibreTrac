@@ -163,6 +163,9 @@ export class ProfileSettingsComponent implements OnInit {
 			height: '500px',
 		});
 		
+		dialogRef.componentInstance.onClose.subscribe(() => {
+			dialogRef.close();
+		});
 	}
 
 	updateEmail() {

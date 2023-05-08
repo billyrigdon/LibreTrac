@@ -8,7 +8,7 @@ import { StorageService } from './services/storage.service';
 import { AppState } from './store/app.state';
 import { setNotifications } from './store/comments/comments.actions';
 import { getAddCommentsOpen } from './store/comments/comments.selector';
-import { setUserId, toggleAuth } from './store/shared/actions/shared.actions';
+import { setUserId, toggleAuth, toggleNoties } from './store/shared/actions/shared.actions';
 import {
 	getAuthState,
 	getLoading,
@@ -129,6 +129,7 @@ export class AppComponent implements OnInit {
 		this.router.events
 			.pipe(filter(event => event instanceof NavigationEnd))
 			.subscribe(() => {
+				this.store.dispatch(toggleNoties({ open: false }));
 				if (!this.router.url.includes('explore')) {
 					document.body.scrollTop = 0;
 				}
