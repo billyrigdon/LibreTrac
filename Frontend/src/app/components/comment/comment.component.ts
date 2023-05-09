@@ -85,8 +85,8 @@ export class CommentComponent implements OnInit, AfterViewInit {
 		this.store.dispatch(setStoryContent({ content: "" }));
 		
 		const dialogRef = this.dialog.open(AddCommentComponent, {
-			width: '500px',
-			height: '500px',
+			width: '90%',
+			height: '70%',
 		});
 		
 		dialogRef.componentInstance.onError.subscribe((event: any) => {

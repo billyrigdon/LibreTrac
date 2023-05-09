@@ -177,8 +177,8 @@ export class StoryComponent implements OnInit, AfterViewInit {
 		this.store.dispatch(setParentCommentContent({ content: "" }))
 
 		const dialogRef = this.dialog.open(AddCommentComponent, {
-			width: '600px',
-			height: '400px',
+			width: '90%',
+			height: '70%',
 		});
 
 		dialogRef.componentInstance.onError.subscribe((event: any) => {
