@@ -32,7 +32,7 @@ export class AddCommentComponent implements OnInit {
 	) {
 		this.addCommentOpen = this.store.select(getAddCommentsOpen);
 		this.form = this.formBuilder.group({
-			content: ['', Validators.required, Validators.minLength(1)],
+			content: ['', [Validators.required, Validators.minLength(1)]],
 		});
 		this.storyId = 0;
 		this.parentCommentContent = "";

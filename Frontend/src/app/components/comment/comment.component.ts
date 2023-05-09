@@ -5,12 +5,13 @@ import { VoteService } from 'src/app/services/vote.service';
 import { AppState } from 'src/app/store/app.state';
 import {
 	setComments,
+	setIsUserStory,
 	setParentCommentContent,
 	setParentId,
 	setStoryContent,
 	toggleAddComment,
 } from 'src/app/store/comments/comments.actions';
-import { getAddCommentState } from 'src/app/store/comments/comments.selector';
+import { getAddCommentState, getCommentsState } from 'src/app/store/comments/comments.selector';
 import { StoryComment } from 'src/app/types/comment';
 import { CommentVote } from 'src/app/types/vote';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
@@ -32,6 +33,8 @@ export class CommentComponent implements OnInit, AfterViewInit {
 	storyId = 0;
 	
 	canDelete = false;
+	isUserStory: any;
+	storyService: any;
 	constructor(
 		private voteService: VoteService,
 		private store: Store<AppState>,
@@ -58,6 +61,11 @@ export class CommentComponent implements OnInit, AfterViewInit {
 
 	ngAfterViewInit(): void {
 		this.comment = {...this.storyComment};
+		const OP_USER_ID = 2;
+		this.store.select(getCommentsState).subscribe((state) => {
+			this.storyId = state.storyId;
+			this.canDelete  = (state.isUserStory && this.comment.userId === OP_USER_ID) || (this.comment.userId === this.userId);
+		})
 	}
 
 	deleteComment(commentId: number, storyId: number) {
@@ -116,7 +124,15 @@ export class CommentComponent implements OnInit, AfterViewInit {
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
 					}
-					this.store.dispatch(toggleLoading({ status: false }));
+					if (!this.isUserStory) {
+						this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any) => {
+							this.isUserStory = JSON.parse(res).result;
+							this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
+							this.store.dispatch(toggleLoading({ status: false }));
+						});
+					} else {
+						this.store.dispatch(toggleLoading({ status: false }));
+					}
 				},
 					(err) => {
 						this.store.dispatch(toggleLoading({ status: false }));
@@ -127,10 +143,14 @@ export class CommentComponent implements OnInit, AfterViewInit {
 	}
 
 	openUpdateComment(comment: StoryComment) {
-		const dialogRef = this.dialog.open(AddCommentComponent, {
-			width: '500px',
-			height: '500px',
-		});
+		
+		const dialogConfig = new MatDialogConfig();
+		dialogConfig.width = '100vw';
+		dialogConfig.height = '100%';
+		dialogConfig.maxWidth = '100vw';
+		dialogConfig.maxHeight = '100%';
+
+		const dialogRef = this.dialog.open(AddCommentComponent,dialogConfig)
 		
 		dialogRef.componentInstance.commentForEdit = comment;
 
@@ -169,10 +189,6 @@ export class CommentComponent implements OnInit, AfterViewInit {
 	}
 
 	ngOnInit(): void {
-		const OP_USER_ID = 2;
-		this.store.select(getAddCommentState).subscribe((state) => {
-			this.storyId = state.storyId;
-			this.canDelete = (state.isUserStory && this.comment.userId === 2) || (this.comment.userId === this.userId);
-		})
+		
 	}
 }

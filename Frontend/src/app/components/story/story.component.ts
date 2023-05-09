@@ -80,6 +80,7 @@ export class StoryComponent implements OnInit, AfterViewInit {
 	}
 
 	navigateToEditStory() {
+		this.store.dispatch(toggleLoading({status: true}));
 		this.store.dispatch(setStoryToEdit({ story: this.story }))
 		this.router.navigate(['/addStory']);
 	}
@@ -142,7 +143,16 @@ export class StoryComponent implements OnInit, AfterViewInit {
 							} else {
 								this.store.dispatch(setComments({ comments: [] }));
 							}
-							this.store.dispatch(toggleLoading({ status: false }));
+							if (!this.isUserStory) {
+								this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any) => {
+									this.isUserStory = JSON.parse(res).result;
+									this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
+									this.store.dispatch(toggleLoading({ status: false }));
+								});
+							} else {
+								this.store.dispatch(toggleLoading({status: false}))
+							}
+							
 							setTimeout(() => {
 							if (this.commentId) {
 								this.scrollToElement('comment-number-' + this.commentId?.toString(), false);
@@ -271,10 +281,7 @@ export class StoryComponent implements OnInit, AfterViewInit {
 			this.commentId = parseInt(params['commentId']);
 			this.store.dispatch(setStoryId({ storyId: this.storyId }));
 			this.getStory();
-			this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any) => {
-				this.isUserStory = JSON.parse(res).result;
-				this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
-			});
+			
 		});
 
 

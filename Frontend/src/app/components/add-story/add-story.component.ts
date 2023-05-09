@@ -40,7 +40,7 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 			irritability: [1, Validators.required],
 			happiness: [1, Validators.required],
 			anxiety: [1, Validators.required],
-			title: ['', Validators.required, Validators.minLength(1)],
+			title: ['', [Validators.required, Validators.minLength(1)]],
 			journal: ['', Validators.required]
 		});
 		this.story = {
@@ -158,11 +158,14 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	}
 
 	ngAfterViewInit(): void {
+		this.store.dispatch(toggleLoading({status: false}));
 		this.store.select(getSharedState).subscribe((state) => {
 			if (state.storyToEdit.storyId) {
-				const story = state.storyToEdit;
+				const story = {...state.storyToEdit};
+				console.log(story)
 				this.story.storyId = story.storyId;
 				this.form.setValue({
+					journal: story.journal,
 					energy: story.energy,
 					focus: story.focus,
 					creativity: story.creativity,
@@ -170,7 +173,6 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 					happiness: story.happiness,
 					anxiety: story.anxiety,
 					title: story.title,
-					journal: story.journal,
 				});
 			}
 		})
@@ -178,6 +180,8 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	}
 
 	ngOnInit(): void {
+		
+
 		this.store.select(getSharedState).subscribe((state) => {
 			if (state.userStories.length > 0) {
 				this.userStories = [...state.userStories];

@@ -4,8 +4,7 @@
 			<p *ngIf="this.storyContent.length > 0">{{storyContent}}</p>
 			<p *ngIf="this.parentCommentContent.length > 0">{{parentCommentContent}}</p>
 			<form id="comment-form" [formGroup]="form" (submit)="addComment()">
-				<textarea id="comment-content" 
-					appAutofocus 
+				<textarea id="comment-content"  
 					matInput 
 					name="content"
 					formControlName="content"
