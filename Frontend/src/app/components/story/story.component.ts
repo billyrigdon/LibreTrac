@@ -72,7 +72,8 @@ export class StoryComponent implements OnInit, AfterViewInit {
 
 			if (swipeDistance > threshold) {
 				console.log('Swipe down at the top of the container');
-				window.location.reload();
+				// window.location.reload();
+				this.getStory();
 			}
 		}
 		this.startY = null;

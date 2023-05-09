@@ -99,8 +99,10 @@ export class ProfileComponent implements OnInit {
 			const threshold = 100; // Set a threshold to consider it as a swipe down
 
 			if (swipeDistance > threshold) {
-				console.log('Swipe down at the top of the container');
-				window.location.reload();
+				// window.location.reload();
+				this.switchView(this.isMonthView);
+				this.getUserDrugs();	
+				this.getUserDisorders();
 			}
 		}
 		this.startY = null;
@@ -265,10 +267,12 @@ export class ProfileComponent implements OnInit {
 	}
 
 	getUserDrugs() {
+		this.store.dispatch(toggleLoading({ status: true }));
 		this.drugService.getUserDrugs().subscribe((res) => {
-			this.store.dispatch(setUserDrugs({userDrugs: JSON.parse(res) })) ;
+			this.store.dispatch(setUserDrugs({userDrugs: JSON.parse(res) }));
+			this.store.dispatch(toggleLoading({ status: false }));
 		}, (err) => {
-			console.log(err);
+			this.store.dispatch(toggleLoading({ status: false }));
 			this.store.dispatch(setUserDrugs({userDrugs: [] })) ;
 		});
 	}
