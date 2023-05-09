@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { CommentService } from 'src/app/services/comment.service';
 import { VoteService } from 'src/app/services/vote.service';
@@ -24,10 +24,11 @@ import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 	templateUrl: './comment.component.html',
 	styleUrls: ['./comment.component.scss'],
 })
-export class CommentComponent implements OnInit {
-	@Input() comment!: StoryComment;
+export class CommentComponent implements OnInit, AfterViewInit {
+	@Input() storyComment!: StoryComment;
 	@Input() comments!: Array<StoryComment>;
 	@Input() userId!: number;
+	comment!: StoryComment;
 	storyId = 0;
 	
 	canDelete = false;
@@ -36,11 +37,16 @@ export class CommentComponent implements OnInit {
 		private store: Store<AppState>,
 		private commentService: CommentService,
 		private dialog: MatDialog
-	) { }
+	) {
+		this.comment = {...this.storyComment};
+	 }
 
 	upvote(vote: CommentVote) {
-		this.voteService.addCommentVote(vote).subscribe((res) => {
-			this.comment.votes = this.comment.votes + 1;
+		// this.voteService.addCommentVote(vote).subscribe((res) => {
+		// 	this.comment.votes = this.comment.votes + 1;
+		// });
+		this.voteService.toggleCommentVote(vote).subscribe((res: any) => {
+			this.comment.votes = res.votes.length;
 		});
 	}
 
@@ -48,6 +54,10 @@ export class CommentComponent implements OnInit {
 		this.voteService.removeCommentVote(vote).subscribe((res) => {
 			this.comment.votes = this.comment.votes - 1;
 		});
+	}
+
+	ngAfterViewInit(): void {
+		this.comment = {...this.storyComment};
 	}
 
 	deleteComment(commentId: number, storyId: number) {

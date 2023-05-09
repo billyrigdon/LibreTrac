@@ -112,7 +112,7 @@ export class StoryComponent implements OnInit, AfterViewInit {
 	getStory() {
 		this.store.dispatch(toggleLoading({ status: true }));
 		this.storyService.getStory(this.storyId).subscribe((res) => {
-			this.story = JSON.parse(res);
+			this.story = {...JSON.parse(res)};
 			const storyDate = new Date(this.story.date);
 			const formattedDate = storyDate.toLocaleDateString('en-US', {
 				month: 'short',
@@ -162,8 +162,11 @@ export class StoryComponent implements OnInit, AfterViewInit {
 	}
 
 	upvoteStory(vote: StoryVote) {
-		this.voteService.addStoryVote(vote).subscribe((res) => {
-			this.story.votes = this.story.votes + 1;
+		// this.voteService.addStoryVote(vote).subscribe((res) => {
+		// 	this.story.votes = this.story.votes + 1;
+		// });
+		this.voteService.toggleStoryVote(vote).subscribe((res: any) => {
+			this.story.votes = res.votes.length;
 		});
 	}
 

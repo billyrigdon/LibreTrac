@@ -18,7 +18,7 @@ export class CommentService {
 
 	getComments(storyId: number): Observable<any> {
 		return this.http.get(
-			API_URL + '/public/story/comment?storyId=' + storyId
+			API_URL + '/protected/story/comment?storyId=' + storyId
 		);
 	}
 

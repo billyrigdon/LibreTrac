@@ -40,19 +40,19 @@ export class StoryService {
 	}
 
 	getAllStories(pageNumber: number) {
-		return this.http.get(API_URL + '/public/story/get?page=' + pageNumber, {
+		return this.http.get(API_URL + '/protected/story/get?page=' + pageNumber, {
 			responseType: 'text',
 		});
 	}
 
 	getFilteredStories(pageNumber: number, drugX: string, drugY: string) {
-		return this.http.get(API_URL + '/public/story/get?page=' + pageNumber + "&drugX=" + drugX + "&drugY=" + drugY, {
+		return this.http.get(API_URL + '/protected/story/get?page=' + pageNumber + "&drugX=" + drugX + "&drugY=" + drugY, {
 			responseType: 'text',
 		});
 	}
 
 	getStory(storyId: number) {
-		return this.http.get(API_URL + '/public/story?storyId=' + storyId, {
+		return this.http.get(API_URL + '/protected/story?storyId=' + storyId, {
 			responseType: 'text',
 		});
 	}

@@ -8,5 +8,5 @@ cd ../Backend
 go get
 go build .
 cd ..
-docker build -t libretrac/libretrac:2.1.5 .
-docker push libretrac/libretrac:2.1.5
+docker build -t libretrac/libretrac:2.1.6 .
+docker push libretrac/libretrac:2.1.6

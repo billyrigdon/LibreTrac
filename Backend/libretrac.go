@@ -70,11 +70,6 @@ func setupRouter() *gin.Engine {
 			public.POST("login", withDB(Controllers.UserLogin))
 			public.POST("signup", withDB(Controllers.UserSignup))
 
-			//Serve public explore page
-			public.GET("/story/get", withDB(Controllers.GetAllStories))
-			public.GET("/story/comment", withDB(Controllers.GetComments))
-			public.GET("/story", withDB(Controllers.GetSingleStory))
-			public.GET("/mood/get", withDB(Controllers.GetAverageStoryMood))
 		}
 
 		//Serve routes that require valid jwt token
@@ -82,6 +77,12 @@ func setupRouter() *gin.Engine {
 		//TODO:remove for prod
 		protected.Use(corsInterceptor())
 		{
+			//Serve public explore page
+			protected.GET("/story/get", withDB(Controllers.GetAllStories))
+			protected.GET("/story/comment", withDB(Controllers.GetComments))
+			protected.GET("/story", withDB(Controllers.GetSingleStory))
+			protected.GET("/mood/get", withDB(Controllers.GetAverageStoryMood))
+
 			//Serve user profile routes
 			protected.GET("/user", withDB(Controllers.GetUserProfile))
 			protected.POST("/user/create", withDB(Controllers.CreateUserProfile))
@@ -97,6 +98,7 @@ func setupRouter() *gin.Engine {
 			protected.POST("/story/create", withDB(Controllers.CreateStory))
 			protected.POST("/story/update", withDB(Controllers.UpdateStory))
 			protected.DELETE("/story/delete", withDB(Controllers.DeleteStory))
+			protected.POST("/story/vote", withDB(Controllers.ToggleStoryVote))
 			protected.POST("/story/vote/add", withDB(Controllers.AddStoryVote))
 			protected.POST("/story/vote/remove", withDB(Controllers.RemoveStoryVote))
 
@@ -104,6 +106,7 @@ func setupRouter() *gin.Engine {
 			protected.POST("/story/comment/create", withDB(Controllers.AddComment))
 			protected.DELETE("/story/comment/delete", withDB(Controllers.DeleteComment))
 			protected.POST("/story/comment/update", withDB(Controllers.UpdateComment))
+			protected.POST("/story/comment/vote", withDB(Controllers.ToggleCommentVote))
 			protected.POST("/story/comment/vote/add", withDB(Controllers.AddCommentVote))
 			protected.POST("/story/comment/vote/remove", withDB(Controllers.RemoveCommentVote))
 
