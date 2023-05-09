@@ -16,7 +16,7 @@ import {
 	setStoryId,
 } from 'src/app/store/comments/comments.actions';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
 import { setAverageMood, setExploreStories, setStoryMood, setStoryToEdit, setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { MoodService } from 'src/app/services/mood.service';
@@ -176,10 +176,16 @@ export class StoryComponent implements OnInit, AfterViewInit {
 		this.store.dispatch(setStoryContent({ content: this.story.journal }))
 		this.store.dispatch(setParentCommentContent({ content: "" }))
 
-		const dialogRef = this.dialog.open(AddCommentComponent, {
-			width: '90%',
-			height: '70%',
-		});
+		const dialogConfig = new MatDialogConfig();
+		dialogConfig.width = '100vw';
+		dialogConfig.height = '100%';
+		dialogConfig.maxWidth = '100vw';
+		dialogConfig.maxHeight = '100%';
+
+		const dialogRef = this.dialog.open(AddCommentComponent,dialogConfig)// {
+		// 	width: '100vw',
+		// 	height: '100%',
+		// });
 
 		dialogRef.componentInstance.onError.subscribe((event: any) => {
 			dialogRef.close();

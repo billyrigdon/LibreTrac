@@ -14,7 +14,7 @@ import { getAddCommentState } from 'src/app/store/comments/comments.selector';
 import { StoryComment } from 'src/app/types/comment';
 import { CommentVote } from 'src/app/types/vote';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
-import {  MatDialog } from '@angular/material/dialog';
+import {  MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
 import { toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
@@ -84,10 +84,13 @@ export class CommentComponent implements OnInit, AfterViewInit {
 		this.store.dispatch(setParentCommentContent({ content: this.comment.content }));
 		this.store.dispatch(setStoryContent({ content: "" }));
 		
-		const dialogRef = this.dialog.open(AddCommentComponent, {
-			width: '90%',
-			height: '70%',
-		});
+		const dialogConfig = new MatDialogConfig();
+		dialogConfig.width = '100vw';
+		dialogConfig.height = '100%';
+		dialogConfig.maxWidth = '100vw';
+		dialogConfig.maxHeight = '100%';
+
+		const dialogRef = this.dialog.open(AddCommentComponent,dialogConfig)
 		
 		dialogRef.componentInstance.onError.subscribe((event: any) => {
 			dialogRef.close();
