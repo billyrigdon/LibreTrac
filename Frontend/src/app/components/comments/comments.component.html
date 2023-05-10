@@ -1,4 +1,4 @@
-<div #scrollable id="comments-container">
+<div *ngIf="this.comments.length > 0" #scrollable id="comments-container">
 	<app-comment-thread
 		[comments]="comments"
 		[userId]="userId"

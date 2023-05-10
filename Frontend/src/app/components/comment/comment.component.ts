@@ -4,6 +4,7 @@ import { CommentService } from 'src/app/services/comment.service';
 import { VoteService } from 'src/app/services/vote.service';
 import { AppState } from 'src/app/store/app.state';
 import {
+	scrollToComment,
 	setComments,
 	setIsUserStory,
 	setParentCommentContent,
@@ -147,30 +148,30 @@ export class CommentComponent implements OnInit, AfterViewInit, OnDestroy {
 				.getComments(this.storyId)
 				.subscribe((comments: Array<StoryComment>) => {
 					if (comments) {
-						this.store.dispatch(setComments({ comments: [] }));
+						// this.store.dispatch(setComments({ comments: [] }));
 						this.store.dispatch(setComments({ comments: comments.sort((a, b) => b.votes - a.votes) }));
-						
+						this.store.dispatch(scrollToComment({commentId: event?.commentId}))
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
 					}
-					if (!this.isUserStory) {
-						this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any) => {
-							this.isUserStory = JSON.parse(res).result;
-							this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
-							this.cdr.detectChanges();
-							this.store.dispatch(toggleLoading({ status: false }));
-							if (event.commentId) {
-								this.scrollToElement('comment-number-' + event?.commentId.toString(), false);
-							}
-						});
-					} else {
-						this.store.dispatch(toggleLoading({ status: false }));
-						this.cdr.detectChanges();
-						if (event.commentId) {
-							this.scrollToElement('comment-number-' + event?.commentId.toString(), false);
-						}
+					// if (!this.isUserStory) {
+					// 	this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any) => {
+					// 		this.isUserStory = JSON.parse(res).result;
+					// 		this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
+					// 		this.cdr.detectChanges();
+					// 		this.store.dispatch(toggleLoading({ status: false }));
+					// 		if (event.commentId) {
+					// 			this.scrollToElement('comment-number-' + event?.commentId.toString(), false);
+					// 		}
+					// 	});
+					// } else {
+					// 	this.store.dispatch(toggleLoading({ status: false }));
+					// 	this.cdr.detectChanges();
+					// 	if (event.commentId) {
+					// 		this.scrollToElement('comment-number-' + event?.commentId.toString(), false);
+					// 	}
 						
-					}
+					// }
 				},
 					(err) => {
 						this.store.dispatch(toggleLoading({ status: false }));

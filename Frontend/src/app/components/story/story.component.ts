@@ -8,6 +8,7 @@ import { StoryDrug } from 'src/app/types/story';
 import { StoryVote } from 'src/app/types/vote';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+	scrollToComment,
 	setComments,
 	setIsUserStory,
 	setParentCommentContent,
@@ -24,6 +25,7 @@ import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { CommentService } from 'src/app/services/comment.service';
 import { StoryComment } from 'src/app/types/comment';
 import { Subscription } from 'rxjs';
+import { getScrollToComment } from 'src/app/store/comments/comments.selector';
 
 @Component({
 	selector: 'app-story',
@@ -110,7 +112,16 @@ export class StoryComponent implements OnInit, AfterViewInit, OnDestroy {
 	}
 
 	ngAfterViewInit() {
-	
+		this.store.select(getScrollToComment).subscribe((commentId) => {
+			if (commentId > 0) {
+				this.store.dispatch(toggleLoading({status: true}))
+				setTimeout( () => {
+					this.scrollToElement('comment-number-' + commentId.toString(), false);
+					this.store.dispatch(scrollToComment({commentId: 0}));	
+					this.store.dispatch(toggleLoading({status: false}));
+				},500)
+			}
+		})
 	}
 
 	getStory() {

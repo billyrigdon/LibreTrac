@@ -40,3 +40,8 @@ export const setComments = createAction(
 	'[Comment] SET_COMMENTS',
 	props<{ comments: StoryComment[] }>()
 )
+
+export const scrollToComment = createAction(
+	'[Comment] SCROLL_TO_COMMENT',
+	props<{commentId: number}>()
+);

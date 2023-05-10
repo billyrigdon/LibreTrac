@@ -17,6 +17,7 @@ export interface CommentsState {
 	notifications: CommentNotification[];
 	isUserStory: boolean;
 	comments: StoryComment[];
+	scrollToCommentId: number;
 }
 
 export const initialState: CommentsState = {
@@ -28,4 +29,5 @@ export const initialState: CommentsState = {
 	notifications: [],
 	isUserStory: false,
 	comments: [],
+	scrollToCommentId: 0
 };

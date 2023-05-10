@@ -63,15 +63,6 @@ export class CommentsComponent implements OnInit, AfterViewInit, OnDestroy {
 	}
 
 	ngAfterViewInit(): void {
-		
-	}
-	
-
-	ngOnInit(): void {
-
-		this.stateSub$ = this.store.select(getSharedState).subscribe(state => {
-			this.userId = state.userId;
-		})
 		this.stateSub$.add(this.store.select(getCommentsState).subscribe((state) => {
 			this.isUserStory = state.isUserStory;
 			this.storyId = state.storyId;
@@ -86,6 +77,15 @@ export class CommentsComponent implements OnInit, AfterViewInit, OnDestroy {
 		this.stateSub$.add(this.store.select(getParentCommentId).subscribe((val) => {
 			this.parentCommentId = val;
 		}));
+	}
+	
+
+	ngOnInit(): void {
+
+		this.stateSub$ = this.store.select(getSharedState).subscribe(state => {
+			this.userId = state.userId;
+		})
+		
 	}
 
 	ngOnDestroy(): void {
