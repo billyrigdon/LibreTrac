@@ -17,6 +17,7 @@ import { CommentVote } from 'src/app/types/vote';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
 import { ModalComponent } from '../modal/modal.component';
 import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
+import { toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 
 @Component({
 	selector: 'app-comments',
@@ -62,7 +63,10 @@ export class CommentsComponent implements OnInit, AfterViewInit {
 		this.store.select(getCommentsState).subscribe((state) => {
 			this.isUserStory = state.isUserStory;
 			this.storyId = state.storyId;
-			this.comments = state.comments;
+			if (this.comments.length !== state.comments.length) {
+				this.comments = state.comments;
+				this.store.dispatch(toggleLoading({status: false}));
+			}
 			
 		})
 

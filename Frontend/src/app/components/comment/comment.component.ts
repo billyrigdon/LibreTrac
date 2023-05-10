@@ -19,6 +19,7 @@ import {  MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
 import { toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
 	selector: 'app-comment',
@@ -39,7 +40,8 @@ export class CommentComponent implements OnInit, AfterViewInit {
 		private voteService: VoteService,
 		private store: Store<AppState>,
 		private commentService: CommentService,
-		private dialog: MatDialog
+		private dialog: MatDialog,
+		private cdr: ChangeDetectorRef
 	) {
 		this.comment = {...this.storyComment};
 	 }
@@ -70,11 +72,14 @@ export class CommentComponent implements OnInit, AfterViewInit {
 
 	deleteComment(commentId: number, storyId: number) {
 		this.commentService.deleteComment(commentId, storyId).subscribe((res) => {
-			this.commentService
+			setTimeout(() => {
+				this.commentService
 				.getComments(this.storyId)
 				.subscribe((res: Array<StoryComment>) => {
 					if (res) {
+						this.store.dispatch(setComments({ comments: [] }));
 						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
+						this.cdr.detectChanges()
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
 					}
@@ -84,7 +89,9 @@ export class CommentComponent implements OnInit, AfterViewInit {
 						this.store.dispatch(toggleLoading({ status: false }));
 						this.store.dispatch(setComments({ comments: [] }));
 					});
-		});
+			},200)
+			
+			});
 	}
 
 	openAddComment(parentCommentId: number) {
@@ -120,7 +127,9 @@ export class CommentComponent implements OnInit, AfterViewInit {
 				.getComments(this.storyId)
 				.subscribe((res: Array<StoryComment>) => {
 					if (res) {
+						this.store.dispatch(setComments({ comments: [] }));
 						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
+						
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
 					}
@@ -128,10 +137,12 @@ export class CommentComponent implements OnInit, AfterViewInit {
 						this.storyService.isUserStory(this.storyId, this.userId).subscribe((res: any) => {
 							this.isUserStory = JSON.parse(res).result;
 							this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
+							this.cdr.detectChanges();
 							this.store.dispatch(toggleLoading({ status: false }));
 						});
 					} else {
 						this.store.dispatch(toggleLoading({ status: false }));
+						this.cdr.detectChanges();
 					}
 				},
 					(err) => {
@@ -174,11 +185,13 @@ export class CommentComponent implements OnInit, AfterViewInit {
 				.getComments(this.storyId)
 				.subscribe((res: Array<StoryComment>) => {
 					if (res) {
+						this.store.dispatch(setComments({ comments: [] }));
 						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
 					}
 					this.store.dispatch(toggleLoading({ status: false }));
+					this.cdr.detectChanges();
 				},
 					(err) => {
 						this.store.dispatch(toggleLoading({ status: false }));
