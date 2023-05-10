@@ -24,6 +24,8 @@ import {
 	setNotificationStories,
 	setUserDrugs,
 	setUserDisorders,
+	setDrugs,
+	setDisorders,
 } from '../actions/shared.actions';
 import { initialState, SharedState } from '../shared.state';
 
@@ -111,6 +113,18 @@ export const _sharedReducer = createReducer(
 		return {
 			...state,
 			userDisorders: action.userDisorders
+		}
+	}),
+	on(setDrugs, (state, action) => {
+		return {
+			...state,
+			drugs: action.drugs
+		}
+	}),
+	on(setDisorders, (state, action) => {
+		return {
+			...state,
+			disorders: action.disorders
 		}
 	})
 );

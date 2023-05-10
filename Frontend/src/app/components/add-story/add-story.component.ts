@@ -1,8 +1,9 @@
-import { AfterViewInit, Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppState } from '@capacitor/app';
 import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
 import { MoodService } from 'src/app/services/mood.service';
 import { StoryService } from 'src/app/services/story.service';
 import { setAverageMood, setExploreStories, setIsMonthView, setStoryMood, setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
@@ -15,7 +16,7 @@ import { Story, StoryDrug } from 'src/app/types/story';
 	styleUrls: ['./add-story.component.scss'],
 	encapsulation: ViewEncapsulation.None
 })
-export class AddStoryComponent implements OnInit, AfterViewInit {
+export class AddStoryComponent implements OnInit, AfterViewInit, OnDestroy {
 	form: UntypedFormGroup;
 	story: Story;
 	journalOpen: boolean;
@@ -23,7 +24,7 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	userStories: StoryDrug[] = [];
 	exploreStories: StoryDrug[] = [];
 	userId = 0;
-
+	stateSub$!: Subscription
 	controlNames = ['energy', 'focus', 'creativity', 'irritability', 'happiness', 'anxiety'];
 
 	constructor(
@@ -41,7 +42,7 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 			happiness: [1, Validators.required],
 			anxiety: [1, Validators.required],
 			title: ['', [Validators.required, Validators.minLength(1)]],
-			journal: ['', Validators.required]
+			journal: ['']
 		});
 		this.story = {
 			title: '',
@@ -180,9 +181,7 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	}
 
 	ngOnInit(): void {
-		
-
-		this.store.select(getSharedState).subscribe((state) => {
+		this.stateSub$ = this.store.select(getSharedState).subscribe((state) => {
 			if (state.userStories.length > 0) {
 				this.userStories = [...state.userStories];
 			} else {
@@ -200,6 +199,10 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 			this.router.navigateByUrl('/login');
 			window.location.reload();
 		}
+	}
+
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 }
 

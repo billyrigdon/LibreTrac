@@ -1,8 +1,8 @@
-import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { CommentService } from 'src/app/services/comment.service';
 import { VoteService } from 'src/app/services/vote.service';
 import { AppState } from 'src/app/store/app.state';
@@ -24,7 +24,7 @@ import { toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 	templateUrl: './comments.component.html',
 	styleUrls: ['./comments.component.scss'],
 })
-export class CommentsComponent implements OnInit, AfterViewInit {
+export class CommentsComponent implements OnInit, AfterViewInit, OnDestroy {
 	@Input() storyId!: number;
 	isUserStory: boolean;
 	parentCommentId: number;
@@ -32,7 +32,7 @@ export class CommentsComponent implements OnInit, AfterViewInit {
 	addCommentOpen: Observable<boolean>;
 	userId: number;
 	@Input() commentId?: number;
-
+	stateSub$!: Subscription;
 	constructor(
 		private commentService: CommentService,
 		private voteService: VoteService,
@@ -48,32 +48,47 @@ export class CommentsComponent implements OnInit, AfterViewInit {
 	}
 
 
-	
+	public scrollToElement(elementId: string, smoothScroll: boolean = true): void {
+		const element = document.getElementById(elementId);
+
+		if (element) {
+			element.scrollIntoView({
+				behavior: smoothScroll ? 'smooth' : 'auto',
+				block: 'start',
+				inline: 'nearest'
+			});
+		} else {
+			console.warn(`Element with ID '${elementId}' not found.`);
+		}
+	}
 
 	ngAfterViewInit(): void {
-
+		
 	}
 	
 
 	ngOnInit(): void {
 
-		this.store.select(getSharedState).subscribe(state => {
+		this.stateSub$ = this.store.select(getSharedState).subscribe(state => {
 			this.userId = state.userId;
 		})
-		this.store.select(getCommentsState).subscribe((state) => {
+		this.stateSub$.add(this.store.select(getCommentsState).subscribe((state) => {
 			this.isUserStory = state.isUserStory;
 			this.storyId = state.storyId;
 			if (this.comments.length !== state.comments.length) {
 				this.comments = state.comments;
 				this.store.dispatch(toggleLoading({status: false}));
 			}
-			
-		})
+		}))
 
 		//Get parentCommentId from store so that add-comment replies to the correct comment
 		//The state is updated by the reply button for comments and stories
-		this.store.select(getParentCommentId).subscribe((val) => {
+		this.stateSub$.add(this.store.select(getParentCommentId).subscribe((val) => {
 			this.parentCommentId = val;
-		});
+		}));
+	}
+
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 }

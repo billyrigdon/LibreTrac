@@ -14,9 +14,11 @@ import { DisorderService } from 'src/app/services/disorder.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
 import { AuthService } from 'src/app/services/auth.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug.component';
+import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
+import { Subscription } from 'rxjs';
 
 
 
@@ -57,11 +59,12 @@ import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug
 
   `]
 })
-export class BottomSheetDisorderComponent implements OnInit {
+export class BottomSheetDisorderComponent implements OnInit, OnDestroy {
 
 	disorders: Array<Disorder> = [];
 	filteredDisorders = this.disorders.slice();
 	filterTextDisorder = '';
+	stateSub$!: Subscription;
 
 
 
@@ -102,11 +105,14 @@ export class BottomSheetDisorderComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		this.disorderService.getDisorders().subscribe((res) => {
-			this.disorders = JSON.parse(res);
+		this.stateSub$ = this.store.select(getSharedState).subscribe((state) => {
+			this.disorders = state.disorders;
 			this.filteredDisorders = this.disorders.slice();
-		});
+		})
+	}
 
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 
 	filterOptions() {

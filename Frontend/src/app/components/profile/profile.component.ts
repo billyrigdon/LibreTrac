@@ -10,7 +10,7 @@ import { DrugService } from 'src/app/services/drug.service';
 import { DatePipe, formatDate } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/store/app.state';
-import { setAverageMood, setDrugToEdit, setIsMonthView, setStoryToEdit, setUserDisorders, setUserDrugs, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setAverageMood, setDisorders, setDrugToEdit, setDrugs, setIsMonthView, setStoryToEdit, setUserDisorders, setUserDrugs, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { getAuthState, getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { ModalComponent } from '../modal/modal.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -305,9 +305,13 @@ export class ProfileComponent implements OnInit {
 		
 			this.getUserDrugs();
 			this.getUserDisorders();
+
+			this.disorderService.getDisorders().subscribe((res) => {
+				this.store.dispatch(setDisorders({disorders: JSON.parse(res)}));
+			});
 			
 			this.drugService.getDrugs().subscribe((res) => {
-				this.drugs = JSON.parse(res);
+				this.store.dispatch(setDrugs({drugs: JSON.parse(res)}))
 				this.store.dispatch(toggleLoading({ status: false }));
 			});
 			//TODO: Move userprofile to shared state instead of handling it this way

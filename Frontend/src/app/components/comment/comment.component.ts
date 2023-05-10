@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { CommentService } from 'src/app/services/comment.service';
 import { VoteService } from 'src/app/services/vote.service';
@@ -20,31 +20,47 @@ import { ModalComponent } from '../modal/modal.component';
 import { toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { ChangeDetectorRef } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { StoryService } from 'src/app/services/story.service';
 
 @Component({
 	selector: 'app-comment',
 	templateUrl: './comment.component.html',
 	styleUrls: ['./comment.component.scss'],
 })
-export class CommentComponent implements OnInit, AfterViewInit {
+export class CommentComponent implements OnInit, AfterViewInit, OnDestroy {
 	@Input() storyComment!: StoryComment;
 	@Input() comments!: Array<StoryComment>;
 	@Input() userId!: number;
 	comment!: StoryComment;
 	storyId = 0;
-	
+	stateSub$!: Subscription;
 	canDelete = false;
 	isUserStory: any;
-	storyService: any;
 	constructor(
 		private voteService: VoteService,
 		private store: Store<AppState>,
 		private commentService: CommentService,
 		private dialog: MatDialog,
-		private cdr: ChangeDetectorRef
+		private cdr: ChangeDetectorRef,
+		private storyService: StoryService
 	) {
 		this.comment = {...this.storyComment};
 	 }
+
+	 public scrollToElement(elementId: string, smoothScroll: boolean = true): void {
+		const element = document.getElementById(elementId);
+
+		if (element) {
+			element.scrollIntoView({
+				behavior: smoothScroll ? 'smooth' : 'auto',
+				block: 'start',
+				inline: 'nearest'
+			});
+		} else {
+			console.warn(`Element with ID '${elementId}' not found.`);
+		}
+	}
 
 	upvote(vote: CommentVote) {
 		// this.voteService.addCommentVote(vote).subscribe((res) => {
@@ -64,11 +80,13 @@ export class CommentComponent implements OnInit, AfterViewInit {
 	ngAfterViewInit(): void {
 		this.comment = {...this.storyComment};
 		const OP_USER_ID = 2;
-		this.store.select(getCommentsState).subscribe((state) => {
+		this.stateSub$ = this.store.select(getCommentsState).subscribe((state) => {
 			this.storyId = state.storyId;
 			this.canDelete  = (state.isUserStory && this.comment.userId === OP_USER_ID) || (this.comment.userId === this.userId);
 		})
 	}
+
+	
 
 	deleteComment(commentId: number, storyId: number) {
 		this.commentService.deleteComment(commentId, storyId).subscribe((res) => {
@@ -80,6 +98,7 @@ export class CommentComponent implements OnInit, AfterViewInit {
 						this.store.dispatch(setComments({ comments: [] }));
 						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
 						this.cdr.detectChanges()
+						this.scrollToElement('comment-number-' + commentId.toString(), false);
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
 					}
@@ -123,12 +142,13 @@ export class CommentComponent implements OnInit, AfterViewInit {
 		});
 
 		dialogRef.componentInstance.onClose.subscribe((event: any) => {
+			console.log(event);
 			this.commentService
 				.getComments(this.storyId)
-				.subscribe((res: Array<StoryComment>) => {
-					if (res) {
+				.subscribe((comments: Array<StoryComment>) => {
+					if (comments) {
 						this.store.dispatch(setComments({ comments: [] }));
-						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
+						this.store.dispatch(setComments({ comments: comments.sort((a, b) => b.votes - a.votes) }));
 						
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
@@ -139,10 +159,17 @@ export class CommentComponent implements OnInit, AfterViewInit {
 							this.store.dispatch(setIsUserStory({ isUserStory: this.isUserStory }))
 							this.cdr.detectChanges();
 							this.store.dispatch(toggleLoading({ status: false }));
+							if (event.commentId) {
+								this.scrollToElement('comment-number-' + event?.commentId.toString(), false);
+							}
 						});
 					} else {
 						this.store.dispatch(toggleLoading({ status: false }));
 						this.cdr.detectChanges();
+						if (event.commentId) {
+							this.scrollToElement('comment-number-' + event?.commentId.toString(), false);
+						}
+						
 					}
 				},
 					(err) => {
@@ -187,11 +214,16 @@ export class CommentComponent implements OnInit, AfterViewInit {
 					if (res) {
 						this.store.dispatch(setComments({ comments: [] }));
 						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
+						setTimeout(() => {
+							this.scrollToElement('comment-number-' + comment.commentId.toString(), false);
+						}, 500)
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
 					}
 					this.store.dispatch(toggleLoading({ status: false }));
 					this.cdr.detectChanges();
+					
+					
 				},
 					(err) => {
 						this.store.dispatch(toggleLoading({ status: false }));
@@ -203,5 +235,9 @@ export class CommentComponent implements OnInit, AfterViewInit {
 
 	ngOnInit(): void {
 		
+	}
+
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 }

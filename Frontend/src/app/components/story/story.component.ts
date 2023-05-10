@@ -1,5 +1,5 @@
 import { formatDate } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { StoryService } from 'src/app/services/story.service';
 import { VoteService } from 'src/app/services/vote.service';
@@ -23,13 +23,14 @@ import { MoodService } from 'src/app/services/mood.service';
 import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { CommentService } from 'src/app/services/comment.service';
 import { StoryComment } from 'src/app/types/comment';
+import { Subscription } from 'rxjs';
 
 @Component({
 	selector: 'app-story',
 	templateUrl: './story.component.html',
 	styleUrls: ['./story.component.scss'],
 })
-export class StoryComponent implements OnInit, AfterViewInit {
+export class StoryComponent implements OnInit, AfterViewInit, OnDestroy {
 	story: StoryDrug;
 	mood: StoryDrug;
 	storyId: number;
@@ -40,6 +41,7 @@ export class StoryComponent implements OnInit, AfterViewInit {
 	commentId?: number;
 	private startY: number | null = null;
 	@ViewChild('scrollableElement') scrollableElementRef!: ElementRef;
+	stateSub$!: Subscription;
 
 	constructor(
 		private storyService: StoryService,
@@ -220,10 +222,15 @@ export class StoryComponent implements OnInit, AfterViewInit {
 				.subscribe((res: Array<StoryComment>) => {
 					if (res) {
 						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
+						setTimeout(() => {
+							this.scrollToElement('comment-number-' + event?.commentId.toString(), false);
+						}, 500)
+						
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
 					}
 					this.store.dispatch(toggleLoading({ status: false }));
+					
 				},
 					(err) => {
 						this.store.dispatch(toggleLoading({ status: false }));
@@ -267,7 +274,7 @@ export class StoryComponent implements OnInit, AfterViewInit {
 
 	ngOnInit(): void {
 
-		this.store.select(getSharedState).subscribe((state) => {
+		this.stateSub$ = this.store.select(getSharedState).subscribe((state) => {
 			if (state.userStories) {
 				this.userStories = [...state.userStories];
 			}
@@ -276,14 +283,15 @@ export class StoryComponent implements OnInit, AfterViewInit {
 			this.mood = state.storyMood;
 		})
 
-		this.route.queryParams.subscribe((params) => {
+		this.stateSub$.add(this.route.queryParams.subscribe((params) => {
 			this.storyId = parseInt(params['storyId']);
 			this.commentId = parseInt(params['commentId']);
 			this.store.dispatch(setStoryId({ storyId: this.storyId }));
 			this.getStory();
-			
-		});
+		}));
+	}
 
-
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 }

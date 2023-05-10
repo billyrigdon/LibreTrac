@@ -12,10 +12,11 @@ import { DisorderService } from 'src/app/services/disorder.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
 import { AuthService } from 'src/app/services/auth.service';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { UserDrug } from 'src/app/types/userDrug';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -70,18 +71,18 @@ import { UserDrug } from 'src/app/types/userDrug';
 	}
   `]
 })
-export class BottomSheetDrugComponent implements OnInit {
+export class BottomSheetDrugComponent implements OnInit, OnDestroy {
 
 	drugs: Array<Drug> = [];
 	// Add problem type
 	@Input() problems?: Array<any>
 	drugToEdit?: UserDrug
-	filteredDrugs = this.drugs.slice();
+	filteredDrugs!: Array<Drug>;
 	filterTextDrug = '';
 	drugId: number = 0;
 	dosage = '';
 	newDrug: boolean = false;
-
+	stateSub$!: Subscription;
 	constructor(private store: Store<AppState>, private router: Router, private drugService: DrugService, private bottomSheetRef: MatBottomSheetRef<BottomSheetDrugComponent>) { }
 
 	addDrug(drugId: number) {
@@ -202,26 +203,25 @@ export class BottomSheetDrugComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		this.drugService.getDrugs().subscribe((res) => {
-			this.drugs = JSON.parse(res);
+		this.stateSub$ = this.store.select(getSharedState).subscribe((state) => {
+			this.drugs = state.drugs;
 			this.filteredDrugs = this.drugs.slice();
-			this.store.select(getSharedState).subscribe((state) => {
-				if (state.drugToEdit) {
-					console.log('test')
-					console.log(state.drugToEdit)
-					this.drugToEdit = { ...state.drugToEdit };
-					this.filterTextDrug = state.drugToEdit.drugName;
-					this.dosage = state.drugToEdit.dosage;
-					this.setDrug({ name: state.drugToEdit.drugName, drugId: state.drugToEdit.drugId })
-					this.filterOptions();
-				}
-			})
-		});
+			if (state.drugToEdit.drugId) {
+				this.drugToEdit = { ...state.drugToEdit };
+				this.filterTextDrug = state.drugToEdit.drugName;
+				this.dosage = state.drugToEdit.dosage;
+				this.setDrug({ name: state.drugToEdit.drugName, drugId: state.drugToEdit.drugId })
+				this.filterOptions();
+			}
+		})
+	}
 
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 
 	ngAfterViewInit() {
-
+		
 	}
 
 	filterOptions() {
