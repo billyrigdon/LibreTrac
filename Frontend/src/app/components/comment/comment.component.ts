@@ -99,7 +99,7 @@ export class CommentComponent implements OnInit, AfterViewInit, OnDestroy {
 						this.store.dispatch(setComments({ comments: [] }));
 						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
 						this.cdr.detectChanges()
-						this.scrollToElement('comment-number-' + commentId.toString(), false);
+						// this.scrollToElement('comment-number-' + commentId.toString(), false);
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
 					}
@@ -150,7 +150,7 @@ export class CommentComponent implements OnInit, AfterViewInit, OnDestroy {
 					if (comments) {
 						// this.store.dispatch(setComments({ comments: [] }));
 						this.store.dispatch(setComments({ comments: comments.sort((a, b) => b.votes - a.votes) }));
-						this.store.dispatch(scrollToComment({commentId: event?.commentId}))
+						// this.store.dispatch(scrollToComment({commentId: event?.commentId}))
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
 					}

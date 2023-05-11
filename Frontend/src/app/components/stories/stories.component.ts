@@ -12,6 +12,7 @@ import { StoryVote } from 'src/app/types/vote';
 import { EventEmitter } from '@angular/core';
 import { ScrollPositionService } from 'src/app/services/scroll-position-service';
 import { debounceTime, filter } from 'rxjs';
+import { setExploreStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 
 @Component({
 	selector: 'app-stories',
@@ -52,9 +53,36 @@ export class StoriesComponent implements OnInit {
       const swipeDistance = endY - this.startY;
       const threshold = 100; // Set a threshold to consider it as a swipe down
 
+	  this.store.dispatch(toggleLoading({ status: true }));
+
       if (swipeDistance > threshold) {
-        console.log('Swipe down at the top of the container');
-        window.location.reload();
+        this.storyService.getAllStories(0).subscribe((res) => {
+			if (res) {
+				let jsonStories = JSON.parse(res) ? [...JSON.parse(res)] : [];
+				// this.stories = jsonStories ? jsonStories : [];
+				if (jsonStories) {
+					for (let i = 0; i < jsonStories.length; i++) {
+						const storyDate = new Date(jsonStories[i].date);
+						const formattedDate = storyDate.toLocaleDateString('en-US', {
+							month: 'short',
+							day: 'numeric',
+							year: 'numeric',
+	
+						});
+						jsonStories[i].date = formattedDate;
+					}
+					this.store.dispatch(setExploreStories({ stories: jsonStories }));
+					this.store.dispatch(toggleLoading({ status: false }));
+				} else {
+					this.store.dispatch(toggleLoading({ status: false }));
+					alert("No stories found")
+				}
+			}
+			this.store.dispatch(toggleLoading({ status: false }));
+		}, (err) => {
+			this.store.dispatch(toggleLoading({ status: false }));
+			alert('Failed to fetch stories')
+		});
       }
     }
     this.startY = null;

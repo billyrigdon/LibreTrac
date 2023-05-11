@@ -66,10 +66,7 @@ export class CommentsComponent implements OnInit, AfterViewInit, OnDestroy {
 		this.stateSub$.add(this.store.select(getCommentsState).subscribe((state) => {
 			this.isUserStory = state.isUserStory;
 			this.storyId = state.storyId;
-			if (this.comments.length !== state.comments.length) {
-				this.comments = state.comments;
-				this.store.dispatch(toggleLoading({status: false}));
-			}
+			this.comments = state.comments;
 		}))
 
 		//Get parentCommentId from store so that add-comment replies to the correct comment

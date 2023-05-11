@@ -235,7 +235,7 @@ export class StoryComponent implements OnInit, AfterViewInit, OnDestroy {
 						this.store.dispatch(setComments({ comments: res.sort((a, b) => b.votes - a.votes) }));
 						setTimeout(() => {
 							this.scrollToElement('comment-number-' + event?.commentId.toString(), false);
-						}, 500)
+						}, 700)
 						
 					} else {
 						this.store.dispatch(setComments({ comments: [] }));
