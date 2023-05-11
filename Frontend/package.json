@@ -1,6 +1,6 @@
 {
   "name": "libretrac",
-  "version": "2.0.1",
+  "version": "2.1.9",
   "description": "Drugs are better with friends. libretrac is an app for tracking your experiences while taking pharmaceutical drugs and sharing your experiences with the world anonymously to identify trends and frequencies of side effects.",
   "scripts": {
     "ng": "ng",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/billyrigdon/Shulgin.git"
+    "url": "git+ssh://git@github.com/welledumacated/LibreTrac.git"
   },
   "author": "Billy Rigdon",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/billyrigdon/Shulgin/issues"
+    "url": "https://github.com/welledumacated/LibreTrac/issues"
   },
-  "homepage": "https://github.com/billyrigdon/Shulgin#readme",
+  "homepage": "https://github.com/welledumacated/LibreTrac#readme",
   "private": true,
   "dependencies": {
     "@angular/animations": "^15.2.7",
