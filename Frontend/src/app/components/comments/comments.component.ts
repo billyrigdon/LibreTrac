@@ -1,8 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { CommentService } from 'src/app/services/comment.service';
 import { VoteService } from 'src/app/services/vote.service';
 import { AppState } from 'src/app/store/app.state';
@@ -17,21 +17,22 @@ import { CommentVote } from 'src/app/types/vote';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
 import { ModalComponent } from '../modal/modal.component';
 import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
+import { toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 
 @Component({
 	selector: 'app-comments',
 	templateUrl: './comments.component.html',
 	styleUrls: ['./comments.component.scss'],
 })
-export class CommentsComponent implements OnInit {
+export class CommentsComponent implements OnInit, AfterViewInit, OnDestroy {
 	@Input() storyId!: number;
 	isUserStory: boolean;
 	parentCommentId: number;
 	comments: Array<StoryComment>;
 	addCommentOpen: Observable<boolean>;
 	userId: number;
-
-
+	@Input() commentId?: number;
+	stateSub$!: Subscription;
 	constructor(
 		private commentService: CommentService,
 		private voteService: VoteService,
@@ -46,41 +47,45 @@ export class CommentsComponent implements OnInit {
 		this.isUserStory = false;
 	}
 
-	ngOnInit(): void {
-		// if (this.isUserStory) {
-		// 	const OP_USER_ID = 2;
-		// 	this.userId = OP_USER_ID;
-		// }
-		this.store.select(getSharedState).subscribe(state => {
-			this.userId = state.userId;
-		})
-		this.store.select(getCommentsState).subscribe((state) => {
+
+	public scrollToElement(elementId: string, smoothScroll: boolean = true): void {
+		const element = document.getElementById(elementId);
+
+		if (element) {
+			element.scrollIntoView({
+				behavior: smoothScroll ? 'smooth' : 'auto',
+				block: 'start',
+				inline: 'nearest'
+			});
+		} else {
+			console.warn(`Element with ID '${elementId}' not found.`);
+		}
+	}
+
+	ngAfterViewInit(): void {
+		this.stateSub$.add(this.store.select(getCommentsState).subscribe((state) => {
 			this.isUserStory = state.isUserStory;
 			this.storyId = state.storyId;
-			console.log(this.storyId);
-			//Get comments and sort them by upvotes
-			this.commentService
-				.getComments(this.storyId)
-				.subscribe((res: Array<StoryComment>) => {
-					if (res) {
-						this.comments = res.sort((a, b) => b.votes - a.votes);
-					} else {
-						this.comments = [];
-					}
-				},
-					(err) => {
-						this.comments = [];
-					});
-		})
+			this.comments = state.comments;
+		}))
 
-
-		// if (localStorage.getItem('userProfile')) {
-		// 	this.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
-		// }
 		//Get parentCommentId from store so that add-comment replies to the correct comment
 		//The state is updated by the reply button for comments and stories
-		this.store.select(getParentCommentId).subscribe((val) => {
+		this.stateSub$.add(this.store.select(getParentCommentId).subscribe((val) => {
 			this.parentCommentId = val;
-		});
+		}));
+	}
+	
+
+	ngOnInit(): void {
+
+		this.stateSub$ = this.store.select(getSharedState).subscribe(state => {
+			this.userId = state.userId;
+		})
+		
+	}
+
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 }

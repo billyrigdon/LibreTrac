@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -12,6 +12,7 @@ import { StoryVote } from 'src/app/types/vote';
 import { EventEmitter } from '@angular/core';
 import { ScrollPositionService } from 'src/app/services/scroll-position-service';
 import { debounceTime, filter } from 'rxjs';
+import { setExploreStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 
 @Component({
 	selector: 'app-stories',
@@ -23,6 +24,7 @@ export class StoriesComponent implements OnInit {
 	@Output() onScroll = new EventEmitter();
 	distance: number;
 	throttle: number;
+	private startY: number | null = null;
 	@Input() summaries: Array<{ summary: string, name: string, url: string }> = [];
 	@ViewChild('scrollableElement') scrollableElementRef!: ElementRef;
 	constructor(
@@ -36,6 +38,55 @@ export class StoriesComponent implements OnInit {
 		this.distance = 0.1;
 		this.throttle = 0;
 	}
+
+	
+
+  @HostListener('touchstart', ['$event'])
+  onTouchStart(event: TouchEvent) {
+    this.startY = event.touches[0].clientY;
+  }
+
+  @HostListener('touchend', ['$event'])
+  onTouchEnd(event: TouchEvent) {
+    const endY = event.changedTouches[0].clientY;
+    if (this.startY !== null && this.startY < endY && this.scrollableElementRef.nativeElement.scrollTop === 0) {
+      const swipeDistance = endY - this.startY;
+      const threshold = 100; // Set a threshold to consider it as a swipe down
+
+	  this.store.dispatch(toggleLoading({ status: true }));
+
+      if (swipeDistance > threshold) {
+        this.storyService.getAllStories(0).subscribe((res) => {
+			if (res) {
+				let jsonStories = JSON.parse(res) ? [...JSON.parse(res)] : [];
+				// this.stories = jsonStories ? jsonStories : [];
+				if (jsonStories) {
+					for (let i = 0; i < jsonStories.length; i++) {
+						const storyDate = new Date(jsonStories[i].date);
+						const formattedDate = storyDate.toLocaleDateString('en-US', {
+							month: 'short',
+							day: 'numeric',
+							year: 'numeric',
+	
+						});
+						jsonStories[i].date = formattedDate;
+					}
+					this.store.dispatch(setExploreStories({ stories: jsonStories }));
+					this.store.dispatch(toggleLoading({ status: false }));
+				} else {
+					this.store.dispatch(toggleLoading({ status: false }));
+					alert("No stories found")
+				}
+			}
+			this.store.dispatch(toggleLoading({ status: false }));
+		}, (err) => {
+			this.store.dispatch(toggleLoading({ status: false }));
+			alert('Failed to fetch stories')
+		});
+      }
+    }
+    this.startY = null;
+  }
 
 	onPageScroll() {
 		console.log("scrolled")
@@ -58,36 +109,6 @@ export class StoriesComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
-		// this.router.events
-		// 	.pipe(filter((event) => event instanceof NavigationEnd))
-		// 	.subscribe(() => {
-		// 		console.log(this.router.url + 'NavigationEnd');
-		// 		if (this.router.url === '/explore' || this.router.url === '/user-stories') {
-					
-		// 			const currentRoute = this.router.url;
-		// 			const savedScrollPosition = this.scrollPositionService.getScrollPosition(currentRoute);
-		// 			console.log(this.router.url, savedScrollPosition)
-		// 			if (savedScrollPosition) {
-		// 				this.scrollableElementRef.nativeElement.scrollTop = savedScrollPosition;
-		// 				this.scrollPositionService.saveScrollPosition(currentRoute, savedScrollPosition);
-		// 			}
-		// 		}
-		// 	});
-
-		// this.router.events
-		// 	.pipe(filter((event) => event instanceof NavigationStart))
-		// 	.subscribe(() => {
-		// 		console.log(this.router.url + 'NavigationStart');
-		// 		if (this.router.url === '/explore' || this.router.url === '/user-stories') {
-		// 			setTimeout(() => {
-		// 				const currentRoute = this.router.url;
-		// 				const scrollPosition = this.scrollableElementRef.nativeElement.scrollTop;
-		// 				console.log(this.router.url, scrollPosition)
-		// 				this.scrollPositionService.saveScrollPosition(currentRoute, scrollPosition);
-		// 			},100)
-					
-		// 		}
-		// 	});
 		this.router.events
 		.pipe(
 			filter((event) => event instanceof NavigationStart || event instanceof NavigationEnd)
@@ -95,12 +116,10 @@ export class StoriesComponent implements OnInit {
       .subscribe((event) => {
         const currentRoute = this.router.url;
 		console.log(currentRoute);
-        if (currentRoute === '/explore') {
+        if (currentRoute.includes('/explore')) {
           if (event instanceof NavigationStart) {
-            // setTimeout(() => {
               const scrollPosition = this.scrollableElementRef.nativeElement.scrollTop;
               this.scrollPositionService.saveScrollPosition(currentRoute, scrollPosition);
-            // }, 100);
           } else if (event instanceof NavigationEnd) {
             this.restoreScrollPosition(currentRoute);
           }

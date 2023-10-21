@@ -210,14 +210,15 @@ func UserSignup(context *Models.CustomContext) {
 			email,
 			dateCreated
 		)
-		VALUES ($1,$2,$3,$4);
+		VALUES ($1,$2,$3,$4)
+		RETURNING userId;
 		`
 
-	_, err = context.DB.Exec(sqlStatement,
+	err = context.DB.QueryRow(sqlStatement,
 		user.Username,
 		user.Password,
 		email,
-		user.DateCreated)
+		user.DateCreated).Scan(&user.UserId)
 
 	if err != nil {
 		log.Error(err)
@@ -231,7 +232,7 @@ func UserSignup(context *Models.CustomContext) {
 
 	tokenResponse := Auth.GetToken(email)
 	tokenResponse.Username = user.Username
-
+	tokenResponse.UserId = user.UserId
 	//return login token on success
 	context.JSON(200, tokenResponse)
 
@@ -267,14 +268,14 @@ func UserLogin(context *Models.CustomContext) {
 
 	//Query db using email in payload
 	sqlStatement := `
-		SELECT username,password
+		SELECT username,password, userId
 		FROM users
 		WHERE email = $1;
 	`
 	row := context.DB.QueryRow(sqlStatement, email)
 
 	//Check username
-	err = row.Scan(&user.Username, &user.Password)
+	err = row.Scan(&user.Username, &user.Password, &user.UserId)
 
 	if err != nil {
 		log.Error(err)
@@ -301,6 +302,7 @@ func UserLogin(context *Models.CustomContext) {
 
 	tokenResponse := Auth.GetToken(email)
 	tokenResponse.Username = user.Username
+	tokenResponse.UserId = user.UserId
 	//return login token on success
 	context.JSON(200, tokenResponse)
 

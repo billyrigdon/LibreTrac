@@ -15,6 +15,7 @@ type LoginPayload struct {
 type LoginResponse struct {
 	Username string `json:"username"`
 	Token    string `json:"token"`
+	UserId   int    `json:"userId"`
 }
 
 type User struct {

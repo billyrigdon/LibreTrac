@@ -8,10 +8,10 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { setNotifications } from 'src/app/store/comments/comments.actions';
 import { getNotifications } from 'src/app/store/comments/comments.selector';
-import { toggleAuth, toggleNoties } from 'src/app/store/shared/actions/shared.actions';
-import { getAuthState, getNotiesOpen, getUserId } from 'src/app/store/shared/selectors/shared.selector';
+import { setNotificationStories, setUserId, toggleAuth, toggleNoties } from 'src/app/store/shared/actions/shared.actions';
+import { getAuthState, getNotiesOpen, getSharedState, getUserId } from 'src/app/store/shared/selectors/shared.selector';
 import { CommentNotification } from 'src/app/types/comment';
-import { Story } from 'src/app/types/story';
+import { NotificationStory, Story } from 'src/app/types/story';
 import { SearchModalComponent } from '../search-modal/search-modal.component';
 
 @Component({
@@ -23,6 +23,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 	isLoggedIn: Observable<boolean>;
 	userId: number;
 	noties: Array<CommentNotification>;
+	notificationStories = Array<NotificationStory>();
 	stories: Array<Story>;
 	notiesOpen: boolean = false;
 	constructor(
@@ -44,7 +45,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 	buttonRoutes = {
 		profile: '/profile',
 		explore: '/explore',
-		userStories: '/user-stories'
+		userStories: '/user-stories',
 	}
 
 	isRouteActive(route: string): boolean {
@@ -53,33 +54,49 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
 	ngAfterViewInit(): void {
 
-		this.isLoggedIn.subscribe((res) => {
-			if (res) {
-			this.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
+		// this.isLoggedIn.subscribe((res) => {
+			// if (res) {
+			// this.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
 			//Get initial notifications
-			this.notificationService
-				.getUserNotifications(this.userId)
-				.subscribe((noties) => {
-					this.store.dispatch(
-						setNotifications({ notifications: noties ? noties : [] })
-					);
-				});
-
-			// Get new notifications every 30 seconds
+			// Get new notifications every 15 seconds
 			// if (res) {
 				setInterval(() => {
-					this.notificationService
-						.getUserNotifications(this.userId)
-						.subscribe((noties) => {
-							this.store.dispatch(
-								setNotifications({ notifications: noties ? noties : [] })
-							);
-						});
+					if (this.userId > 0) {
+						this.notificationService
+							.getUserNotifications(this.userId)
+							.subscribe((noties) => {
+								this.store.dispatch(
+									setNotifications({ notifications: noties ? noties : [] })
+								);
+								if (noties && noties.length !== this.notificationStories.length) {
+									this.getNotifications(this.userId);
+								}
+							});
+					}
 				}, 15000);
-			}
+			// }
 
-		});
+		// });
 	}
+
+	getNotifications(userId: number) {
+		this.notificationService
+		  .getNotificationStories(userId)
+		  .subscribe((res) => {
+			if (res) {
+				console.log(res);
+
+				let notieArray = [...res];
+				notieArray.forEach((notie) => {
+					notie.title = notie.title.length > 18 ? notie.title.slice(0, 18) + '...' : notie.title;
+					notie.content = notie.content.length > 12 ? notie.content.slice(0, 12) + '...' : notie.content;
+				})
+			  	this.store.dispatch(setNotificationStories({
+					notificationStories: notieArray
+			  	})) 
+			}
+		  });
+	  }
 
 	ngOnInit(): void {
 
@@ -93,6 +110,9 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 		this.store.select(getNotifications).subscribe((res) => {
 			this.noties = res;
 		});
+		this.store.select(getSharedState).subscribe((state) => {
+			this.notificationStories = state.notificationStories
+		})
 	}
 
 	goToAddStory() {
@@ -116,7 +136,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 	}
 
 	goToExplore() {
-		this.router.navigateByUrl('/explore');
+		this.router.navigateByUrl('/explore?drugX=&drugY=');
 	}
 
 	reloadWhenSearch() {
@@ -131,6 +151,9 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 	}
 
 	showSearch() {
+
+		this.store.dispatch(toggleNoties({open: false}))
+
 		const dialogRef = this.dialog.open(SearchModalComponent, {
 			data: {},
 			width: '95%',
@@ -155,7 +178,12 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 	signout() {
 		this.storageService.signout();
 		this.profileService.removeProfile();
+		this.store.dispatch(setUserId({userId: 0}));
 		this.store.dispatch(toggleAuth({ status: false }));
 		this.router.navigateByUrl('/login');
+		setTimeout(() => {
+			window.location.reload();
+		},300)
+		
 	}
 }

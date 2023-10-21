@@ -1,4 +1,6 @@
-import { StoryDrug } from "src/app/types/story";
+import { Disorder, UserDisorder } from "src/app/types/disorder";
+import { Drug } from "src/app/types/drug";
+import { NotificationStory, StoryDrug } from "src/app/types/story";
 import { UserDrug } from "src/app/types/userDrug";
 
 export interface SharedState {
@@ -13,6 +15,11 @@ export interface SharedState {
 	averageMood: StoryDrug;
 	isMonthView: boolean;
 	storyMood: StoryDrug;
+	notificationStories: Array<NotificationStory>;
+	userDrugs: Array<UserDrug>;
+	userDisorders: Array<UserDisorder>;
+	drugs: Array<Drug>;
+	disorders: Array<Disorder>
 }
 
 export const initialState: SharedState = {
@@ -27,4 +34,9 @@ export const initialState: SharedState = {
 	averageMood: <StoryDrug>{},
 	isMonthView: false,
 	storyMood: <StoryDrug>{},
+	notificationStories: [],
+	userDrugs: [],
+	userDisorders: [],
+	drugs: [],
+	disorders: []
 };

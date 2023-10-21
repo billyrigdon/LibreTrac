@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { setIsUserStory, setNotifications, setParentCommentContent, setParentId, setStoryContent, setStoryId, toggleAddComment } from './comments.actions';
+import { scrollToComment, setComments, setIsUserStory, setNotifications, setParentCommentContent, setParentId, setStoryContent, setStoryId, toggleAddComment } from './comments.actions';
 import { initialState, CommentsState } from './comments.state';
 import { Statement } from '@angular/compiler';
 
@@ -45,6 +45,18 @@ export const _commentsReducer = createReducer(
 		return {
 			...state,
 			isUserStory: action.isUserStory
+		}
+	}),
+	on(setComments, (state, action) => {
+		return {
+			...state,
+			comments: action.comments
+		}
+	}),
+	on(scrollToComment, (state, action) => {
+		return {
+			...state,
+			scrollToCommentId: action.commentId
 		}
 	})
 );

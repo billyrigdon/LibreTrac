@@ -27,41 +27,46 @@ export class UserStoriesComponent implements OnInit {
       if (state.userStories.length > 0) {
         stories = [...state.userStories];
       }
-      // for (let i = 0; i < this.stories.length; i++) {
-      //   const storyDate = new Date(stories[i].date);
-      //   const formattedDate = storyDate.toLocaleDateString('en-US', {
-      //     month: 'short',
-      //     day: 'numeric',
-      //     year: 'numeric',
+      for (let i = 0; i < this.stories.length; i++) {
+        if (stories[i]) {
+          const storyDate = new Date(stories[i].date);
+          const formattedDate = storyDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
 
-      //   });
-      //   // stories[i].date = formattedDate;
-      // }
+          });
+          stories[i] = {
+            ...stories[i],
+            date: formattedDate
+          }
+        }
+      }
       this.stories = stories;
     })
 
-    this.store.dispatch(toggleLoading({status: true}));
+    this.store.dispatch(toggleLoading({ status: true }));
     if (this.storageService.getToken() && this.storageService.getUser()) {
       if (localStorage.getItem('userProfile')) {
         //Get user fields from user stored in local storage
         let user = JSON.parse(localStorage.getItem('userProfile') || '');
-			  const userId = user.userId;
+        const userId = user.userId;
 
         this.storyService
           .getUserStories(userId)
           .subscribe((res) => {
             // this.stories = JSON.parse(res);
-            this.store.dispatch(setUserStories({stories: JSON.parse(res)}));
+            this.store.dispatch(setUserStories({ stories: JSON.parse(res) }));
             if (!this.stories) {
-              this.store.dispatch(setUserStories({stories: []}));
+              this.store.dispatch(setUserStories({ stories: [] }));
             }
-            
 
-            this.store.dispatch(toggleLoading({status: false}));
+
+            this.store.dispatch(toggleLoading({ status: false }));
           },
             (err) => {
-              this.store.dispatch(toggleLoading({status: false}));
-              
+              this.store.dispatch(toggleLoading({ status: false }));
+
             });
       } else {
         this.router.navigateByUrl('/login');

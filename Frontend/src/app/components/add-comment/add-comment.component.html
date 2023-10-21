@@ -4,13 +4,17 @@
 			<p *ngIf="this.storyContent.length > 0">{{storyContent}}</p>
 			<p *ngIf="this.parentCommentContent.length > 0">{{parentCommentContent}}</p>
 			<form id="comment-form" [formGroup]="form" (submit)="addComment()">
-				<textarea id="comment-content" 
-					appAutofocus 
+				<textarea id="comment-content"  
 					matInput 
 					name="content"
 					formControlName="content"
 					placeholder="Remember to be nice :)"></textarea>
 			</form>
+			<div class="error-container">
+				<div *ngIf="form.get('content')?.invalid && (form.get('content')?.dirty || form.get('content')?.touched)">
+					<p *ngIf="form.get('content')?.hasError">Comments cannot be blank</p>
+				</div>
+			</div>
 		</mat-card-content>
 		<mat-card-actions>
 			<button *ngIf="!this.commentForEdit" mat-raised-button (click)="addComment()">Comment</button>

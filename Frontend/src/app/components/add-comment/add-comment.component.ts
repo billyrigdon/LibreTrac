@@ -1,7 +1,7 @@
-import { Component, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { CommentService } from 'src/app/services/comment.service';
 import { AppState } from 'src/app/store/app.state';
 import { toggleAddComment } from 'src/app/store/comments/comments.actions';
@@ -13,7 +13,7 @@ import { StoryComment } from 'src/app/types/comment';
 	templateUrl: './add-comment.component.html',
 	styleUrls: ['./add-comment.component.scss'],
 })
-export class AddCommentComponent implements OnInit {
+export class AddCommentComponent implements OnInit, OnDestroy {
 	storyId: number;
 	parentCommentId: number;
 	storyContent: string;
@@ -24,6 +24,7 @@ export class AddCommentComponent implements OnInit {
 	commentForEdit?: StoryComment;
 	@Output() onClose = new EventEmitter();
 	@Output() onError = new EventEmitter();
+	stateSub$!: Subscription;
 	
 	constructor(
 		private store: Store<AppState>,
@@ -32,7 +33,7 @@ export class AddCommentComponent implements OnInit {
 	) {
 		this.addCommentOpen = this.store.select(getAddCommentsOpen);
 		this.form = this.formBuilder.group({
-			content: ['', Validators.required],
+			content: ['', [Validators.required, Validators.minLength(1)]],
 		});
 		this.storyId = 0;
 		this.parentCommentContent = "";
@@ -42,6 +43,9 @@ export class AddCommentComponent implements OnInit {
 	}
 
 	addComment() {
+		if (this.form.invalid) {
+			return;
+		}
 		let content = this.form.value.content;
 
 		this.commentService
@@ -52,7 +56,7 @@ export class AddCommentComponent implements OnInit {
 				content: content,
 			})
 			.subscribe((res) => {
-				this.onClose.emit();
+				this.onClose.emit(res);
 			},
 			(err) => {
 				this.onError.emit();
@@ -61,6 +65,11 @@ export class AddCommentComponent implements OnInit {
 
 
 	updateComment(comment: StoryComment) {
+
+		if (this.form.invalid) {
+			return;
+		}
+
 		let content = this.form.value.content;
 
 		this.commentService
@@ -91,7 +100,7 @@ export class AddCommentComponent implements OnInit {
 	ngOnInit(): void {
 		const OP_USER_ID = 2;
 		
-		this.store.select(getAddCommentState).subscribe((res) => {
+		this.stateSub$ = this.store.select(getAddCommentState).subscribe((res) => {
 			this.parentCommentContent = res.parentCommentContent;
 			this.parentCommentId = res.parentCommentId;
 			this.storyId = res.storyId;
@@ -103,7 +112,10 @@ export class AddCommentComponent implements OnInit {
 			this.form.setValue({
 				content: this.commentForEdit.content,
 			});
-		}
-		
+		}	
+	}
+
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 }

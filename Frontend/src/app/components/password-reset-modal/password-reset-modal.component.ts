@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
@@ -18,7 +18,8 @@ import { toggleAuth } from 'src/app/store/shared/actions/shared.actions';
 })
 export class PasswordResetModalComponent {
   resetPasswordForm: any;
-  formContainer: any;
+  @Output() onClose = new EventEmitter();
+//   formContainer: any;
 
   constructor(private formBuilder: UntypedFormBuilder,
 		private profileService: ProfileService,
@@ -40,8 +41,12 @@ export class PasswordResetModalComponent {
 		});
    }
 
+   close() {
+	this.onClose.emit();
+   }
+
   resetPassword() {
-		this.formContainer.nativeElement.style.marginTop = '0';
+		// this.formContainer.nativeElement.style.marginTop = '0';
 		const val = this.resetPasswordForm.value;
 		if (val.password !== val.confirmPassword) {
 			alert('Passwords do not match');
@@ -53,6 +58,7 @@ export class PasswordResetModalComponent {
 				this.authService.resetPassword(val.email, val.password).subscribe((res2) => {
 					if (res2) {
 						alert('Password reset successfully');
+						this.onClose.emit();
 						this.storageService.signout();
 						this.store.dispatch(toggleAuth({ status: false }))
 						this.router.navigateByUrl('/login');

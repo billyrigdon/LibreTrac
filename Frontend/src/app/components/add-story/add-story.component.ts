@@ -1,8 +1,9 @@
-import { AfterViewInit, Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppState } from '@capacitor/app';
 import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
 import { MoodService } from 'src/app/services/mood.service';
 import { StoryService } from 'src/app/services/story.service';
 import { setAverageMood, setExploreStories, setIsMonthView, setStoryMood, setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
@@ -15,7 +16,7 @@ import { Story, StoryDrug } from 'src/app/types/story';
 	styleUrls: ['./add-story.component.scss'],
 	encapsulation: ViewEncapsulation.None
 })
-export class AddStoryComponent implements OnInit, AfterViewInit {
+export class AddStoryComponent implements OnInit, AfterViewInit, OnDestroy {
 	form: UntypedFormGroup;
 	story: Story;
 	journalOpen: boolean;
@@ -23,7 +24,7 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	userStories: StoryDrug[] = [];
 	exploreStories: StoryDrug[] = [];
 	userId = 0;
-
+	stateSub$!: Subscription
 	controlNames = ['energy', 'focus', 'creativity', 'irritability', 'happiness', 'anxiety'];
 
 	constructor(
@@ -40,8 +41,8 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 			irritability: [1, Validators.required],
 			happiness: [1, Validators.required],
 			anxiety: [1, Validators.required],
-			title: ['', Validators.required],
-			journal: ['', Validators.required],
+			title: ['', [Validators.required, Validators.minLength(1)]],
+			journal: ['']
 		});
 		this.story = {
 			title: '',
@@ -61,6 +62,9 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	}
 
 	addStory() {
+		if (this.form.invalid) {
+			return;
+		}
 		const val = this.form.value;
 		this.story.energy = parseInt(val.energy);
 		this.story.creativity = parseInt(val.creativity);
@@ -97,6 +101,9 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	}
 
 	updateStory() {
+		if (this.form.invalid) {
+			return;
+		}
 		const val = this.form.value;
 		// const story = {} as Story;
 		this.story.energy = parseInt(val.energy);
@@ -152,11 +159,14 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	}
 
 	ngAfterViewInit(): void {
+		this.store.dispatch(toggleLoading({status: false}));
 		this.store.select(getSharedState).subscribe((state) => {
 			if (state.storyToEdit.storyId) {
-				const story = state.storyToEdit;
+				const story = {...state.storyToEdit};
+				console.log(story)
 				this.story.storyId = story.storyId;
 				this.form.setValue({
+					journal: story.journal,
 					energy: story.energy,
 					focus: story.focus,
 					creativity: story.creativity,
@@ -164,7 +174,6 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 					happiness: story.happiness,
 					anxiety: story.anxiety,
 					title: story.title,
-					journal: story.journal,
 				});
 			}
 		})
@@ -172,7 +181,7 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 	}
 
 	ngOnInit(): void {
-		this.store.select(getSharedState).subscribe((state) => {
+		this.stateSub$ = this.store.select(getSharedState).subscribe((state) => {
 			if (state.userStories.length > 0) {
 				this.userStories = [...state.userStories];
 			} else {
@@ -186,12 +195,14 @@ export class AddStoryComponent implements OnInit, AfterViewInit {
 			this.userId = state.userId;
 		});
 
-		if (localStorage.getItem('userProfile')) {
-			//Get user fields from user stored in local storage
-			// this.story.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
-		} else {
+		if (!localStorage.getItem('userProfile')) {
 			this.router.navigateByUrl('/login');
+			window.location.reload();
 		}
+	}
+
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 }
 

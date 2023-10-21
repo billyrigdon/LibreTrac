@@ -127,6 +127,8 @@ export class ProfileSettingsComponent implements OnInit {
 			return;
 		}
 
+		this.store.dispatch(toggleLoading({ status: true }))
+
 		this.authService.login(val.email, val.oldPassword).subscribe((res) => {
 			if (res) {
 				this.authService.resetPassword(val.email, val.password).subscribe((res2) => {
@@ -135,13 +137,23 @@ export class ProfileSettingsComponent implements OnInit {
 						this.storageService.signout();
 						this.store.dispatch(toggleAuth({ status: false }))
 						this.router.navigateByUrl('/login');
+						window.location.reload()
 					} else {
+						this.store.dispatch(toggleLoading({ status: false }))
 						alert('Failed to reset password');
 					}
+				}, (err) => {
+					this.store.dispatch(toggleLoading({ status: false }))
+					alert('Failed to reset password');
+
 				});
 			} else {
+				this.store.dispatch(toggleLoading({ status: false }))
 				alert('Failed to reset password');
 			}
+		}, (err) => {
+			this.store.dispatch(toggleLoading({ status: false }))
+			alert('Failed to reset password');
 		});
 	}
 
@@ -151,6 +163,9 @@ export class ProfileSettingsComponent implements OnInit {
 			height: '500px',
 		});
 		
+		dialogRef.componentInstance.onClose.subscribe(() => {
+			dialogRef.close();
+		});
 	}
 
 	updateEmail() {
@@ -171,11 +186,17 @@ export class ProfileSettingsComponent implements OnInit {
 						this.store.dispatch(toggleLoading({ status: false }))
 						alert('Failed to update Email');
 					}
+				}, (err) => {
+					this.store.dispatch(toggleLoading({ status: false }))
+					alert('Failed to update Email');
 				});
 			} else {
 				this.store.dispatch(toggleLoading({ status: false }))
-				alert('Failed to updateEmail');
+				alert('Failed to update Email');
 			}
+		}, (err) => {
+			this.store.dispatch(toggleLoading({ status: false }))
+			alert('Failed to update Email');
 		});
 	}
 
@@ -204,9 +225,6 @@ export class ProfileSettingsComponent implements OnInit {
 		}
 	}
 
-	// goToDrugs() {
-	// 	this.router.navigateByUrl('addDrug');
-	// }
 
 	updateProfile() {
 		let val = this.form.value;
@@ -217,6 +235,7 @@ export class ProfileSettingsComponent implements OnInit {
 
 		this.profileService.updateProfile(this.userProfile).subscribe((res) => {
 			this.profileService.setProfile(res);
+			alert('Profile updated successfully');
 			this.router.navigate(['/profile']);
 		}, (err) => {
 			alert('Failed to update profile');

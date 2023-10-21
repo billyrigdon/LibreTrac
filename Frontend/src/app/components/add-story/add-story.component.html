@@ -15,12 +15,20 @@
 				<span class="material-icons">arrow_back</span>
 			</button>
 			<div>
-				<input formControlName="title" placeholder="Title" />
+				<input appAutofocus formControlName="title" placeholder="Title" />
 				<textarea id="journal-content" matInput name="content" formControlName="journal"
 					placeholder="Journal Entry"></textarea>
 			</div>
 			<div class="button-container">
 				<button type="submit">Add Story</button>
+			</div>
+			<div class="error-container">
+				<div *ngIf="form.get('content')?.invalid && (form.get('content')?.dirty || form.get('content')?.touched)">
+					<p *ngIf="form.get('content')?.hasError">Journals must be at least 8 characters</p>
+				</div>
+				<div *ngIf="form.get('title')?.invalid && (form.get('title')?.dirty || form.get('title')?.touched)">
+					<p *ngIf="form.get('title')?.errors">Title cannot be blank</p>
+				</div>
 			</div>
 		</div>
 	</form>
@@ -42,13 +50,22 @@
 				<span class="material-icons">arrow_back</span>
 			</button>
 			<div>
-				<input formControlName="title" placeholder="Title" />
+				<input appAutofocus formControlName="title" placeholder="Title" />
 				<textarea id="journal-content" matInput name="content" formControlName="journal"
 					placeholder="Journal Entry"></textarea>
 			</div>
 			<div class="button-container">
 				<button type="submit">Update Story</button>
 			</div>
+			<div class="error-container">
+				<div *ngIf="form.get('content')?.invalid && (form.get('content')?.dirty || form.get('content')?.touched)">
+					<p *ngIf="form.get('content')?.hasError">Journals must be at least 8 characters</p>
+				</div>
+				<div *ngIf="form.get('title')?.invalid && (form.get('title')?.dirty || form.get('title')?.touched)">
+					<p *ngIf="form.get('title')?.errors">Title cannot be blank</p>
+				</div>
+			</div>
 		</div>
+		
 	</form>
 </div>

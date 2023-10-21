@@ -11,7 +11,7 @@ let CommentService = class CommentService {
         this.http = http;
     }
     getComments(storyId) {
-        return this.http.get(API_URL + '/public/story/comment?storyId=' + storyId);
+        return this.http.get(API_URL + '/protected/story/comment?storyId=' + storyId);
     }
     addComment(comment) {
         return this.http.post(API_URL + '/protected/story/comment/create', comment, headers);

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProfileService } from 'src/app/services/profile.service';
 import { StoryService } from 'src/app/services/story.service';
@@ -10,7 +10,7 @@ import { DrugService } from 'src/app/services/drug.service';
 import { DatePipe, formatDate } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/store/app.state';
-import { setAverageMood, setDrugToEdit, setIsMonthView, setStoryToEdit, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setAverageMood, setDisorders, setDrugToEdit, setDrugs, setIsMonthView, setStoryToEdit, setUserDisorders, setUserDrugs, setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { getAuthState, getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { ModalComponent } from '../modal/modal.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -49,7 +49,7 @@ export class ProfileComponent implements OnInit {
 	profilePic: string;
 	drugs: Array<Drug>;
 	isMonthView: boolean = false;
-
+	private startY: number | null = null;
 	illnesses = [
 		{ name: 'Bipolar Disorder Type I' },
 		{ name: 'Attention Deficit Hyperactive Disorder - Combined' },
@@ -59,7 +59,7 @@ export class ProfileComponent implements OnInit {
 	drugForm: UntypedFormGroup;
 	userId: number = 0;
 	mood: StoryDrug = <StoryDrug>{};
-
+	@ViewChild('scrollable') scrollableElementRef!: ElementRef;
 	constructor(
 		private storyService: StoryService,
 		private router: Router,
@@ -86,8 +86,30 @@ export class ProfileComponent implements OnInit {
 		});
 	}
 
+	@HostListener('touchstart', ['$event'])
+	onTouchStart(event: TouchEvent) {
+		this.startY = event.touches[0].clientY;
+	}
+
+	@HostListener('touchend', ['$event'])
+	onTouchEnd(event: TouchEvent) {
+		const endY = event.changedTouches[0].clientY;
+		if (this.startY !== null && this.startY < endY && this.scrollableElementRef.nativeElement.scrollTop === 0) {
+			const swipeDistance = endY - this.startY;
+			const threshold = 100; // Set a threshold to consider it as a swipe down
+
+			if (swipeDistance > threshold) {
+				// window.location.reload();
+				this.switchView(this.isMonthView);
+				this.getUserDrugs();	
+				this.getUserDisorders();
+			}
+		}
+		this.startY = null;
+	}
+
 	openBottomSheetDrug() {
-		this.store.dispatch(setDrugToEdit({drug: {} as UserDrug}))
+		this.store.dispatch(setDrugToEdit({ drug: {} as UserDrug }))
 		const bottomSheetRef = this.bottomSheet.open(BottomSheetDrugComponent);
 
 
@@ -115,7 +137,7 @@ export class ProfileComponent implements OnInit {
 
 	openBottomSheetInfo(summary: string, url: string, id: number, isDrug: boolean, drug?: UserDrug) {
 		if (drug) {
-			this.store.dispatch(setDrugToEdit({drug}))
+			this.store.dispatch(setDrugToEdit({ drug }))
 		}
 		const bottomSheetRef: MatBottomSheetRef<BottomSheetInfoComponent> = this.bottomSheet.open(BottomSheetInfoComponent);
 		bottomSheetRef.instance.summary = summary;
@@ -133,42 +155,42 @@ export class ProfileComponent implements OnInit {
 
 	switchView(isMonth: boolean) {
 		// this.mood = <StoryDrug>{}; // reset mood
-		this.store.dispatch(setIsMonthView({isMonthView: isMonth}));
+		this.store.dispatch(setIsMonthView({ isMonthView: isMonth }));
 
 		if (this.isMonthView) {
 			this.moodService.getAverageUserMoodForMonth(this.userId).subscribe((res: any) => {
 				console.log(res);
 				// this.mood = JSON.parse(res);
-				this.store.dispatch(setAverageMood({mood: JSON.parse(res)}))
+				this.store.dispatch(setAverageMood({ mood: JSON.parse(res) }))
 			},
 				(err) => {
-					this.store.dispatch(setAverageMood({mood: {} as StoryDrug}))
+					this.store.dispatch(setAverageMood({ mood: {} as StoryDrug }))
 				});
 		} else {
 			this.moodService
-					.getAverageUserMood(this.userId)
-					.subscribe((res: any) => {
-						console.log(res);
-						// this.mood = JSON.parse(res);
-						this.store.dispatch(setAverageMood({mood: JSON.parse(res)}))
-					},
-						(err) => {
-							this.store.dispatch(setAverageMood({mood: {} as StoryDrug}))
-						});
+				.getAverageUserMood(this.userId)
+				.subscribe((res: any) => {
+					console.log(res);
+					// this.mood = JSON.parse(res);
+					this.store.dispatch(setAverageMood({ mood: JSON.parse(res) }))
+				},
+					(err) => {
+						this.store.dispatch(setAverageMood({ mood: {} as StoryDrug }))
+					});
 		}
 	}
 
 	addDrug() {
+
 		if (localStorage.getItem('userProfile')) {
 			let user = JSON.parse(localStorage.getItem('userProfile') || '');
-			const userId = user.userId;
+			// const userId = user.userId;
 			const val = this.drugForm.value;
 
 			this.drugService
-				.addUserDrug(userId, parseInt(val.drugId), val.dosage)
+				.addUserDrug(this.userId, parseInt(val.drugId), val.dosage)
 				.subscribe((res) => {
-					// this.router.navigateByUrl('/profile');
-					window.location.reload();
+					this.getUserDrugs();
 				});
 		}
 	}
@@ -182,8 +204,7 @@ export class ProfileComponent implements OnInit {
 			this.disorderService
 				.addUserDisorder(userId, parseInt(val.disorderId))
 				.subscribe((res) => {
-					// this.router.navigateByUrl('/profile');
-					window.location.reload();
+					this.getUserDisorders();
 				});
 		}
 	}
@@ -201,7 +222,7 @@ export class ProfileComponent implements OnInit {
 			this.openBottomSheetInfo(summary, wikiUrl, id, isDrug, drug);
 			return { contents: summary };
 		} catch (error) {
-			this.openBottomSheetInfo('No information found','', id, isDrug);
+			this.openBottomSheetInfo('No information found', '', id, isDrug);
 			return null;
 		}
 	}
@@ -228,7 +249,7 @@ export class ProfileComponent implements OnInit {
 	}
 
 	goToAddStory() {
-		this.store.dispatch(setStoryToEdit({story: {} as StoryDrug}))
+		this.store.dispatch(setStoryToEdit({ story: {} as StoryDrug }))
 		this.router.navigateByUrl('addStory');
 	}
 
@@ -245,40 +266,54 @@ export class ProfileComponent implements OnInit {
 		this.router.navigateByUrl('/drugInfo?drugName=' + drugName)
 	}
 
-	ngOnInit(): void {
-		this.store.select(getSharedState).subscribe((state) => {
-			console.log(this.mood);
-			this.mood = state.averageMood;
-			this.isMonthView = state.isMonthView;
-			if (this.userId !== state.userId) {
-				this.userId = state.userId;
-				this.switchView(this.isMonthView);
-				this.drugService.getDrugs().subscribe((res) => {
-					this.drugs = JSON.parse(res);
-				});
+	getUserDrugs() {
+		this.store.dispatch(toggleLoading({ status: true }));
+		this.drugService.getUserDrugs().subscribe((res) => {
+			this.store.dispatch(setUserDrugs({userDrugs: JSON.parse(res) }));
+			this.store.dispatch(toggleLoading({ status: false }));
+		}, (err) => {
+			this.store.dispatch(toggleLoading({ status: false }));
+			this.store.dispatch(setUserDrugs({userDrugs: [] })) ;
+		});
+	}
 
-				//Get list of drugs that user is taking
-				this.drugService.getUserDrugs().subscribe((res) => {
-					this.userDrugs = JSON.parse(res);
-				}, (err) => {
-					console.log(err);
-					this.userDrugs = [];
-				});
-
-				this.disorderService.getUserDisorders().subscribe((res) => {
-					this.userDisorders = JSON.parse(res);
-					this.store.dispatch(toggleLoading({ status: false }));
-				}, (err) => {
-					console.log(err);
-					this.userDisorders = [];
-					this.store.dispatch(toggleLoading({ status: false }));
-				});
-			}
+	getUserDisorders() {
+		this.disorderService.getUserDisorders().subscribe((res) => {
+			this.store.dispatch(setUserDisorders({userDisorders: JSON.parse(res) })) ;
+			
+		}, (err) => {
+			console.log(err);
+			this.store.dispatch(setUserDisorders({userDisorders: []})) ;
 			
 		});
+	}
+
+	ngOnInit(): void {
+		this.store.select(getSharedState).subscribe((state) => {
+			this.userDrugs = state.userDrugs;
+			this.userDisorders = state.userDisorders;
+			this.mood = state.averageMood;
+			this.isMonthView = state.isMonthView;
+			this.userId = state.userId;
 		
+		});
+
+
 		//Check if logged in and navigate to splash if not
 		if (this.storageService.getToken() && this.storageService.getUser()) {
+			this.switchView(this.isMonthView);
+		
+			this.getUserDrugs();
+			this.getUserDisorders();
+
+			this.disorderService.getDisorders().subscribe((res) => {
+				this.store.dispatch(setDisorders({disorders: JSON.parse(res)}));
+			});
+			
+			this.drugService.getDrugs().subscribe((res) => {
+				this.store.dispatch(setDrugs({drugs: JSON.parse(res)}))
+				this.store.dispatch(toggleLoading({ status: false }));
+			});
 			//TODO: Move userprofile to shared state instead of handling it this way
 			if (localStorage.getItem('userProfile')) {
 				this.store.dispatch(toggleLoading({ status: true }));
@@ -290,11 +325,6 @@ export class ProfileComponent implements OnInit {
 					localStorage.getItem('userProfile') || ''
 				);
 
-				// this.switchView(this.isMonthView);
-				// Get drugs for add-drug bottom sheet
-				
-				
-
 				//Get Profile if it does not exist in local storage
 			} else {
 				this.profileService.getProfile().subscribe((res) => {
@@ -303,11 +333,8 @@ export class ProfileComponent implements OnInit {
 					//If user profile successfully saved, reload page
 					if (localStorage.getItem('userProfile')) {
 						window.location.reload();
-
 						//If couldn't get user profile, navigate to createProfile page
-					} else {
-						this.router.navigateByUrl('/createProfile');
-					}
+					} 
 				});
 			}
 		} else {
@@ -315,5 +342,7 @@ export class ProfileComponent implements OnInit {
 			this.store.dispatch(toggleAuth({ status: false }));
 			this.router.navigateByUrl('/login');
 		}
+
+		
 	}
 }

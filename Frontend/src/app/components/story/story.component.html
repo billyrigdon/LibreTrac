@@ -1,8 +1,8 @@
-<div *ngIf="this.storyId" id="story-container">
+<div #scrollableElement *ngIf="this.storyId" id="story-container">
 	<mat-card class="story">
 		<h1>{{ story.title }}</h1>
 		<button (click)="goBack()" class="back-button">
-			<p><span class="material-icons">arrow_back</span>Go back </p>
+			<p><span class="material-icons">arrow_back</span>Go back</p>
 		</button>
 		<br />
 		<span>{{ story.date}}</span>
@@ -32,5 +32,5 @@
 			<button *ngIf="this.isUserStory" mat-raised-button (click)="deleteStory(story.storyId)">Delete</button>
 		</mat-card-actions>
 	</mat-card>
-	<app-comments [storyId]="storyId"></app-comments>
+	<app-comments [commentId]="this.commentId" [storyId]="storyId"></app-comments>
 </div>

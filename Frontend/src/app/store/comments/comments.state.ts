@@ -1,4 +1,4 @@
-import { CommentNotification } from "src/app/types/comment";
+import { CommentNotification, StoryComment } from "src/app/types/comment";
 
 export interface Notification {
 	notificationId: number;
@@ -16,6 +16,8 @@ export interface CommentsState {
 	parentCommentContent: string;
 	notifications: CommentNotification[];
 	isUserStory: boolean;
+	comments: StoryComment[];
+	scrollToCommentId: number;
 }
 
 export const initialState: CommentsState = {
@@ -25,5 +27,7 @@ export const initialState: CommentsState = {
 	storyContent: "",
 	parentCommentContent: "",
 	notifications: [],
-	isUserStory: false
+	isUserStory: false,
+	comments: [],
+	scrollToCommentId: 0
 };

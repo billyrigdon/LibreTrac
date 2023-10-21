@@ -35,7 +35,7 @@ export class MoodService {
 
 	getAverageStoryMood(storyId: number) {
 		return this.http.get(
-			API_URL + '/public/mood/get?storyId=' + storyId,
+			API_URL + '/protected/mood/get?storyId=' + storyId,
 			{
 				responseType: 'text',
 			}

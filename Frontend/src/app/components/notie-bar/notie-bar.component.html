@@ -1,11 +1,11 @@
 <div id="notie-bar">
 	<h2>Notifications.</h2>
 	<div class="horizontal-line"></div>
-	<p *ngIf="this.stories.length === 0">All caught up!</p>
-	<p *ngIf="this.stories.length > 0">You have comments:</p>
+	<p *ngIf="this.noties.length === 0">All caught up!</p>
+	<p *ngIf="this.noties.length > 0">You have comments:</p>
 	<ul>
-		<li *ngFor="let story of this.stories">
-			<a (click)="this.goToStory(story.storyId)">{{story.title}}</a>
+		<li *ngFor="let story of this.noties">
+			<a (click)="this.goToStory(story.storyId, story.commentId)">{{story.content}}</a>
 		</li>
 	</ul>
 </div>

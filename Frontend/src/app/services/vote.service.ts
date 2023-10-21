@@ -15,12 +15,24 @@ const headers = {
 export class VoteService {
 	constructor(private http: HttpClient) {}
 
+	toggleStoryVote(vote: StoryVote) {
+		return this.http.post(API_URL + '/story/vote', vote, headers);
+	}
+
 	addStoryVote(vote: StoryVote) {
 		return this.http.post(API_URL + '/story/vote/add', vote, headers);
 	}
 
 	removeStoryVote(vote: StoryVote) {
 		return this.http.post(API_URL + '/story/vote/remove', vote, headers);
+	}
+
+	toggleCommentVote(vote: CommentVote) {
+		return this.http.post(
+			API_URL + '/story/comment/vote',
+			vote,
+			headers
+		);
 	}
 
 	addCommentVote(vote: CommentVote) {

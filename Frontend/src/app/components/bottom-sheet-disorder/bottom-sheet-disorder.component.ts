@@ -3,7 +3,7 @@
 import { Store } from '@ngrx/store';
 import { ProfileService } from 'src/app/services/profile.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setUserDisorders, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { UserProfile } from 'src/app/types/user';
 import { AppState } from 'src/app/store/app.state';
 import { DrugService } from 'src/app/services/drug.service';
@@ -14,9 +14,11 @@ import { DisorderService } from 'src/app/services/disorder.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
 import { AuthService } from 'src/app/services/auth.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug.component';
+import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
+import { Subscription } from 'rxjs';
 
 
 
@@ -57,15 +59,16 @@ import { BottomSheetDrugComponent } from '../bottom-sheet-drug/bottom-sheet-drug
 
   `]
 })
-export class BottomSheetDisorderComponent implements OnInit {
+export class BottomSheetDisorderComponent implements OnInit, OnDestroy {
 
 	disorders: Array<Disorder> = [];
 	filteredDisorders = this.disorders.slice();
 	filterTextDisorder = '';
+	stateSub$!: Subscription;
 
 
 
-	constructor(private router: Router, private disorderService: DisorderService, private bottomSheetRef: MatBottomSheetRef<BottomSheetDrugComponent>) { }
+	constructor(private router: Router, private disorderService: DisorderService, private bottomSheetRef: MatBottomSheetRef<BottomSheetDrugComponent>, private store: Store<AppState>) { }
 
 
 
@@ -74,24 +77,42 @@ export class BottomSheetDisorderComponent implements OnInit {
 			let user = JSON.parse(localStorage.getItem('userProfile') || '');
 			const userId = user.userId;
 
-
 			this.disorderService
 				.addUserDisorder(userId, disorderId)
 				.subscribe((res) => {
-					window.location.reload();
+					this.getUserDisorders();
 				}, (err) => {
 					alert('Failed to add disorder. Is this a duplicate?')
 				});
 		}
 	}
 
+	getUserDisorders() {
+		this.store.dispatch(toggleLoading({ status: true }));
+		this.disorderService.getUserDisorders().subscribe((res) => {
+			this.store.dispatch(setUserDisorders({userDisorders: JSON.parse(res) })) ;
+			this.store.dispatch(toggleLoading({ status: false }));
+			this.bottomSheetRef.dismiss();
+			alert('Disorder added successfully')
+			
+		}, (err) => {
+			console.log(err);
+			this.store.dispatch(setUserDisorders({userDisorders: []})) ;
+			this.store.dispatch(toggleLoading({ status: false }));
+			this.bottomSheetRef.dismiss();
+			alert('Failed to fetch updated disorders.')
+		});
+	}
 
 	ngOnInit() {
-		this.disorderService.getDisorders().subscribe((res) => {
-			this.disorders = JSON.parse(res);
+		this.stateSub$ = this.store.select(getSharedState).subscribe((state) => {
+			this.disorders = state.disorders;
 			this.filteredDisorders = this.disorders.slice();
-		});
+		})
+	}
 
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 
 	filterOptions() {

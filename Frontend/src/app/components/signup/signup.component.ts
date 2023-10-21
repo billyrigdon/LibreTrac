@@ -3,7 +3,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { Form, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { StorageService } from 'src/app/services/storage.service';
-import { toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setUserId, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/store/app.state';
 import { MatDialog } from '@angular/material/dialog';
@@ -118,7 +118,9 @@ export class SignupComponent implements OnInit {
 				.subscribe((res) => {
 					this.storageService.saveToken(res.token);
 					this.storageService.saveUser(res.username);
-					
+					this.store.dispatch(
+						setUserId({ userId: res.userId})
+					);
 					this.user.username = res.username;
 					this.user.covidVaccine = val.covidVaccine;
 					this.user.smoker = val.smoker;

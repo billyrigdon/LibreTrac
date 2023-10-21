@@ -92,7 +92,8 @@ CREATE TABLE notifications (
 	storyId INT,
 	viewed BOOLEAN,
 	parentCommentId INT,
-	userId INT
+	userId INT,
+	commentId INT,
 );
 
 CREATE TABLE comment_votes (

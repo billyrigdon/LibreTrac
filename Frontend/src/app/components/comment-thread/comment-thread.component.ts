@@ -11,7 +11,7 @@ export class CommentThreadComponent implements OnInit {
   @Input() parentCommentId!: number;
   @Input() comment!: StoryComment;
 	@Input() userId!: number;
-	
+	@Input() storyId!: number;
   
 	
   constructor() { 

@@ -30,3 +30,13 @@ export type StoryDrug = {
   votes: number;
   drugs: Array<UserDrug>;
 };
+
+export interface NotificationStory {
+  notificationId: number;
+  storyId: number;
+  title: string;
+  parentCommentId: number;
+  viewed: boolean;
+  commentId: number;
+  content: string;
+}

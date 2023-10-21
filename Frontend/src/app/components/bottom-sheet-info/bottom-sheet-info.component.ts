@@ -1,7 +1,7 @@
 import { Store } from '@ngrx/store';
 import { ProfileService } from 'src/app/services/profile.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setUserDisorders, setUserDrugs, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { UserProfile } from 'src/app/types/user';
 import { AppState } from 'src/app/store/app.state';
 import { DrugService } from 'src/app/services/drug.service';
@@ -84,7 +84,7 @@ export class BottomSheetInfoComponent implements OnInit {
 	@Output() onEdit = new EventEmitter()
 	url: string = '';
 
-	constructor(private router: Router, private drugService: DrugService, private bottomSheetRef: MatBottomSheetRef<BottomSheetDrugComponent>, private disorderService: DisorderService, private dialog: MatDialog) { }
+	constructor(private router: Router, private drugService: DrugService, private bottomSheetRef: MatBottomSheetRef<BottomSheetDrugComponent>, private disorderService: DisorderService, private dialog: MatDialog, private store: Store<AppState>) { }
 
 	confirmDelete() {
 		const dialogRef = this.dialog.open(ModalComponent, {
@@ -101,15 +101,40 @@ export class BottomSheetInfoComponent implements OnInit {
 		});
 
 		dialogRef.componentInstance.onConfirm.subscribe((event: any) => {
+			dialogRef.close();
 			this.onRemove();
+		});
+	}
+
+	getUserDrugs() {
+		this.drugService.getUserDrugs().subscribe((res) => {
+			this.store.dispatch(setUserDrugs({userDrugs: JSON.parse(res) })) ;
+			this.bottomSheetRef.dismiss();
+			alert('Medication deleted')
+		}, (err) => {
+			alert('Failed to get updated medications')
+			this.store.dispatch(setUserDrugs({userDrugs: [] })) ;
+			this.bottomSheetRef.dismiss();
+		});
+	}
+
+	getUserDisorders() {
+		this.disorderService.getUserDisorders().subscribe((res) => {
+			this.store.dispatch(setUserDisorders({userDisorders: JSON.parse(res) })) ;
+			this.bottomSheetRef.dismiss();
+			alert('Problem deleted')
+		}, (err) => {
+			alert('Failed to get updated problems')
+			this.store.dispatch(setUserDisorders({userDisorders: []})) ;
+			this.bottomSheetRef.dismiss();
 		});
 	}
 
 	onRemove() {
 		if (this.isDrug) {
-			this.drugService.removeUserDrug(this.id).subscribe((res) => window.location.reload(), (err) => { this.summary = 'Failed to delete' })
+			this.drugService.removeUserDrug(this.id).subscribe((res) => this.getUserDrugs(), (err) => { this.summary = 'Failed to delete' })
 		} else {
-			this.disorderService.removeUserDisorder(this.id).subscribe((res) => window.location.reload(), (err) => { this.summary = 'Failed to delete' })
+			this.disorderService.removeUserDisorder(this.id).subscribe((res) => this.getUserDisorders(), (err) => { this.summary = 'Failed to delete' })
 		}
 	}
 

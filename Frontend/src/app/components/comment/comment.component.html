@@ -1,7 +1,7 @@
 <div id="comment-container">
 	<div id="line-marker"></div>
 	<div>
-		<mat-card class="comment">
+		<mat-card *ngIf="comment.commentId" [id]="'comment-number-' + comment.commentId" class="comment">
 			<mat-card-content id="comment-content">
 				<p>{{ comment.content }}</p>
 				<br />

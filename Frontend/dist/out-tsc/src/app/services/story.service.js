@@ -19,7 +19,7 @@ let StoryService = class StoryService {
         return this.http.post(API_URL + '/protected/story/create', story, headers);
     }
     getAllStories(pageNumber) {
-        return this.http.get(API_URL + '/public/story/get?page=' + pageNumber, {
+        return this.http.get(API_URL + '/protected/story/get?page=' + pageNumber, {
             responseType: 'text',
         });
     }

@@ -1,7 +1,7 @@
 import { Store } from '@ngrx/store';
 import { ProfileService } from 'src/app/services/profile.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import { setUserDrugs, toggleAuth, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 import { UserProfile } from 'src/app/types/user';
 import { AppState } from 'src/app/store/app.state';
 import { DrugService } from 'src/app/services/drug.service';
@@ -12,10 +12,11 @@ import { DisorderService } from 'src/app/services/disorder.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalComponent } from '../modal/modal.component';
 import { AuthService } from 'src/app/services/auth.service';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { getSharedState } from 'src/app/store/shared/selectors/shared.selector';
 import { UserDrug } from 'src/app/types/userDrug';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -33,15 +34,15 @@ import { UserDrug } from 'src/app/types/userDrug';
       </mat-list>
     </div>
 	<div *ngIf="this.drugToEdit?.drugId" class="bottom-sheet-container">
-        <input  (ngModelChange)="filterOptions()" placeholder="Medication" [(ngModel)]="filterTextDrug">
+		<mat-list>
+    	    <mat-list-item>
+    	      {{ this.filterTextDrug }}
+    	    </mat-list-item>
+    	</mat-list>
 		<input placeholder="Dosage" name="dosage" [(ngModel)]="dosage" type="text" />
-		<button *ngIf="!this.newDrug" (click)="updateDrug(this.drugId)">Save</button>
-		<button *ngIf="this.newDrug" (click)="updateDrugAndCreate(this.drugId, this.filterTextDrug)">Save</button>
-      <mat-list>
-        <mat-list-item (click)="setDrug(option)"  *ngFor="let option of filteredDrugs">
-          {{ option.name }}
-        </mat-list-item>
-      </mat-list>
+		<button (click)="updateDrug(this.drugId)">Save</button>
+		<!-- <button *ngIf="this.newDrug" (click)="updateDrugAndCreate(this.drugId, this.filterTextDrug)">Save</button> -->
+      
     </div>
 	
   `,
@@ -70,18 +71,18 @@ import { UserDrug } from 'src/app/types/userDrug';
 	}
   `]
 })
-export class BottomSheetDrugComponent implements OnInit {
+export class BottomSheetDrugComponent implements OnInit, OnDestroy {
 
 	drugs: Array<Drug> = [];
 	// Add problem type
 	@Input() problems?: Array<any>
 	drugToEdit?: UserDrug
-	filteredDrugs = this.drugs.slice();
+	filteredDrugs!: Array<Drug>;
 	filterTextDrug = '';
 	drugId: number = 0;
 	dosage = '';
 	newDrug: boolean = false;
-
+	stateSub$!: Subscription;
 	constructor(private store: Store<AppState>, private router: Router, private drugService: DrugService, private bottomSheetRef: MatBottomSheetRef<BottomSheetDrugComponent>) { }
 
 	addDrug(drugId: number) {
@@ -97,15 +98,26 @@ export class BottomSheetDrugComponent implements OnInit {
 				.addUserDrug(userId, drugId, this.dosage)
 				.subscribe((res) => {
 					// this.router.navigateByUrl('/profile');
-					window.location.reload();
+					this.getUserDrugs();
 				}, (err) => {
 					alert('Failed to add medication. Is this a duplicate?')
 				});
 		}
 	}
 
+	getUserDrugs() {
+		this.drugService.getUserDrugs().subscribe((res) => {
+			this.store.dispatch(setUserDrugs({userDrugs: JSON.parse(res) })) ;
+			this.bottomSheetRef.dismiss();
+			alert('Successfully updated medications');
+		}, (err) => {
+			alert('Failed to fetch updated medications')			
+			this.store.dispatch(setUserDrugs({userDrugs: [] })) ;
+			this.bottomSheetRef.dismiss();
+		});
+	}
+	
 	addDrugAndCreate(drugName: string) {
-
 		if (localStorage.getItem('userProfile')) {
 			let user = JSON.parse(localStorage.getItem('userProfile') || '');
 			const userId = user.userId;
@@ -152,7 +164,7 @@ export class BottomSheetDrugComponent implements OnInit {
 				.updateUserDrug(this.drugToEdit)
 				.subscribe((res) => {
 					// this.router.navigateByUrl('/profile');
-					window.location.reload();
+					this.getUserDrugs();
 				}, (err) => {
 					alert('Failed to update drug');
 				});
@@ -180,7 +192,7 @@ export class BottomSheetDrugComponent implements OnInit {
 						.updateUserDrug(this.drugToEdit)
 						.subscribe((res) => {
 							// this.router.navigateByUrl('/profile');
-							window.location.reload();
+							this.getUserDrugs();
 						}, (err) => {
 							alert('Failed to update drug');
 						});
@@ -191,26 +203,25 @@ export class BottomSheetDrugComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		this.drugService.getDrugs().subscribe((res) => {
-			this.drugs = JSON.parse(res);
+		this.stateSub$ = this.store.select(getSharedState).subscribe((state) => {
+			this.drugs = state.drugs;
 			this.filteredDrugs = this.drugs.slice();
-			this.store.select(getSharedState).subscribe((state) => {
-				if (state.drugToEdit) {
-					console.log('test')
-					console.log(state.drugToEdit)
-					this.drugToEdit = { ...state.drugToEdit };
-					this.filterTextDrug = state.drugToEdit.drugName;
-					this.dosage = state.drugToEdit.dosage;
-					this.setDrug({ name: state.drugToEdit.drugName, drugId: state.drugToEdit.drugId })
-					this.filterOptions();
-				}
-			})
-		});
+			if (state.drugToEdit.drugId) {
+				this.drugToEdit = { ...state.drugToEdit };
+				this.filterTextDrug = state.drugToEdit.drugName;
+				this.dosage = state.drugToEdit.dosage;
+				this.setDrug({ name: state.drugToEdit.drugName, drugId: state.drugToEdit.drugId })
+				this.filterOptions();
+			}
+		})
+	}
 
+	ngOnDestroy(): void {
+		this.stateSub$.unsubscribe();
 	}
 
 	ngAfterViewInit() {
-
+		
 	}
 
 	filterOptions() {

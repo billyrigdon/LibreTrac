@@ -32,3 +32,7 @@ export const getAddCommentState = createSelector(getCommentsState, (state) => {
 export const getNotifications = createSelector(getCommentsState, (state) => {
 	return state.notifications;
 });
+
+export const getScrollToComment = createSelector(getCommentsState, (state) => {
+	return state.scrollToCommentId;
+})

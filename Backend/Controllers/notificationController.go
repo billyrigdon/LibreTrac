@@ -14,7 +14,6 @@ func CreateNotification(comment Models.StoryComment, context *Models.CustomConte
 	var userId int
 	// var parentCommentUserId int
 
-
 	// First get the userId of the story
 	storyUserIdSqlStatement := `
 		SELECT userId FROM stories
@@ -47,9 +46,9 @@ func CreateNotification(comment Models.StoryComment, context *Models.CustomConte
 
 	sqlStatement := `
 			INSERT INTO notifications
-				(storyId, parentCommentId, viewed, userId)
+				(storyId, parentCommentId, viewed, userId, commentId)
 			VALUES
-				($1, $2, $3, $4)
+				($1, $2, $3, $4, $5)
 			RETURNING notificationId;
 	`
 
@@ -57,7 +56,8 @@ func CreateNotification(comment Models.StoryComment, context *Models.CustomConte
 		comment.StoryId,
 		comment.ParentCommentId,
 		false,
-		userId).Scan(&notification.NotificationId)
+		userId,
+		comment.CommentId).Scan(&notification.NotificationId)
 
 	if notieErr != nil {
 		log.Error(err)
@@ -68,7 +68,6 @@ func CreateNotification(comment Models.StoryComment, context *Models.CustomConte
 func ClearNotifications(context *Models.CustomContext) {
 	storyId := context.Query("storyId")
 	userId := context.Query("userId")
-
 
 	sqlStatement := `
 		UPDATE notifications
@@ -86,7 +85,7 @@ func ClearNotifications(context *Models.CustomContext) {
 	if err != nil {
 		log.Error(err)
 		context.JSON(500, gin.H{
-			"msg": "Error clearing notifcations",
+			"msg": "Error clearing notifications",
 		})
 		context.Abort()
 
@@ -121,9 +120,8 @@ func GetNotifications(context *Models.CustomContext) {
 		return
 	}
 
-
 	sqlStatement := `
-		SELECT notificationId, viewed, parentCommentId, storyId FROM notifications
+		SELECT notificationId, viewed, parentCommentId, storyId, commentId FROM notifications
 		WHERE 
 		userId = $1
 		AND
@@ -145,6 +143,7 @@ func GetNotifications(context *Models.CustomContext) {
 			&notification.Viewed,
 			&notification.ParentCommentId,
 			&notification.StoryId,
+			&notification.CommentId,
 		)
 
 		if rowErr != nil {
@@ -186,16 +185,24 @@ func GetNotificationStories(context *Models.CustomContext) {
 		return
 	}
 
-
 	sqlStatement := `
-		SELECT storyId, title from stories WHERE storyId IN
+		SELECT s.storyId, s.title, sc.content, sc.commentId from stories s
+		JOIN story_comments sc ON sc.storyId = s.storyId 
+		 WHERE s.storyId IN
 			(
-			SELECT storyId FROM notifications
+			SELECT n.storyId FROM notifications n
 				WHERE 
 				userID = $1
 				AND
 				viewed = false
-			);
+			)
+		AND sc.commentId IN (
+			SELECT n.commentId FROM notifications n
+				WHERE
+				userID = $1
+				AND
+				viewed = false
+		);
 		`
 
 	rows, err := context.DB.Query(sqlStatement, userId)
@@ -208,14 +215,16 @@ func GetNotificationStories(context *Models.CustomContext) {
 		return
 	}
 
-	var stories []Models.Story
+	var noties []Models.NotificationStory
 
 	for rows.Next() {
-		var story Models.Story
+		var notie Models.NotificationStory
 
 		rowErr := rows.Scan(
-			&story.StoryId,
-			&story.Title,
+			&notie.StoryId,
+			&notie.Title,
+			&notie.Content,
+			&notie.CommentId,
 		)
 
 		if rowErr != nil {
@@ -227,8 +236,8 @@ func GetNotificationStories(context *Models.CustomContext) {
 
 		}
 
-		stories = append(stories, story)
+		noties = append(noties, notie)
 	}
 
-	context.JSON(200, stories)
+	context.JSON(200, noties)
 }

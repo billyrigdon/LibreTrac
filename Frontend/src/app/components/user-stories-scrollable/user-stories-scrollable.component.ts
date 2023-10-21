@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -12,6 +12,7 @@ import { StoryVote } from 'src/app/types/vote';
 import { EventEmitter } from '@angular/core';
 import { ScrollPositionService } from 'src/app/services/scroll-position-service';
 import { debounceTime, filter } from 'rxjs';
+import { setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
 
 @Component({
 	selector: 'app-user-stories-scrollable',
@@ -23,6 +24,8 @@ export class UserStoriesScrollableComponent implements OnInit {
 	@Output() onScroll = new EventEmitter();
 	distance: number;
 	throttle: number;
+	userId!: number;
+	private startY: number | null = null;
 	@Input() summaries: Array<{ summary: string, name: string, url: string }> = [];
 	@ViewChild('scrollableElement') scrollableElementRef!: ElementRef;
 	constructor(
@@ -35,6 +38,38 @@ export class UserStoriesScrollableComponent implements OnInit {
 	) {
 		this.distance = 0.1;
 		this.throttle = 0;
+	}
+
+	@HostListener('touchstart', ['$event'])
+	onTouchStart(event: TouchEvent) {
+		this.startY = event.touches[0].clientY;
+	}
+
+	@HostListener('touchend', ['$event'])
+	onTouchEnd(event: TouchEvent) {
+		const endY = event.changedTouches[0].clientY;
+		if (this.startY !== null && this.startY < endY && this.scrollableElementRef.nativeElement.scrollTop === 0) {
+			const swipeDistance = endY - this.startY;
+			const threshold = 100; // Set a threshold to consider it as a swipe down
+
+			this.store.dispatch(toggleLoading({ status: true }));
+			if (swipeDistance > threshold) {
+				this.storyService
+					.getUserStories(this.userId)
+					.subscribe((res) => {
+						this.store.dispatch(setUserStories({ stories: JSON.parse(res) }));
+						if (!res) {
+							this.store.dispatch(setUserStories({ stories: [] }));
+						}
+
+						this.store.dispatch(toggleLoading({ status: false }));
+					},
+						(err) => {
+							this.store.dispatch(toggleLoading({ status: false }));
+						});
+			}
+		}
+		this.startY = null;
 	}
 
 	onPageScroll() {
@@ -58,12 +93,15 @@ export class UserStoriesScrollableComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
+		this.store.select(getUserId).subscribe((userId) => {
+			this.userId = userId;
+		})
 		// this.router.events
 		// 	.pipe(filter((event) => event instanceof NavigationEnd))
 		// 	.subscribe(() => {
 		// 		console.log(this.router.url + 'NavigationEnd');
 		// 		if (this.router.url === '/explore' || this.router.url === '/user-stories') {
-					
+
 		// 			const currentRoute = this.router.url;
 		// 			const savedScrollPosition = this.scrollPositionService.getScrollPosition(currentRoute);
 		// 			console.log(this.router.url, savedScrollPosition)
@@ -85,36 +123,36 @@ export class UserStoriesScrollableComponent implements OnInit {
 		// 				console.log(this.router.url, scrollPosition)
 		// 				this.scrollPositionService.saveScrollPosition(currentRoute, scrollPosition);
 		// 			},100)
-					
+
 		// 		}
 		// 	});
 		this.router.events
-		.pipe(
-			filter((event) => event instanceof NavigationStart || event instanceof NavigationEnd)
-		  )
-      .subscribe((event) => {
-        const currentRoute = this.router.url;
-		    console.log(currentRoute);
-        if (currentRoute === '/user-stories') {
-          if (event instanceof NavigationStart) {
-            // setTimeout(() => {
-              const scrollPosition = this.scrollableElementRef.nativeElement.scrollTop;
-              this.scrollPositionService.saveScrollPosition(currentRoute, scrollPosition);
-            // }, 100);
-          } else if (event instanceof NavigationEnd) {
-            this.restoreScrollPosition(currentRoute);
-          }
-        }
-      });
+			.pipe(
+				filter((event) => event instanceof NavigationStart || event instanceof NavigationEnd)
+			)
+			.subscribe((event) => {
+				const currentRoute = this.router.url;
+				console.log(currentRoute);
+				if (currentRoute === '/user-stories') {
+					if (event instanceof NavigationStart) {
+						// setTimeout(() => {
+						const scrollPosition = this.scrollableElementRef.nativeElement.scrollTop;
+						this.scrollPositionService.saveScrollPosition(currentRoute, scrollPosition);
+						// }, 100);
+					} else if (event instanceof NavigationEnd) {
+						this.restoreScrollPosition(currentRoute);
+					}
+				}
+			});
 	}
 
 	private restoreScrollPosition(route: string): void {
 		setTimeout(() => {
-		  const savedScrollPosition = this.scrollPositionService.getScrollPosition(route);
-		  if (savedScrollPosition && this.scrollableElementRef) {
-			this.scrollableElementRef.nativeElement.scrollTop = savedScrollPosition;
-		  }
+			const savedScrollPosition = this.scrollPositionService.getScrollPosition(route);
+			if (savedScrollPosition && this.scrollableElementRef) {
+				this.scrollableElementRef.nativeElement.scrollTop = savedScrollPosition;
+			}
 		});
-	  }
+	}
 
 }

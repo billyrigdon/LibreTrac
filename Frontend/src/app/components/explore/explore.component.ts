@@ -84,24 +84,24 @@ export class ExploreComponent implements OnInit {
 
 	setStoriesInit(res: string) {
 		if (res) {
-		let jsonStories = JSON.parse(res) ? [...JSON.parse(res)] : [];
-		// this.stories = jsonStories ? jsonStories : [];
-		if (jsonStories) {
-			for (let i = 0; i < jsonStories.length; i++) {
-				const storyDate = new Date(jsonStories[i].date);
-				const formattedDate = storyDate.toLocaleDateString('en-US', {
-					month: 'short',
-					day: 'numeric',
-					year: 'numeric',
+			let jsonStories = JSON.parse(res) ? [...JSON.parse(res)] : [];
+			// this.stories = jsonStories ? jsonStories : [];
+			if (jsonStories) {
+				for (let i = 0; i < jsonStories.length; i++) {
+					const storyDate = new Date(jsonStories[i].date);
+					const formattedDate = storyDate.toLocaleDateString('en-US', {
+						month: 'short',
+						day: 'numeric',
+						year: 'numeric',
 
-				});
-				jsonStories[i].date = formattedDate;
+					});
+					jsonStories[i].date = formattedDate;
+				}
+				this.store.dispatch(setExploreStories({ stories: jsonStories }));
+			} else {
+				this.store.dispatch(setExploreStories({ stories: [] }));
 			}
-			this.store.dispatch(setExploreStories({ stories: jsonStories }));
-		} else {
-			this.store.dispatch(setExploreStories({ stories: [] }));
 		}
-	}
 	}
 
 	async getSummary(name: string, id: number, isDrug: boolean): Promise<any> {
@@ -150,7 +150,7 @@ export class ExploreComponent implements OnInit {
 							this.drugXSummary = res?.contents;
 							this.summaries.push({ summary: this.drugXSummary, name: this.drugXName, url: res?.url });
 						}, (err) => {
-							this.drugXSummary = 'No information found.'	
+							this.drugXSummary = 'No information found.'
 						});
 					});
 				}
@@ -174,17 +174,24 @@ export class ExploreComponent implements OnInit {
 					// alert('No search results found');
 				});
 			}
+
+			if (!this.drugX && !this.drugY) {
+				this.storyService.getAllStories(this.pageNumber).subscribe((res) => {
+					this.drugXName = '';
+					this.drugYName = '';
+					this.drugXSummary = '';
+					this.drugYSummary = '';
+					this.summaries = [];
+					this.setStoriesInit(res)
+					this.store.dispatch(toggleLoading({ status: false }));
+				}, (err) => {
+					this.store.dispatch(toggleLoading({ status: false }));
+					// alert('No search results found');
+				});
+			}
 		});
 
-		if (!this.drugX && !this.drugY) {
-			this.storyService.getAllStories(this.pageNumber).subscribe((res) => {
-				this.setStoriesInit(res)
-				this.store.dispatch(toggleLoading({ status: false }));
-			}, (err) => {
-				this.store.dispatch(toggleLoading({ status: false }));
-				// alert('No search results found');
-			});
-		}
+
 
 	}
 }

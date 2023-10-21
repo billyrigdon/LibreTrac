@@ -21,3 +21,4 @@ export const getNotiesOpen = createSelector(getSharedState, (state) => {
 	return state.notiesOpen;
 });
 
+

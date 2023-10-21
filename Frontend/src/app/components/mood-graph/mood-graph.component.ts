@@ -31,40 +31,40 @@ export class MoodGraphComponent implements OnInit, AfterViewInit {
 	buildGraph(mood: StoryDrug) {
 		this.moodBars = [
 			{
-				value: mood.energy ? mood.energy : 5,
+				value: mood.energy ? mood.energy : 1,
 				color: '#b2a2c7', 
 				size: '',
 				legend: 'Energy',
 			},
 			
 			{
-				value: mood.happiness ? mood.happiness : 5,
+				value: mood.happiness ? mood.happiness : 1,
 				color: '#8c82a6',
 				size: '',
 				legend: 'Happiness',
 			},
 
 			{
-				value: mood.creativity ? mood.creativity : 5,
+				value: mood.creativity ? mood.creativity : 1,
 				color: '#685e85',
 				size: '',
 				legend: 'Creativity',
 			},
 			{
-				value: mood.focus ? mood.focus : 5,
+				value: mood.focus ? mood.focus : 1,
 				color: '#4e415f',
 				size: '',
 				legend: 'Focus',
 			},
 			
 			{
-				value: mood.irritability ? mood.irritability : 5,
+				value: mood.irritability ? mood.irritability : 1,
 				color: '#3b3148',
 				size: '',
 				legend: 'Irritability',
 			},
 			{
-				value: mood.anxiety ? mood.anxiety : 5,
+				value: mood.anxiety ? mood.anxiety : 1,
 				color: '#271f2e',
 				size: '',
 				legend: 'Anxiety',
