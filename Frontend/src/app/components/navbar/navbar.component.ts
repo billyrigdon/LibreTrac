@@ -13,6 +13,7 @@ import { getAuthState, getNotiesOpen, getSharedState, getUserId } from 'src/app/
 import { CommentNotification } from 'src/app/types/comment';
 import { NotificationStory, Story } from 'src/app/types/story';
 import { SearchModalComponent } from '../search-modal/search-modal.component';
+import {Platform} from "@angular/cdk/platform";
 
 @Component({
 	selector: 'app-navbar',
@@ -26,13 +27,15 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 	notificationStories = Array<NotificationStory>();
 	stories: Array<Story>;
 	notiesOpen: boolean = false;
+	bottomMargin: string = "0px";
 	constructor(
 		private storageService: StorageService,
 		private profileService: ProfileService,
 		public router: Router,
 		private store: Store,
 		private notificationService: NotificationService,
-		private dialog: MatDialog
+		private dialog: MatDialog,
+		private platform: Platform
 	) {
 		this.isLoggedIn = this.store.select(getAuthState);
 		this.userId = 0;
@@ -93,12 +96,16 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 				})
 			  	this.store.dispatch(setNotificationStories({
 					notificationStories: notieArray
-			  	})) 
+			  	}))
 			}
 		  });
 	  }
 
 	ngOnInit(): void {
+
+		if (this.platform.IOS && this.platform.IOS && window.matchMedia('(display-mode: standalone)').matches) {
+			this.bottomMargin = '12px';
+		}
 
 		this.store.select(getNotiesOpen).subscribe((res) => {
 			this.notiesOpen = res;
@@ -140,7 +147,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 	}
 
 	reloadWhenSearch() {
-		
+
 	}
 
 	showNoties(): void {
@@ -184,6 +191,6 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 		setTimeout(() => {
 			window.location.reload();
 		},300)
-		
+
 	}
 }

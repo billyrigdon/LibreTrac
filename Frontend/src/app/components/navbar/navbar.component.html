@@ -1,11 +1,11 @@
-<mat-toolbar *ngIf="isLoggedIn | async" id="navbar">
+<mat-toolbar [style.margin-bottom]="bottomMargin" *ngIf="isLoggedIn | async" id="navbar">
 	<div id="nav-buttons">
 		<button [class.active]="isRouteActive(buttonRoutes.profile)" (click)="goToProfile()"><span class="nav-icon" class="material-icons">home</span>
 		</button>
 		<button [class.active]="isRouteActive(buttonRoutes.userStories)" (click)="goToUserStories()"><span class="nav-icon" class="material-icons">menu_book</span></button>
 		<button [class.active]="isRouteActive(buttonRoutes.explore)" (click)="goToExplore()"><span class="nav-icon" class="material-icons">explore</span></button>
-		
-		
+
+
 		<button aria-label="Search Button" id="search-button" (click)="showSearch()">
 			<span class="material-icons">search</span>
 		</button>

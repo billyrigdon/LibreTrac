@@ -63,7 +63,7 @@ func setupRouter() *gin.Engine {
 	{
 		public := api.Group("/public")
 		//TODO:remove for prod
-		public.Use(corsInterceptor())
+		//public.Use(corsInterceptor())
 
 		{
 			//Serve public login/signup routes
@@ -75,7 +75,7 @@ func setupRouter() *gin.Engine {
 		//Serve routes that require valid jwt token
 		protected := api.Group("/protected").Use(Auth.Auth())
 		//TODO:remove for prod
-		protected.Use(corsInterceptor())
+		//protected.Use(corsInterceptor())
 		{
 			//Serve public explore page
 			protected.GET("/story/get", withDB(Controllers.GetAllStories))
@@ -144,21 +144,21 @@ func setupRouter() *gin.Engine {
 
 // TODO:Remove for prod
 // Cors header and handler of preflight options
-func corsInterceptor() gin.HandlerFunc {
-	return func(context *gin.Context) {
-		context.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		context.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		context.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		context.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-
-		if context.Request.Method == "OPTIONS" {
-			context.AbortWithStatus(204)
-			return
-		}
-
-		context.Next()
-	}
-}
+//func corsInterceptor() gin.HandlerFunc {
+//	return func(context *gin.Context) {
+//		context.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+//		context.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+//		context.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+//		context.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+//
+//		if context.Request.Method == "OPTIONS" {
+//			context.AbortWithStatus(204)
+//			return
+//		}
+//
+//		context.Next()
+//	}
+//}
 
 // Create log file if it doesn't exist, append if it does.
 // The 666 is file permissions, not some hidden satanic message in my code.
@@ -190,7 +190,7 @@ func main() {
 	//Create server
 	router := setupRouter()
 	//TODO: remove for prod
-	router.Use(corsInterceptor())
+	//router.Use(corsInterceptor())
 
 	//Start server
 	router.Run(":8080")

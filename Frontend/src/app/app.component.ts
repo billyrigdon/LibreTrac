@@ -17,6 +17,7 @@ import {
 import { AuthService } from './services/auth.service';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
+import {Platform} from "@angular/cdk/platform";
 
 @Component({
 	selector: 'app-root',
@@ -40,7 +41,8 @@ export class AppComponent implements OnInit {
 		private store: Store<AppState>,
 		public router: Router,
 		private notificationService: NotificationService,
-		private authService: AuthService
+		private authService: AuthService,
+		private platform: Platform
 	) {
 		this.isLoading = this.store.select(getLoading);
 		this.isLoggedIn = this.store.select(getAuthState);
@@ -82,8 +84,8 @@ export class AppComponent implements OnInit {
 
 	inputHandler() {
 		console.log(this.containerHeight);
-		document.body.style.height = window.innerHeight + 'px';	
-		this.containerHeight = (window.innerHeight - 48);
+		document.body.style.height = window.innerHeight + 'px';
+		this.containerHeight = (window.innerHeight - 48 - (this.platform.IOS ? 24 : 0));
 		this.containerMarginBottom = (this.originalHeight - this.containerHeight).toString() + 'px';
 	}
 
@@ -123,7 +125,7 @@ export class AppComponent implements OnInit {
 				}
 			})
 		}
-		this.containerHeight = (window.innerHeight - 48);
+		this.containerHeight = (window.innerHeight - 48 - (this.platform.IOS && window.matchMedia('(display-mode: standalone)').matches ? 24 : 0));
 		this.originalHeight = (window.innerHeight - 48);
 		//Scroll to top of page on route changes aside from explore page
 		this.router.events
@@ -167,7 +169,7 @@ export class AppComponent implements OnInit {
 		// document.body.addEventListener("resize", () => {
 		// 	console.log(this.containerHeight);
 		// 	this.containerHeight = (window.innerHeight - 48);
-		// 	this.containerMarginBottom = (this.originalHeight - this.containerHeight) .toString() + 'px'; 
+		// 	this.containerMarginBottom = (this.originalHeight - this.containerHeight) .toString() + 'px';
 		// }, true);
 
 
@@ -181,10 +183,10 @@ export class AppComponent implements OnInit {
 		// 		case "SELECT":
 		// 			document.body.classList.add("keyboard");
 		// 	}
-		// }, true); 
+		// }, true);
 		// document.body.addEventListener("blur", () => {
 		// 	this.containerHeight = (window.innerHeight - 48);
 		// 	document.body.classList.remove("keyboard");
-		// }, true); 
+		// }, true);
 	}
 }
