@@ -1,11 +1,29 @@
-import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+	AfterViewInit,
+	Component,
+	ElementRef,
+	EventEmitter,
+	HostListener,
+	Input,
+	OnDestroy,
+	OnInit,
+	Output,
+	ViewChild,
+} from '@angular/core';
+import {
+	UntypedFormBuilder,
+	UntypedFormGroup,
+	Validators,
+} from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Observable, Subscription } from 'rxjs';
 import { CommentService } from 'src/app/services/comment.service';
 import { AppState } from 'src/app/store/app.state';
 import { toggleAddComment } from 'src/app/store/comments/comments.actions';
-import { getAddCommentsOpen, getAddCommentState } from 'src/app/store/comments/comments.selector';
+import {
+	getAddCommentsOpen,
+	getAddCommentState,
+} from 'src/app/store/comments/comments.selector';
 import { StoryComment } from 'src/app/types/comment';
 
 @Component({
@@ -13,7 +31,7 @@ import { StoryComment } from 'src/app/types/comment';
 	templateUrl: './add-comment.component.html',
 	styleUrls: ['./add-comment.component.scss'],
 })
-export class AddCommentComponent implements OnInit, OnDestroy {
+export class AddCommentComponent implements OnInit, OnDestroy, AfterViewInit {
 	storyId: number;
 	parentCommentId: number;
 	storyContent: string;
@@ -25,7 +43,9 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 	@Output() onClose = new EventEmitter();
 	@Output() onError = new EventEmitter();
 	stateSub$!: Subscription;
-	
+
+	@ViewChild('commentTextArea') commentTextArea!: ElementRef;
+
 	constructor(
 		private store: Store<AppState>,
 		private commentService: CommentService,
@@ -36,10 +56,14 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 			content: ['', [Validators.required, Validators.minLength(1)]],
 		});
 		this.storyId = 0;
-		this.parentCommentContent = "";
-		this.storyContent = "";
+		this.parentCommentContent = '';
+		this.storyContent = '';
 		this.parentCommentId = 0;
 		this.userId = 0;
+	}
+
+	ngAfterViewInit() {
+		this.commentTextArea.nativeElement.focus();
 	}
 
 	addComment() {
@@ -55,17 +79,17 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 				userId: this.userId,
 				content: content,
 			})
-			.subscribe((res) => {
-				this.onClose.emit(res);
-			},
-			(err) => {
-				this.onError.emit();
-			});
+			.subscribe(
+				(res) => {
+					this.onClose.emit(res);
+				},
+				(err) => {
+					this.onError.emit();
+				},
+			);
 	}
 
-
 	updateComment(comment: StoryComment) {
-
 		if (this.form.invalid) {
 			return;
 		}
@@ -84,35 +108,41 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 				votes: comment.votes,
 				dateCreated: comment.dateCreated,
 			})
-			.subscribe((res) => {
-				this.onClose.emit();
-			},
-			(err) => {
-				this.onError.emit();
-			});
+			.subscribe(
+				(res) => {
+					this.onClose.emit();
+				},
+				(err) => {
+					this.onError.emit();
+				},
+			);
 	}
 
-	
 	closeAddComment() {
 		this.onClose.emit();
 	}
 
 	ngOnInit(): void {
 		const OP_USER_ID = 2;
-		
-		this.stateSub$ = this.store.select(getAddCommentState).subscribe((res) => {
-			this.parentCommentContent = res.parentCommentContent;
-			this.parentCommentId = res.parentCommentId;
-			this.storyId = res.storyId;
-			this.storyContent = res.storyContent;
-			this.userId = res.isUserStory ? OP_USER_ID : JSON.parse(localStorage.getItem('userProfile') || '').userId  
-		})
+
+		this.stateSub$ = this.store
+			.select(getAddCommentState)
+			.subscribe((res) => {
+				this.parentCommentContent = res.parentCommentContent;
+				this.parentCommentId = res.parentCommentId;
+				this.storyId = res.storyId;
+				this.storyContent = res.storyContent;
+				this.userId = res.isUserStory
+					? OP_USER_ID
+					: JSON.parse(localStorage.getItem('userProfile') || '')
+							.userId;
+			});
 
 		if (this.commentForEdit) {
 			this.form.setValue({
 				content: this.commentForEdit.content,
 			});
-		}	
+		}
 	}
 
 	ngOnDestroy(): void {

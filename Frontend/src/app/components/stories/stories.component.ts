@@ -1,4 +1,12 @@
-import { Component, ElementRef, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+	Component,
+	ElementRef,
+	HostListener,
+	Input,
+	OnInit,
+	Output,
+	ViewChild,
+} from '@angular/core';
 import { formatDate } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -12,7 +20,11 @@ import { StoryVote } from 'src/app/types/vote';
 import { EventEmitter } from '@angular/core';
 import { ScrollPositionService } from 'src/app/services/scroll-position-service';
 import { debounceTime, filter } from 'rxjs';
-import { setExploreStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import {
+	setExploreStories,
+	toggleLoading,
+} from 'src/app/store/shared/actions/shared.actions';
+import { Platform } from '@angular/cdk/platform';
 
 @Component({
 	selector: 'app-stories',
@@ -25,72 +37,91 @@ export class StoriesComponent implements OnInit {
 	distance: number;
 	throttle: number;
 	private startY: number | null = null;
-	@Input() summaries: Array<{ summary: string, name: string, url: string }> = [];
+	@Input() summaries: Array<{ summary: string; name: string; url: string }> =
+		[];
 	@ViewChild('scrollableElement') scrollableElementRef!: ElementRef;
+	containerHeight: string = window.innerHeight - 48 + 'px';
+
 	constructor(
 		private storyService: StoryService,
 		private voteService: VoteService,
 		private store: Store<AppState>,
 		private router: Router,
 		private storageService: StorageService,
-		private scrollPositionService: ScrollPositionService
+		private scrollPositionService: ScrollPositionService,
+		private platform: Platform,
 	) {
 		this.distance = 0.1;
 		this.throttle = 0;
 	}
 
-	
+	@HostListener('touchstart', ['$event'])
+	onTouchStart(event: TouchEvent) {
+		this.startY = event.touches[0].clientY;
+	}
 
-  @HostListener('touchstart', ['$event'])
-  onTouchStart(event: TouchEvent) {
-    this.startY = event.touches[0].clientY;
-  }
+	@HostListener('touchend', ['$event'])
+	onTouchEnd(event: TouchEvent) {
+		const endY = event.changedTouches[0].clientY;
+		if (
+			this.startY !== null &&
+			this.startY < endY &&
+			this.scrollableElementRef.nativeElement.scrollTop <= 0
+		) {
+			const swipeDistance = endY - this.startY;
+			const threshold = 100; // Set a threshold to consider it as a swipe down
 
-  @HostListener('touchend', ['$event'])
-  onTouchEnd(event: TouchEvent) {
-    const endY = event.changedTouches[0].clientY;
-    if (this.startY !== null && this.startY < endY && this.scrollableElementRef.nativeElement.scrollTop === 0) {
-      const swipeDistance = endY - this.startY;
-      const threshold = 100; // Set a threshold to consider it as a swipe down
+			this.store.dispatch(toggleLoading({ status: true }));
 
-	  this.store.dispatch(toggleLoading({ status: true }));
-
-      if (swipeDistance > threshold) {
-        this.storyService.getAllStories(0).subscribe((res) => {
-			if (res) {
-				let jsonStories = JSON.parse(res) ? [...JSON.parse(res)] : [];
-				// this.stories = jsonStories ? jsonStories : [];
-				if (jsonStories) {
-					for (let i = 0; i < jsonStories.length; i++) {
-						const storyDate = new Date(jsonStories[i].date);
-						const formattedDate = storyDate.toLocaleDateString('en-US', {
-							month: 'short',
-							day: 'numeric',
-							year: 'numeric',
-	
-						});
-						jsonStories[i].date = formattedDate;
-					}
-					this.store.dispatch(setExploreStories({ stories: jsonStories }));
-					this.store.dispatch(toggleLoading({ status: false }));
-				} else {
-					this.store.dispatch(toggleLoading({ status: false }));
-					alert("No stories found")
-				}
+			if (swipeDistance > threshold) {
+				this.storyService.getAllStories(0).subscribe(
+					(res) => {
+						if (res) {
+							let jsonStories = JSON.parse(res)
+								? [...JSON.parse(res)]
+								: [];
+							// this.stories = jsonStories ? jsonStories : [];
+							if (jsonStories) {
+								for (let i = 0; i < jsonStories.length; i++) {
+									const storyDate = new Date(
+										jsonStories[i].date,
+									);
+									const formattedDate =
+										storyDate.toLocaleDateString('en-US', {
+											month: 'short',
+											day: 'numeric',
+											year: 'numeric',
+										});
+									jsonStories[i].date = formattedDate;
+								}
+								this.store.dispatch(
+									setExploreStories({ stories: jsonStories }),
+								);
+								this.store.dispatch(
+									toggleLoading({ status: false }),
+								);
+							} else {
+								this.store.dispatch(
+									toggleLoading({ status: false }),
+								);
+								alert('No stories found');
+							}
+						}
+						this.store.dispatch(toggleLoading({ status: false }));
+					},
+					(err) => {
+						this.store.dispatch(toggleLoading({ status: false }));
+						alert('Failed to fetch stories');
+					},
+				);
 			}
-			this.store.dispatch(toggleLoading({ status: false }));
-		}, (err) => {
-			this.store.dispatch(toggleLoading({ status: false }));
-			alert('Failed to fetch stories')
-		});
-      }
-    }
-    this.startY = null;
-  }
+		}
+		this.startY = null;
+	}
 
 	onPageScroll() {
-		console.log("scrolled")
-		this.onScroll.emit()
+		console.log('scrolled');
+		this.onScroll.emit();
 	}
 
 	openStory(storyId: number) {
@@ -100,40 +131,64 @@ export class StoriesComponent implements OnInit {
 
 	getDateString(date: string) {
 		const localDateObj = new Date(date);
-		const localTimezoneOffsetMs = localDateObj.getTimezoneOffset() * 60 * 1000;
+		const localTimezoneOffsetMs =
+			localDateObj.getTimezoneOffset() * 60 * 1000;
 		const utcTimestampMs = localDateObj.getTime() + localTimezoneOffsetMs;
 		const utcDateObj = new Date(utcTimestampMs);
-		const options = { timeZone: 'UTC', month: 'long', day: 'numeric', year: 'numeric' };
+		const options = {
+			timeZone: 'UTC',
+			month: 'long',
+			day: 'numeric',
+			year: 'numeric',
+		};
 		const utcDateString = localDateObj.toLocaleDateString('UTC');
 		return utcDateString;
 	}
 
 	ngOnInit(): void {
+		this.containerHeight =
+			window.innerHeight -
+			48 -
+			(this.platform.IOS &&
+			window.matchMedia('(display-mode: standalone)').matches
+				? 24
+				: 0) +
+			'px';
+
 		this.router.events
-		.pipe(
-			filter((event) => event instanceof NavigationStart || event instanceof NavigationEnd)
-		  )
-      .subscribe((event) => {
-        const currentRoute = this.router.url;
-		console.log(currentRoute);
-        if (currentRoute.includes('/explore')) {
-          if (event instanceof NavigationStart) {
-              const scrollPosition = this.scrollableElementRef.nativeElement.scrollTop;
-              this.scrollPositionService.saveScrollPosition(currentRoute, scrollPosition);
-          } else if (event instanceof NavigationEnd) {
-            this.restoreScrollPosition(currentRoute);
-          }
-        }
-      });
+			.pipe(
+				filter(
+					(event) =>
+						event instanceof NavigationStart ||
+						event instanceof NavigationEnd,
+				),
+			)
+			.subscribe((event) => {
+				const currentRoute = this.router.url;
+				console.log(currentRoute);
+				if (currentRoute.includes('/explore')) {
+					if (event instanceof NavigationStart) {
+						const scrollPosition =
+							this.scrollableElementRef.nativeElement.scrollTop;
+						this.scrollPositionService.saveScrollPosition(
+							currentRoute,
+							scrollPosition,
+						);
+					} else if (event instanceof NavigationEnd) {
+						this.restoreScrollPosition(currentRoute);
+					}
+				}
+			});
 	}
 
 	private restoreScrollPosition(route: string): void {
 		setTimeout(() => {
-		  const savedScrollPosition = this.scrollPositionService.getScrollPosition(route);
-		  if (savedScrollPosition && this.scrollableElementRef) {
-			this.scrollableElementRef.nativeElement.scrollTop = savedScrollPosition;
-		  }
+			const savedScrollPosition =
+				this.scrollPositionService.getScrollPosition(route);
+			if (savedScrollPosition && this.scrollableElementRef) {
+				this.scrollableElementRef.nativeElement.scrollTop =
+					savedScrollPosition;
+			}
 		});
-	  }
-
+	}
 }

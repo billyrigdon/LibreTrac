@@ -1,4 +1,12 @@
-import { Component, ElementRef, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+	Component,
+	ElementRef,
+	HostListener,
+	Input,
+	OnInit,
+	Output,
+	ViewChild,
+} from '@angular/core';
 import { formatDate } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -12,7 +20,10 @@ import { StoryVote } from 'src/app/types/vote';
 import { EventEmitter } from '@angular/core';
 import { ScrollPositionService } from 'src/app/services/scroll-position-service';
 import { debounceTime, filter } from 'rxjs';
-import { setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
+import {
+	setUserStories,
+	toggleLoading,
+} from 'src/app/store/shared/actions/shared.actions';
 
 @Component({
 	selector: 'app-user-stories-scrollable',
@@ -26,15 +37,17 @@ export class UserStoriesScrollableComponent implements OnInit {
 	throttle: number;
 	userId!: number;
 	private startY: number | null = null;
-	@Input() summaries: Array<{ summary: string, name: string, url: string }> = [];
+	@Input() summaries: Array<{ summary: string; name: string; url: string }> =
+		[];
 	@ViewChild('scrollableElement') scrollableElementRef!: ElementRef;
+
 	constructor(
 		private storyService: StoryService,
 		private voteService: VoteService,
 		private store: Store<AppState>,
 		private router: Router,
 		private storageService: StorageService,
-		private scrollPositionService: ScrollPositionService
+		private scrollPositionService: ScrollPositionService,
 	) {
 		this.distance = 0.1;
 		this.throttle = 0;
@@ -48,33 +61,41 @@ export class UserStoriesScrollableComponent implements OnInit {
 	@HostListener('touchend', ['$event'])
 	onTouchEnd(event: TouchEvent) {
 		const endY = event.changedTouches[0].clientY;
-		if (this.startY !== null && this.startY < endY && this.scrollableElementRef.nativeElement.scrollTop === 0) {
+		if (
+			this.startY !== null &&
+			this.startY < endY &&
+			this.scrollableElementRef.nativeElement.scrollTop <= 0
+		) {
 			const swipeDistance = endY - this.startY;
 			const threshold = 100; // Set a threshold to consider it as a swipe down
 
 			this.store.dispatch(toggleLoading({ status: true }));
 			if (swipeDistance > threshold) {
-				this.storyService
-					.getUserStories(this.userId)
-					.subscribe((res) => {
-						this.store.dispatch(setUserStories({ stories: JSON.parse(res) }));
+				this.storyService.getUserStories(this.userId).subscribe(
+					(res) => {
+						this.store.dispatch(
+							setUserStories({ stories: JSON.parse(res) }),
+						);
 						if (!res) {
-							this.store.dispatch(setUserStories({ stories: [] }));
+							this.store.dispatch(
+								setUserStories({ stories: [] }),
+							);
 						}
 
 						this.store.dispatch(toggleLoading({ status: false }));
 					},
-						(err) => {
-							this.store.dispatch(toggleLoading({ status: false }));
-						});
+					(err) => {
+						this.store.dispatch(toggleLoading({ status: false }));
+					},
+				);
 			}
 		}
 		this.startY = null;
 	}
 
 	onPageScroll() {
-		console.log("scrolled")
-		this.onScroll.emit()
+		console.log('scrolled');
+		this.onScroll.emit();
 	}
 
 	openStory(storyId: number) {
@@ -84,10 +105,16 @@ export class UserStoriesScrollableComponent implements OnInit {
 
 	getDateString(date: string) {
 		const localDateObj = new Date(date);
-		const localTimezoneOffsetMs = localDateObj.getTimezoneOffset() * 60 * 1000;
+		const localTimezoneOffsetMs =
+			localDateObj.getTimezoneOffset() * 60 * 1000;
 		const utcTimestampMs = localDateObj.getTime() + localTimezoneOffsetMs;
 		const utcDateObj = new Date(utcTimestampMs);
-		const options = { timeZone: 'UTC', month: 'long', day: 'numeric', year: 'numeric' };
+		const options = {
+			timeZone: 'UTC',
+			month: 'long',
+			day: 'numeric',
+			year: 'numeric',
+		};
 		const utcDateString = localDateObj.toLocaleDateString('UTC');
 		return utcDateString;
 	}
@@ -95,7 +122,7 @@ export class UserStoriesScrollableComponent implements OnInit {
 	ngOnInit(): void {
 		this.store.select(getUserId).subscribe((userId) => {
 			this.userId = userId;
-		})
+		});
 		// this.router.events
 		// 	.pipe(filter((event) => event instanceof NavigationEnd))
 		// 	.subscribe(() => {
@@ -128,7 +155,11 @@ export class UserStoriesScrollableComponent implements OnInit {
 		// 	});
 		this.router.events
 			.pipe(
-				filter((event) => event instanceof NavigationStart || event instanceof NavigationEnd)
+				filter(
+					(event) =>
+						event instanceof NavigationStart ||
+						event instanceof NavigationEnd,
+				),
 			)
 			.subscribe((event) => {
 				const currentRoute = this.router.url;
@@ -136,8 +167,12 @@ export class UserStoriesScrollableComponent implements OnInit {
 				if (currentRoute === '/user-stories') {
 					if (event instanceof NavigationStart) {
 						// setTimeout(() => {
-						const scrollPosition = this.scrollableElementRef.nativeElement.scrollTop;
-						this.scrollPositionService.saveScrollPosition(currentRoute, scrollPosition);
+						const scrollPosition =
+							this.scrollableElementRef.nativeElement.scrollTop;
+						this.scrollPositionService.saveScrollPosition(
+							currentRoute,
+							scrollPosition,
+						);
 						// }, 100);
 					} else if (event instanceof NavigationEnd) {
 						this.restoreScrollPosition(currentRoute);
@@ -148,11 +183,12 @@ export class UserStoriesScrollableComponent implements OnInit {
 
 	private restoreScrollPosition(route: string): void {
 		setTimeout(() => {
-			const savedScrollPosition = this.scrollPositionService.getScrollPosition(route);
+			const savedScrollPosition =
+				this.scrollPositionService.getScrollPosition(route);
 			if (savedScrollPosition && this.scrollableElementRef) {
-				this.scrollableElementRef.nativeElement.scrollTop = savedScrollPosition;
+				this.scrollableElementRef.nativeElement.scrollTop =
+					savedScrollPosition;
 			}
 		});
 	}
-
 }

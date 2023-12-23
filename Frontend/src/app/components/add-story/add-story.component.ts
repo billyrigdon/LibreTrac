@@ -1,20 +1,43 @@
-import { AfterViewInit, Component, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+	AfterViewInit,
+	Component,
+	ElementRef,
+	Input,
+	OnDestroy,
+	OnInit,
+	ViewChild,
+	ViewEncapsulation,
+} from '@angular/core';
+import {
+	UntypedFormBuilder,
+	UntypedFormGroup,
+	Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppState } from '@capacitor/app';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { MoodService } from 'src/app/services/mood.service';
 import { StoryService } from 'src/app/services/story.service';
-import { setAverageMood, setExploreStories, setIsMonthView, setStoryMood, setUserStories, toggleLoading } from 'src/app/store/shared/actions/shared.actions';
-import { SHARED_STATE_NAME, getSharedState } from 'src/app/store/shared/selectors/shared.selector';
+import {
+	setAverageMood,
+	setExploreStories,
+	setIsMonthView,
+	setStoryMood,
+	setUserStories,
+	toggleLoading,
+} from 'src/app/store/shared/actions/shared.actions';
+import {
+	SHARED_STATE_NAME,
+	getSharedState,
+} from 'src/app/store/shared/selectors/shared.selector';
 import { Story, StoryDrug } from 'src/app/types/story';
 
 @Component({
 	selector: 'app-add-story',
 	templateUrl: './add-story.component.html',
 	styleUrls: ['./add-story.component.scss'],
-	encapsulation: ViewEncapsulation.None
+	encapsulation: ViewEncapsulation.Emulated,
 })
 export class AddStoryComponent implements OnInit, AfterViewInit, OnDestroy {
 	form: UntypedFormGroup;
@@ -24,15 +47,24 @@ export class AddStoryComponent implements OnInit, AfterViewInit, OnDestroy {
 	userStories: StoryDrug[] = [];
 	exploreStories: StoryDrug[] = [];
 	userId = 0;
-	stateSub$!: Subscription
-	controlNames = ['energy', 'focus', 'creativity', 'irritability', 'happiness', 'anxiety'];
+	stateSub$!: Subscription;
+	controlNames = [
+		'energy',
+		'focus',
+		'creativity',
+		'irritability',
+		'happiness',
+		'anxiety',
+	];
+
+	@ViewChild('addJournalInput') addJournalInput!: ElementRef;
 
 	constructor(
 		private formBuilder: UntypedFormBuilder,
 		private storyService: StoryService,
 		private router: Router,
 		private store: Store<AppState>,
-		private moodService: MoodService
+		private moodService: MoodService,
 	) {
 		this.form = this.formBuilder.group({
 			energy: [1, Validators.required],
@@ -42,7 +74,7 @@ export class AddStoryComponent implements OnInit, AfterViewInit, OnDestroy {
 			happiness: [1, Validators.required],
 			anxiety: [1, Validators.required],
 			title: ['', [Validators.required, Validators.minLength(1)]],
-			journal: ['']
+			journal: [''],
 		});
 		this.story = {
 			title: '',
@@ -77,27 +109,46 @@ export class AddStoryComponent implements OnInit, AfterViewInit, OnDestroy {
 		this.story.date = new Date();
 		this.story.userId = this.userId;
 		this.store.dispatch(toggleLoading({ status: true }));
-		this.storyService.addUserStory(this.story).subscribe((res: any) => {
-			this.store.dispatch(setUserStories({ stories: [res, ...this.userStories] }));
-			this.store.dispatch(setExploreStories({ stories: [res, ...this.exploreStories] }));
+		this.storyService.addUserStory(this.story).subscribe(
+			(res: any) => {
+				this.store.dispatch(
+					setUserStories({ stories: [res, ...this.userStories] }),
+				);
+				this.store.dispatch(
+					setExploreStories({
+						stories: [res, ...this.exploreStories],
+					}),
+				);
 
-			setTimeout(() => {
-				this.moodService.getAverageUserMood(this.userId).subscribe((mood: any) => {
-					this.store.dispatch(setAverageMood({ mood: JSON.parse(mood) }));
-					this.store.dispatch(setIsMonthView({ isMonthView: false }));
-					this.store.dispatch(toggleLoading({ status: false }));
-					alert('Journal added successfully')
-					this.router.navigateByUrl('/user-stories');
-				}, (err) => {
-					this.store.dispatch(toggleLoading({ status: false }));
-					alert('Failed to fetch updated mood')
-				})
-			}, 500)
-
-		}, (err) => {
-			this.store.dispatch(toggleLoading({ status: false }));
-			alert('Failed to add journal entry');
-		});
+				setTimeout(() => {
+					this.moodService.getAverageUserMood(this.userId).subscribe(
+						(mood: any) => {
+							this.store.dispatch(
+								setAverageMood({ mood: JSON.parse(mood) }),
+							);
+							this.store.dispatch(
+								setIsMonthView({ isMonthView: false }),
+							);
+							this.store.dispatch(
+								toggleLoading({ status: false }),
+							);
+							alert('Journal added successfully');
+							this.router.navigateByUrl('/user-stories');
+						},
+						(err) => {
+							this.store.dispatch(
+								toggleLoading({ status: false }),
+							);
+							alert('Failed to fetch updated mood');
+						},
+					);
+				}, 500);
+			},
+			(err) => {
+				this.store.dispatch(toggleLoading({ status: false }));
+				alert('Failed to add journal entry');
+			},
+		);
 	}
 
 	updateStory() {
@@ -115,39 +166,72 @@ export class AddStoryComponent implements OnInit, AfterViewInit, OnDestroy {
 		this.story.journal = val.journal;
 		this.story.title = val.title;
 		this.story.date = new Date();
-		this.story.userId = this.userId;;
+		this.story.userId = this.userId;
 		this.store.dispatch(toggleLoading({ status: true }));
-		this.storyService.updateUserStory(this.story).subscribe((res: any) => {
-			const newStory = { ...res }
-			this.moodService.getAverageStoryMood(res.storyId).subscribe((mood: any) => {
-				this.store.dispatch(setStoryMood({ mood: JSON.parse(mood) }));
-				const filteredUserStories = this.userStories.filter((story) => story.storyId !== newStory.storyId);
-				const filteredExploreStories = this.exploreStories.filter((story) => story.storyId !== newStory.storyId);
-				this.store.dispatch(setUserStories({ stories: [res, ...filteredUserStories] }));
-				this.store.dispatch(setExploreStories({ stories: [res, ...filteredExploreStories] }));
-				// setTimeout(() => {
-				this.moodService.getAverageUserMood(this.userId).subscribe((mood: any) => {
-					this.store.dispatch(setIsMonthView({ isMonthView: false }));
-					this.store.dispatch(toggleLoading({ status: false }));
-					this.store.dispatch(setAverageMood({ mood: JSON.parse(mood) }));
-					alert('Story updated successfully')
-					this.router.navigateByUrl('/user-stories');
-				}, (err) => {
-					this.store.dispatch(toggleLoading({ status: false }));
-					alert('Failed to fetch updated mood')
-				});
-				// },500)
-			}, (err) => {
+		this.storyService.updateUserStory(this.story).subscribe(
+			(res: any) => {
+				const newStory = { ...res };
+				this.moodService.getAverageStoryMood(res.storyId).subscribe(
+					(mood: any) => {
+						this.store.dispatch(
+							setStoryMood({ mood: JSON.parse(mood) }),
+						);
+						const filteredUserStories = this.userStories.filter(
+							(story) => story.storyId !== newStory.storyId,
+						);
+						const filteredExploreStories =
+							this.exploreStories.filter(
+								(story) => story.storyId !== newStory.storyId,
+							);
+						this.store.dispatch(
+							setUserStories({
+								stories: [res, ...filteredUserStories],
+							}),
+						);
+						this.store.dispatch(
+							setExploreStories({
+								stories: [res, ...filteredExploreStories],
+							}),
+						);
+						// setTimeout(() => {
+						this.moodService
+							.getAverageUserMood(this.userId)
+							.subscribe(
+								(mood: any) => {
+									this.store.dispatch(
+										setIsMonthView({ isMonthView: false }),
+									);
+									this.store.dispatch(
+										toggleLoading({ status: false }),
+									);
+									this.store.dispatch(
+										setAverageMood({
+											mood: JSON.parse(mood),
+										}),
+									);
+									alert('Story updated successfully');
+									this.router.navigateByUrl('/user-stories');
+								},
+								(err) => {
+									this.store.dispatch(
+										toggleLoading({ status: false }),
+									);
+									alert('Failed to fetch updated mood');
+								},
+							);
+						// },500)
+					},
+					(err) => {
+						this.store.dispatch(toggleLoading({ status: false }));
+						alert('Failed to fetch updated mood');
+					},
+				);
+			},
+			(err) => {
 				this.store.dispatch(toggleLoading({ status: false }));
-				alert('Failed to fetch updated mood')
-			});
-
-
-
-		}, (err) => {
-			this.store.dispatch(toggleLoading({ status: false }));
-			alert('Failed to add journal entry');
-		});
+				alert('Failed to add journal entry');
+			},
+		);
 	}
 
 	openJournal() {
@@ -159,11 +243,11 @@ export class AddStoryComponent implements OnInit, AfterViewInit, OnDestroy {
 	}
 
 	ngAfterViewInit(): void {
-		this.store.dispatch(toggleLoading({status: false}));
+		this.store.dispatch(toggleLoading({ status: false }));
 		this.store.select(getSharedState).subscribe((state) => {
 			if (state.storyToEdit.storyId) {
-				const story = {...state.storyToEdit};
-				console.log(story)
+				const story = { ...state.storyToEdit };
+				console.log(story);
 				this.story.storyId = story.storyId;
 				this.form.setValue({
 					journal: story.journal,
@@ -176,24 +260,25 @@ export class AddStoryComponent implements OnInit, AfterViewInit, OnDestroy {
 					title: story.title,
 				});
 			}
-		})
-
+		});
 	}
 
 	ngOnInit(): void {
-		this.stateSub$ = this.store.select(getSharedState).subscribe((state) => {
-			if (state.userStories.length > 0) {
-				this.userStories = [...state.userStories];
-			} else {
-				this.userStories = []
-			}
-			if (state.exploreStories.length > 0) {
-				this.exploreStories = [...state.exploreStories];
-			} else {
-				this.exploreStories = []
-			}
-			this.userId = state.userId;
-		});
+		this.stateSub$ = this.store
+			.select(getSharedState)
+			.subscribe((state) => {
+				if (state.userStories.length > 0) {
+					this.userStories = [...state.userStories];
+				} else {
+					this.userStories = [];
+				}
+				if (state.exploreStories.length > 0) {
+					this.exploreStories = [...state.exploreStories];
+				} else {
+					this.exploreStories = [];
+				}
+				this.userId = state.userId;
+			});
 
 		if (!localStorage.getItem('userProfile')) {
 			this.router.navigateByUrl('/login');
@@ -205,5 +290,3 @@ export class AddStoryComponent implements OnInit, AfterViewInit, OnDestroy {
 		this.stateSub$.unsubscribe();
 	}
 }
-
-

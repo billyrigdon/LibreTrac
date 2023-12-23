@@ -1,71 +1,71 @@
 <div *ngIf="this.story.storyId === 1" id="add-story-container">
-	<form (submit)="addStory()" [formGroup]="form">
-		<div *ngIf="!journalOpen" id="slider-form-container" [formGroup]="form">
-			<h1>Check in.</h1>
-			<div class="form-group" *ngFor="let controlName of controlNames">
-				<label [for]="controlName">{{ controlName }}</label>
-				<input min="1" max="10" type="range" class="form-control-range-mood" [id]="controlName"
-					[formControlName]="controlName">
-			</div>
-			<button (click)="openJournal()">Check in</button>
-		</div>
-		<div *ngIf="journalOpen" id="journal-card">
-			<h1>Check in.</h1>
-			<button (click)="closeJournal()" class="back-button">
-				<span class="material-icons">arrow_back</span>
-			</button>
-			<div>
-				<input appAutofocus formControlName="title" placeholder="Title" />
-				<textarea id="journal-content" matInput name="content" formControlName="journal"
-					placeholder="Journal Entry"></textarea>
-			</div>
-			<div class="button-container">
-				<button type="submit">Add Story</button>
-			</div>
-			<div class="error-container">
-				<div *ngIf="form.get('content')?.invalid && (form.get('content')?.dirty || form.get('content')?.touched)">
-					<p *ngIf="form.get('content')?.hasError">Journals must be at least 8 characters</p>
-				</div>
-				<div *ngIf="form.get('title')?.invalid && (form.get('title')?.dirty || form.get('title')?.touched)">
-					<p *ngIf="form.get('title')?.errors">Title cannot be blank</p>
-				</div>
-			</div>
-		</div>
-	</form>
+    <form (submit)="addStory()" [formGroup]="form">
+        <div *ngIf="!journalOpen" id="slider-form-container" [formGroup]="form">
+            <h1>Check in.</h1>
+            <div class="form-group" *ngFor="let controlName of controlNames">
+                <label [for]="controlName">{{ controlName }}</label>
+                <input min="1" max="10" type="range" class="form-control-range-mood" [id]="controlName"
+                       [formControlName]="controlName">
+            </div>
+            <button (click)="openJournal()">Check in</button>
+        </div>
+        <div *ngIf="journalOpen" id="journal-card">
+            <h1>Check in.</h1>
+            <button (click)="closeJournal()" class="back-button">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <div class="journal-container">
+                <input autofocus="true" id="journal-title" formControlName="title" placeholder="Title"/>
+                <textarea id="journal-content" matInput name="content" formControlName="journal"
+                          placeholder="Journal Entry"></textarea>
+            </div>
+            <div class="button-container">
+                <button type="submit">Add Story</button>
+            </div>
+            <div class="error-container">
+                <div *ngIf="form.get('content')?.invalid && (form.get('content')?.dirty || form.get('content')?.touched)">
+                    <p *ngIf="form.get('content')?.hasError">Journals must be at least 8 characters</p>
+                </div>
+                <div *ngIf="form.get('title')?.invalid && (form.get('title')?.dirty || form.get('title')?.touched)">
+                    <p *ngIf="form.get('title')?.errors">Title cannot be blank</p>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
-<div *ngIf="this.story.storyId > 1" id="add-story-container">
-	<form (submit)="updateStory()" [formGroup]="form">
-		<div *ngIf="!journalOpen" id="slider-form-container" [formGroup]="form">
-			<h1>Check in.</h1>
-			<div class="form-group" *ngFor="let controlName of controlNames">
-				<label [for]="controlName">{{ controlName }}</label>
-				<input min="1" max="10" type="range" class="form-control-range-mood" [id]="controlName"
-					[formControlName]="controlName">
-			</div>
-			<button (click)="openJournal()">Check in</button>
-		</div>
-		<div *ngIf="journalOpen" id="journal-card">
-			<h1>Check in.</h1>
-			<button (click)="closeJournal()" class="back-button">
-				<span class="material-icons">arrow_back</span>
-			</button>
-			<div>
-				<input appAutofocus formControlName="title" placeholder="Title" />
-				<textarea id="journal-content" matInput name="content" formControlName="journal"
-					placeholder="Journal Entry"></textarea>
-			</div>
-			<div class="button-container">
-				<button type="submit">Update Story</button>
-			</div>
-			<div class="error-container">
-				<div *ngIf="form.get('content')?.invalid && (form.get('content')?.dirty || form.get('content')?.touched)">
-					<p *ngIf="form.get('content')?.hasError">Journals must be at least 8 characters</p>
-				</div>
-				<div *ngIf="form.get('title')?.invalid && (form.get('title')?.dirty || form.get('title')?.touched)">
-					<p *ngIf="form.get('title')?.errors">Title cannot be blank</p>
-				</div>
-			</div>
-		</div>
-		
-	</form>
+<div *ngIf="this.story.storyId != 1" id="add-story-container">
+    <form (submit)="updateStory()" [formGroup]="form">
+        <div *ngIf="!journalOpen" id="slider-form-container" [formGroup]="form">
+            <h1>Check in.</h1>
+            <div class="form-group" *ngFor="let controlName of controlNames">
+                <label [for]="controlName">{{ controlName }}</label>
+                <input min="1" max="10" type="range" class="form-control-range-mood" [id]="controlName"
+                       [formControlName]="controlName">
+            </div>
+            <button (click)="openJournal()">Check in</button>
+        </div>
+        <div *ngIf="journalOpen" id="journal-card">
+            <h1>Check in.</h1>
+            <button (click)="closeJournal()" class="back-button">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <div class="journal-container">
+                <input autofocus="true" id="journal-title" formControlName="title" placeholder="Title"/>
+                <textarea id="journal-content" matInput name="content" formControlName="journal"
+                          placeholder="Journal Entry"></textarea>
+            </div>
+            <div class="button-container">
+                <button type="submit">Update Story</button>
+            </div>
+            <div class="error-container">
+                <div *ngIf="form.get('content')?.invalid && (form.get('content')?.dirty || form.get('content')?.touched)">
+                    <p *ngIf="form.get('content')?.hasError">Journals must be at least 8 characters</p>
+                </div>
+                <div *ngIf="form.get('title')?.invalid && (form.get('title')?.dirty || form.get('title')?.touched)">
+                    <p *ngIf="form.get('title')?.errors">Title cannot be blank</p>
+                </div>
+            </div>
+        </div>
+
+    </form>
 </div>

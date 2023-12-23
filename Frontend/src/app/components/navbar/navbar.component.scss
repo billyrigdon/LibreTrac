@@ -2,66 +2,69 @@
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans&display=swap");
 
 
-
 #navbar {
-	width: 100vw;
-	height: 48px;
-	position: fixed;
-	bottom: 0;
-	// left: 0;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	background-color: $main-color;
-	z-index: 99;
-	box-shadow: rgba(0, 0, 0, 0.3) 0px 8px 24px;
+  width: 100vw;
+  height: 48px;
+  position: fixed !important;
+  bottom: 0;
+  // left: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: $main-color;
+  z-index: 99;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 8px 24px;
 
-	#nav-buttons {
-		width: 100%;
-		height: 6vh;
-		display: flex;
-		flex-direction: row;
-		justify-content: space-evenly;
-		align-items: flex-end;
-		
+  #nav-buttons {
+    width: 100%;
+    height: 6vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: flex-end;
 
-		button {
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			justify-content: center;
-			background-color: transparent !important;
-			color: #271f2e !important;
-			z-index: 10000px;
-			margin: 0px !important;
-			height: 100%;
-			width: 15%;
-			// padding: 8px;
-			span {
-				color: #271f2e !important;
-				display: flex;
-				flex-direction: row;
-				align-items: flex-end;	
-			}
-			p {
-				margin: 0px !important;
-				align-items: flex-end;
-				// font-size: 8px;
-				color: #271f2e !important;
-			}
-			
-		}
-		.active {
-			color: #b2a2c7 !important;
-			span {
-				font-size: 24px;
-				color: #b2a2c7 !important;
-			}
-			p {
-				font-size: 24px;
-				color: #b2a2c7 !important;
-			}
-		}
-	}
+
+    button {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      background-color: transparent !important;
+      color: #271f2e !important;
+      z-index: 10000px;
+      margin: 0px !important;
+      height: 100%;
+      width: 15%;
+      // padding: 8px;
+      span {
+        color: #271f2e !important;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+      }
+
+      p {
+        margin: 0px !important;
+        align-items: flex-end;
+        // font-size: 8px;
+        color: #271f2e !important;
+      }
+
+    }
+
+    .active {
+      color: #b2a2c7 !important;
+
+      span {
+        font-size: 24px;
+        color: #b2a2c7 !important;
+      }
+
+      p {
+        font-size: 24px;
+        color: #b2a2c7 !important;
+      }
+    }
+  }
 
 }

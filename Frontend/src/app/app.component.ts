@@ -8,7 +8,11 @@ import { StorageService } from './services/storage.service';
 import { AppState } from './store/app.state';
 import { setNotifications } from './store/comments/comments.actions';
 import { getAddCommentsOpen } from './store/comments/comments.selector';
-import { setUserId, toggleAuth, toggleNoties } from './store/shared/actions/shared.actions';
+import {
+	setUserId,
+	toggleAuth,
+	toggleNoties,
+} from './store/shared/actions/shared.actions';
 import {
 	getAuthState,
 	getLoading,
@@ -17,7 +21,7 @@ import {
 import { AuthService } from './services/auth.service';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
-import {Platform} from "@angular/cdk/platform";
+import { Platform } from '@angular/cdk/platform';
 
 @Component({
 	selector: 'app-root',
@@ -36,13 +40,14 @@ export class AppComponent implements OnInit {
 	containerMarginBottom: string = '0px';
 	inputFocusBlurHandler: () => void = this.inputHandler.bind(this);
 	notiesOpen: boolean = false;
+
 	constructor(
 		private storageService: StorageService,
 		private store: Store<AppState>,
 		public router: Router,
 		private notificationService: NotificationService,
 		private authService: AuthService,
-		private platform: Platform
+		private platform: Platform,
 	) {
 		this.isLoading = this.store.select(getLoading);
 		this.isLoggedIn = this.store.select(getAuthState);
@@ -53,8 +58,18 @@ export class AppComponent implements OnInit {
 
 	@HostListener('window:resize', ['$event'])
 	onResize(event: Event) {
-		this.containerHeight = (event.target as Window).innerHeight;
-		this.inputHandler();
+		// this.containerHeight = (event.target as Window).innerHeight;
+		// this.inputHandler();
+
+		const activeElement = document.activeElement;
+		if (
+			activeElement?.tagName === 'INPUT' ||
+			activeElement?.tagName === 'TEXTAREA'
+		) {
+			setTimeout(() => {
+				activeElement?.scrollIntoView();
+			}, 0);
+		}
 	}
 
 	ngAfterViewInit(): void {
@@ -79,20 +94,22 @@ export class AppComponent implements OnInit {
 			if (!this.loggedIn) {
 				this.router.navigateByUrl('/login');
 			}
-		})
+		});
 	}
 
 	inputHandler() {
 		console.log(this.containerHeight);
 		document.body.style.height = window.innerHeight + 'px';
-		this.containerHeight = (window.innerHeight - 48 - (this.platform.IOS ? 24 : 0));
-		this.containerMarginBottom = (this.originalHeight - this.containerHeight).toString() + 'px';
+		this.containerHeight =
+			window.innerHeight - 48 - (this.platform.IOS ? 24 : 0);
+		this.containerMarginBottom =
+			(this.originalHeight - this.containerHeight).toString() + 'px';
 	}
 
 	addEventListenersToInputs() {
 		// document.body.addEventListener("resize", this.inputHandler, true);
 		const inputElements = document.querySelectorAll('input');
-		inputElements.forEach(input => {
+		inputElements.forEach((input) => {
 			input.addEventListener('focus', this.inputFocusBlurHandler);
 			input.addEventListener('blur', this.inputFocusBlurHandler);
 		});
@@ -100,18 +117,16 @@ export class AppComponent implements OnInit {
 
 	removeEventListenersFromInputs() {
 		const inputElements = document.querySelectorAll('input');
-		inputElements.forEach(input => {
+		inputElements.forEach((input) => {
 			input.removeEventListener('focus', this.inputFocusBlurHandler);
 			input.removeEventListener('blur', this.inputFocusBlurHandler);
 		});
 	}
 
 	ngOnInit(): void {
-
 		this.store.select(getNotiesOpen).subscribe((open) => {
 			this.notiesOpen = open;
-		})
-
+		});
 
 		if (Capacitor.getPlatform() === 'android') {
 			App.addListener('backButton', (data) => {
@@ -123,13 +138,19 @@ export class AppComponent implements OnInit {
 				} else {
 					App.exitApp();
 				}
-			})
+			});
 		}
-		this.containerHeight = (window.innerHeight - 48 - (this.platform.IOS && window.matchMedia('(display-mode: standalone)').matches ? 24 : 0));
-		this.originalHeight = (window.innerHeight - 48);
+		this.containerHeight =
+			window.innerHeight -
+			48 -
+			(this.platform.IOS &&
+			window.matchMedia('(display-mode: standalone)').matches
+				? 24
+				: 0);
+		this.originalHeight = window.innerHeight - 48;
 		//Scroll to top of page on route changes aside from explore page
 		this.router.events
-			.pipe(filter(event => event instanceof NavigationEnd))
+			.pipe(filter((event) => event instanceof NavigationEnd))
 			.subscribe(() => {
 				this.store.dispatch(toggleNoties({ open: false }));
 				if (!this.router.url.includes('explore')) {
@@ -138,7 +159,11 @@ export class AppComponent implements OnInit {
 			});
 
 		if (this.storageService.getToken()) {
-			if (this.authService.tokenExpired(this.storageService.getToken() as string)) {
+			if (
+				this.authService.tokenExpired(
+					this.storageService.getToken() as string,
+				)
+			) {
 				this.storageService.signout();
 			} else {
 				this.store.dispatch(toggleAuth({ status: true }));
@@ -147,7 +172,9 @@ export class AppComponent implements OnInit {
 
 		if (localStorage.getItem('userProfile')) {
 			//Get userId from user stored in local storage
-			this.userId = JSON.parse(localStorage.getItem('userProfile') || '').userId;
+			this.userId = JSON.parse(
+				localStorage.getItem('userProfile') || '',
+			).userId;
 			console.log(this.userId);
 			// this.store.dispatch(setUserId({ userId: this.userId }));
 
@@ -157,21 +184,17 @@ export class AppComponent implements OnInit {
 				.getUserNotifications(this.userId)
 				.subscribe((noties) => {
 					this.store.dispatch(
-						setNotifications({ notifications: noties })
+						setNotifications({ notifications: noties }),
 					);
 				});
 		}
 		this.isLoading = this.store.select(getLoading);
-
-
-
 
 		// document.body.addEventListener("resize", () => {
 		// 	console.log(this.containerHeight);
 		// 	this.containerHeight = (window.innerHeight - 48);
 		// 	this.containerMarginBottom = (this.originalHeight - this.containerHeight) .toString() + 'px';
 		// }, true);
-
 
 		// document.body.addEventListener("focus", (event: any) => {
 		// 	this.containerHeight = (window.innerHeight - 48);
