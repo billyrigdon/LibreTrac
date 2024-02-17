@@ -5,7 +5,7 @@
 #app-container {
   position: fixed !important;
   width: 100vw !important;
-  //height: calc(100% - 64px) !important;
+  height: calc(100% - 64px) !important;
   overflow-y: hidden !important;
   overflow-x: hidden !important;
   overscroll-behavior-x: none !important;
