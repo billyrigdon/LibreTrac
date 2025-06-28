@@ -1,16 +1,5 @@
 # LibreTrac 📊🧠
 
-Offline-first mood, cognition & stack tracker written in **Flutter**.  
-Track how your medications, supplements, sleep and daily habits affect mood and raw cognitive performance—without sending your data anywhere.
-
-<p align="center">
-  <img src="assets/screenshots/dashboard_dark.png" width="240"> 
-  <img src="assets/screenshots/substances_dark.png" width="240"> 
-  <img src="assets/screenshots/sleep_chart.png" width="240">
-</p>
-
----
-
 ## ✨ Features
 
 * **Mood & cognition journal**  
