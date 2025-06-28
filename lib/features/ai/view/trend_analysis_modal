@@ -1,0 +1,52 @@
+  void openTrendAnalysisModal() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        final future = ref.read(analysisProvider.future);
+
+        return AlertDialog(
+          title: const Text('AI Trends'),
+          content: SizedBox(
+            width: 320,
+            child: FutureBuilder<String?>(
+              future: future,
+              builder: (context, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('Crunching the numbers…'),
+                    ],
+                  );
+                } else if (snap.hasError) {
+                  return Text(
+                    'Error: ${snap.error}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  );
+                } else {
+                  final text = snap.data;
+                  return text == null
+                      ? const Text(
+                        'No data available for this period.',
+                        style: TextStyle(color: Colors.grey),
+                      )
+                      : SingleChildScrollView(child: SelectableText(text));
+                }
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
