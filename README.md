@@ -1,16 +1,66 @@
-# libretrac
+# LibreTrac 📊🧠
 
-A new Flutter project.
+Offline-first mood, cognition & stack tracker written in **Flutter**.  
+Track how your medications, supplements, sleep and daily habits affect mood and raw cognitive performance—without sending your data anywhere.
 
-## Getting Started
+<p align="center">
+  <img src="assets/screenshots/dashboard_dark.png" width="240"> 
+  <img src="assets/screenshots/substances_dark.png" width="240"> 
+  <img src="assets/screenshots/sleep_chart.png" width="240">
+</p>
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## ✨ Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+* **Mood & cognition journal**  
+* **Cognitive mini-tests** (reaction-time, N-back, Stroop, digit span…)
+* **Sleep log** – dual-axis charts for hours & quality  
+* **Stack manager** (meds & nootropics) with:
+  * AI-generated safety summaries  
+  * Real-time interaction warnings (OpenAI)  
+* **Trend analytics**
+* **Fully offline** – SQLite (Drift) + Riverpod + Hive prefs  
+* **Dark theme**
+* **100 % open source** – GPL‑3
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 🚀 Quick start
+
+```bash
+git clone https://github.com/billyrigdon/libretrac.git
+cd libretrac
+flutter pub get
+```
+
+### 1. Add your OpenAI API key
+
+1. Create a file at **`assets/.env`** (ignored by git).  
+2. Add a single line:
+
+   ```env
+   api_key=sk-********************************
+   ```
+
+3. That’s it — `OpenAIAPI.instance` reads the key at runtime.
+
+### 2. Run on Android
+
+```bash
+flutter run
+```
+
+## 🤝 Contributing
+
+PRs welcome!  Open an issue for ideas or bugs.  
+Please run `flutter analyze` and `dart format .` before submitting.
+
+---
+
+## 🪪 License
+
+GPL‑3.0 — see [`LICENSE`](LICENSE).  
+Use freely, attribute, and share improvements alike.
+
+---
