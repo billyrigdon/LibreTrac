@@ -1,0 +1,8 @@
+<resources>
+    <!-- Already present -->
+    <string name="app_name">LibreTrac</string>
+
+    <!-- Add this if it isn’t there yet -->
+    <string name="mood_widget_content_desc">7-day mood chart</string>
+</resources>
+

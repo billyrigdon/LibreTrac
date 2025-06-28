@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="110dp"
-    android:minHeight="110dp"
+    android:minWidth ="296dp"  
+    android:minHeight="148dp"  
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/mood_widget"
-    android:previewImage="@mipmap/ic_launcher"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"/>

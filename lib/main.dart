@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:libretrac/features/home/view/home_screen.dart';
 import 'package:libretrac/providers/theme_provider.dart';
+import 'package:libretrac/services/mood_widget_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await HomeWidget.registerBackgroundCallback(_widgetCallback);
+  await HomeWidget.registerBackgroundCallback(_widgetCallback);
 
   await dotenv.load(fileName: 'assets/.env');
   runApp(ProviderScope(child: const LibreTracApp()));
 
   // 2 — kick the widget after the first frame so ProviderScope is ready
-  // WidgetsBinding.instance.addPostFrameCallback((_) {
-  // MoodWidgetService.update();
-  // });
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+  MoodWidgetService.update();
+  });
 }
 
 /// Called by the OS when the widget requests an update.
-// @pragma('vm:entry-point')
-// void _widgetCallback(Uri? _) async {
-// await MoodWidgetService.update();
-// }
+@pragma('vm:entry-point')
+void _widgetCallback(Uri? _) async {
+await MoodWidgetService.update();
+}
 
 class LibreTracApp extends ConsumerWidget {
   const LibreTracApp({super.key});

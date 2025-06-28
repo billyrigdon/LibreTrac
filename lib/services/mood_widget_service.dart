@@ -25,69 +25,94 @@ class MoodWidgetService {
 
   static Future<void> update() async {
     // ── 1. Fetch the seven most-recent rows ────────────────────────────
-    final rows =
-        await (db.select(db.moodEntries)
-              ..orderBy([
-                (t) => OrderingTerm(
-                  expression: t.timestamp,
-                  mode: OrderingMode.desc,
-                ),
-              ])
-              ..limit(7))
-            .get();
+    try {
+      final rows =
+          await (db.select(db.moodEntries)
+                ..orderBy([
+                  (t) => OrderingTerm(
+                    expression: t.timestamp,
+                    mode: OrderingMode.desc,
+                  ),
+                ])
+                ..limit(7))
+              .get();
 
-    if (rows.isEmpty) {
-      // Nothing to draw – still notify the widget so it clears itself
-      // tell Android which provider to ping
-      await HomeWidget.updateWidget(
-        name: 'MoodWidgetProvider', // <-- here
-        qualifiedAndroidName: 'com.example.libretrac.MoodWidgetProvider',
-      );
-      return;
-    }
+      if (rows.isEmpty) {
+        // Nothing to draw – still notify the widget so it clears itself
+        // tell Android which provider to ping
+        await HomeWidget.updateWidget(
+          name: 'MoodWidgetProvider', // <-- here
+          qualifiedAndroidName: 'com.example.libretrac.MoodWidgetProvider',
+        );
+        return;
+      }
 
-    final ordered = rows.reversed.toList(); // oldest → newest (left→right)
-
-    // ── 2. Build the chart widget off-screen ───────────────────────────
-    //  ----  build the headless chart widget  ----
-    final chartWidget = Directionality(
-      // ① text direction
-      textDirection: TextDirection.ltr,
-      child: MediaQuery(
-        // ② minimal MediaQuery
-        data: const MediaQueryData(
-          size: Size(300, 300), // fl_chart needs a non-zero size
-          devicePixelRatio: 1.0, // any reasonable dpi
-        ),
-        child: SizedBox(
-          // ③ 300×300 canvas
-          width: 300,
-          height: 300,
-          child: LineChart(
-            LineChartData(
-              minY: 0,
-              maxY: 10,
-              minX: 0,
-              maxX: ordered.length - 1.toDouble(),
-              titlesData: FlTitlesData(show: false),
-              gridData: FlGridData(show: false),
-              borderData: FlBorderData(show: false),
-              lineBarsData: _buildLines(ordered),
+      final ordered = rows.reversed.toList(); // oldest → newest (left→right)
+      const Size _bitmapSize = Size(272, 110);
+      // ── 2. Build the chart widget off-screen ───────────────────────────
+      //  ----  build the headless chart widget  ----
+      final chartWidget = Directionality(
+        // ① text direction
+        textDirection: TextDirection.ltr,
+        child: MediaQuery(
+          // ② minimal MediaQuery
+          data: const MediaQueryData(
+            size: _bitmapSize, // fl_chart needs a non-zero size
+            devicePixelRatio: 1.0, // any reasonable dpi
+          ),
+          child: SizedBox(
+            // ③ 300×300 canvas
+            width: _bitmapSize.width,
+            height: _bitmapSize.height,
+            child: LineChart(
+              LineChartData(
+                minY: 0,
+                maxY: 10,
+                minX: 0,
+                maxX: ordered.length - 1.toDouble(),
+                titlesData: FlTitlesData(show: false),
+                gridData: FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: _buildLines(ordered),
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    //  ----  rasterise to PNG and push into the widget  ----
-    await HomeWidget.renderFlutterWidget(
-      chartWidget,
-      key: 'widget_image',
-      logicalSize: const Size(300, 300),
-    );
+      final chart = SizedBox(
+        width: _bitmapSize.width,
+        height: _bitmapSize.height,
+        child: Padding(
+          // 6 dp top & bottom keeps axes clear
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: chartWidget,
+        ),
+      );
 
-    // Notify the launcher that the bitmap changed
-    await HomeWidget.updateWidget(name: 'MoodWidgetProvider');
+      await HomeWidget.renderFlutterWidget(
+        RepaintBoundary(child: chart),
+        logicalSize: _bitmapSize,
+        key: 'widget_image',
+      );
+
+      //  ----  rasterise to PNG and push into the widget  ----
+      await HomeWidget.renderFlutterWidget(
+        Padding(padding: const EdgeInsets.all(8.0), child: chartWidget),
+        key: 'widget_image',
+        logicalSize: const Size(380, 160),
+      );
+
+      // Notify the launcher that the bitmap changed
+      // lib/services/mood_widget_service.dart
+      // ...
+      await HomeWidget.updateWidget(
+        name: 'MoodWidgetProvider',
+        qualifiedAndroidName: 'com.example.libretrac.MoodWidgetProvider',
+      );
+    } catch (err) {
+      print(err);
+    }
   }
 
   /// Builds six LineChartBarData traces (colour-coded).

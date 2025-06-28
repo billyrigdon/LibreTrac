@@ -24,8 +24,19 @@ part 'app_database.g.dart';
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  // AppDatabase() : super(_openConnection());
 
+  // ❶ private named ctor
+  AppDatabase._() : super(_openConnection());
+
+  // ❷ single shared instance
+  static final AppDatabase _instance = AppDatabase._();
+
+  // ❸ factory always returns the same object
+  factory AppDatabase() => _instance;
+
+  @override
+  // int get schemaVersion => 1;
   @override
   int get schemaVersion => 2; // ← bumped
 
@@ -41,19 +52,19 @@ class AppDatabase extends _$AppDatabase {
   );
 
   // // ── Sleep helpers ────────────────────────────────────────────
-    Future<int> insertSleep(SleepEntriesCompanion data) =>
-        into(sleepEntries).insert(data);
+  Future<int> insertSleep(SleepEntriesCompanion data) =>
+      into(sleepEntries).insert(data);
 
-    Stream<List<SleepEntry>> watchAllSleep() =>
-        (select(sleepEntries)
-          ..orderBy([(t) => OrderingTerm.desc(t.date)])).watch();
+  Stream<List<SleepEntry>> watchAllSleep() =>
+      (select(sleepEntries)
+        ..orderBy([(t) => OrderingTerm.desc(t.date)])).watch();
 
-    Future<SleepEntry?> entryFor(DateTime day) {
-      final start = DateTime(day.year, day.month, day.day);
-      final end = start.add(const Duration(days: 1));
-      return (select(sleepEntries)
-        ..where((t) => t.date.isBetweenValues(start, end))).getSingleOrNull();
-    }
+  Future<SleepEntry?> entryFor(DateTime day) {
+    final start = DateTime(day.year, day.month, day.day);
+    final end = start.add(const Duration(days: 1));
+    return (select(sleepEntries)
+      ..where((t) => t.date.isBetweenValues(start, end))).getSingleOrNull();
+  }
 }
 
 LazyDatabase _openConnection() {

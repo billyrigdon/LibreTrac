@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:libretrac/services/mood_widget_service.dart';
 import '../../../core/database/app_database.dart';
 import '../../../providers/db_provider.dart';
 import 'package:intl/intl.dart';
@@ -44,7 +45,7 @@ class _MoodCheckInScreenState extends ConsumerState<MoodCheckInScreen> {
           ),
         );
 
-    // await MoodWidgetService.update(); // call right after inserting a row
+    await MoodWidgetService.update(); // call right after inserting a row
 
     if (mounted) {
       ScaffoldMessenger.of(
