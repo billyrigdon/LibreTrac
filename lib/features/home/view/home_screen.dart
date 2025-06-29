@@ -199,7 +199,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 () =>
                                     isSelected
                                         ? selectedMetrics.add(metric)
-                                        : selectedMetrics.remove(metric),
+                                        : selectedMetrics.length > 1
+                                        ? selectedMetrics.remove(metric)
+                                        : null,
                               );
                             },
                           ),
@@ -253,5 +255,3 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
-
-
