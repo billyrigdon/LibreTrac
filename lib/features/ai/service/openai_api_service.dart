@@ -5,7 +5,6 @@ import 'package:libretrac/core/database/app_database.dart';
 
 class OpenAIAPI {
   OpenAIAPI._() {
-    // Put your key in --dart-define=OPENAI_KEY=... or .env; this picks it up.
     OpenAI.apiKey = dotenv.env['api_key'] ?? '';
   }
   static final instance = OpenAIAPI._();
@@ -79,34 +78,6 @@ class OpenAIAPI {
     ].join('\n');
   }
 
-  // Future<String> getSummary(String substanceName) async {
-  //   final chat = await OpenAI.instance.chat.create(
-  //     model: "gpt-4o-mini",
-  //     temperature: 0.7,
-  //     messages: [
-  //       OpenAIChatCompletionChoiceMessageModel(
-  //         role: OpenAIChatMessageRole.system,
-  //         content: [
-  //           OpenAIChatCompletionChoiceMessageContentItemModel.text(
-  //             "You are a clinical pharmacist. "
-  //             "Summaries must be ≤120 words, plain language.",
-  //           ),
-  //         ],
-  //       ),
-  //       OpenAIChatCompletionChoiceMessageModel(
-  //         role: OpenAIChatMessageRole.user,
-  //         content: [
-  //           OpenAIChatCompletionChoiceMessageContentItemModel.text(
-  //             "Summarize $substanceName.",
-  //           ),
-  //         ],
-  //       ),
-  //     ],
-  //   );
-
-  //   return chat.choices.first.message.content!.first.text!.trim();
-  // }
-
   Future<bool> isIngestible(String name) async {
     final chat = await OpenAI.instance.chat.create(
       model: 'gpt-4o-mini',
@@ -119,7 +90,7 @@ class OpenAIAPI {
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
               'Respond ONLY with valid JSON like {"edible": true}. '
               'Definition: edible = humans intentionally ingest it '
-              '(eat, drink, smoke, snort, inject) for nourishment, therapy, or psychoactive use. '
+              '(eat, drink, smoke, snort, inject, topicals, suppository) for nourishment, therapy, or psychoactive use. '
               'Interpret emojis and slang. For example, "🚹 hormone" means testosterone, which is edible. '
               'If it’s normally taken by mouth, injection, patch, or sublingually, it counts. '
               'If unsure or clearly non-edible (e.g. "smartphone"), return false.',
@@ -218,8 +189,8 @@ class OpenAIAPI {
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
               "You are a data analyst specialised in mood, cognition, sleep and "
               "pharmacology.  Analyse the JSON-encoded data and identify any "
-              "correlations or concerning trends.  Mention limitations and "
-              "suggest next steps. Refer to entries by date, not by ID.  Respond in concise Markdown.",
+              "correlations or concerning trends."
+              "Refer to entries by date, not by ID.  Respond in concise Markdown.",
             ),
           ],
         ),

@@ -135,16 +135,6 @@ class SleepDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateFmt = DateFormat.yMMMd().add_jm();
 
-    final bars = [
-      ('Hours Slept', entry.hoursSlept.clamp(0, 10)), // Clamp for graph range
-      (
-        'Quality',
-        (entry.quality.toDouble() * 2).clamp(0, 10),
-      ), // scale out of 10
-    ];
-
-    final colors = {'Hours Slept': Colors.indigo, 'Quality': Colors.green};
-
     return Scaffold(
       appBar: AppBar(title: const Text('Sleep Entry')),
       resizeToAvoidBottomInset: false,

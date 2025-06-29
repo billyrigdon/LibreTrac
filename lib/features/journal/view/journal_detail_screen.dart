@@ -3,7 +3,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
 import 'package:libretrac/core/database/app_database.dart';
 import 'package:libretrac/providers/db_provider.dart';
 
@@ -129,11 +128,6 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Text(
-                    //   _notes.text.isEmpty ? 'No notes.' : _notes.text,
-                    //   style: const TextStyle(fontSize: 22),
-                    //   textAlign: TextAlign.left,
-                    // ),
                     SizedBox(
                       height: 320,
                       child: LayoutBuilder(

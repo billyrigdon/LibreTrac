@@ -70,15 +70,6 @@ class _AddEditSubstanceState extends ConsumerState<AddEditSubstanceScreen> {
         return;
       }
 
-      // ── Interaction check ──────────────────────────────────────────
-      // final currentStack =
-      //     ref
-      //         .read(substancesStreamProvider)
-      //         .valueOrNull
-      //         ?.map((s) => s.name)
-      //         .toList() ??
-      //     <String>[];
-
       final db = ref.read(dbProvider);
       final allSubstances = await db.select(db.substances).get();
       final currentStack = allSubstances.map((s) => s.name).toList();

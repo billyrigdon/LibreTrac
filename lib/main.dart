@@ -8,6 +8,7 @@ import 'package:libretrac/services/mood_widget_service.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:libretrac/services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -53,36 +54,78 @@ class LibreTracApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(themeModeProvider);
-    const seed = Colors.purple; // <— pick anything; drives both schemes
+    final seed = ref.watch(accentColorProvider); // updates live
 
-    // ── LIGHT & DARK COLOR SCHEMES ─────────────────────────────
     final lightScheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: Brightness.light,
     );
-
     final darkScheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: Brightness.dark,
-      // Override a few tones so surfaces are really dark:
       surface: const Color(0xFF1A1A1A),
       background: const Color(0xFF121212),
     );
 
-    // ── THEME DATA ─────────────────────────────────────────────
     final lightTheme = ThemeData(
       colorScheme: lightScheme,
       useMaterial3: true,
+      dividerColor: lightScheme.primary.withOpacity(0.3),
+      switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.all(lightScheme.primary),
+        trackColor: MaterialStateProperty.all(
+          lightScheme.primary.withOpacity(0.5),
+        ),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: lightScheme.primary,
         foregroundColor: lightScheme.onPrimary,
       ),
-      cardTheme: CardTheme(color: lightScheme.background),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: lightScheme.primary),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: lightScheme.primary,
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: MaterialStateProperty.all(lightScheme.primary),
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: MaterialStateProperty.all(lightScheme.primary),
+      ),
+      cardTheme: CardTheme(
+        color: lightScheme.background,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+      ),
+      dividerTheme: DividerThemeData(
+        color: lightScheme.primary.withOpacity(0.3),
+        thickness: 1,
+        space: 32,
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: lightScheme.primary,
+        inactiveTrackColor: lightScheme.primary.withOpacity(0.3),
+        thumbColor: lightScheme.primary,
+        overlayColor: lightScheme.primary.withOpacity(0.2),
+        valueIndicatorColor: lightScheme.primary,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: lightScheme.primary,
+        linearTrackColor: lightScheme.primary.withOpacity(0.2),
+      ),
+      tabBarTheme: TabBarTheme(
+        indicatorColor: lightScheme.primary,
+        labelColor: lightScheme.primary,
+        unselectedLabelColor: lightScheme.onSurface.withOpacity(0.6),
+        indicatorSize: TabBarIndicatorSize.label,
+      ),
     );
 
     final darkTheme = ThemeData(
       colorScheme: darkScheme,
       useMaterial3: true,
+      dividerColor: darkScheme.primary.withOpacity(0.3),
       scaffoldBackgroundColor: darkScheme.background,
       appBarTheme: AppBarTheme(
         backgroundColor: darkScheme.background,
@@ -91,8 +134,82 @@ class LibreTracApp extends ConsumerWidget {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(foregroundColor: darkScheme.primary),
       ),
-      cardTheme: CardTheme(color: darkScheme.background),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: darkScheme.primary,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.all(darkScheme.primary),
+        trackColor: MaterialStateProperty.all(
+          darkScheme.primary.withOpacity(0.5),
+        ),
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: MaterialStateProperty.all(darkScheme.primary),
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: MaterialStateProperty.all(darkScheme.primary),
+      ),
+      cardTheme: CardTheme(
+        color: darkScheme.background,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+      ),
+
+      dividerTheme: DividerThemeData(
+        color: darkScheme.primary.withOpacity(0.3),
+        thickness: 1,
+        space: 32,
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: darkScheme.primary,
+        inactiveTrackColor: darkScheme.primary.withOpacity(0.3),
+        thumbColor: darkScheme.primary,
+        overlayColor: darkScheme.primary.withOpacity(0.2),
+        valueIndicatorColor: darkScheme.primary,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: darkScheme.primary,
+        linearTrackColor: darkScheme.primary.withOpacity(0.2),
+      ),
+      tabBarTheme: TabBarTheme(
+        indicatorColor: darkScheme.primary,
+        labelColor: darkScheme.primary,
+        unselectedLabelColor: darkScheme.onSurface.withOpacity(0.6),
+        indicatorSize: TabBarIndicatorSize.label,
+      ),
     );
+
+    // final lightTheme = ThemeData(
+    //   colorScheme: lightScheme,
+    //   useMaterial3: true,
+    //   appBarTheme: AppBarTheme(
+    //     backgroundColor: lightScheme.primary,
+    //     foregroundColor: lightScheme.onPrimary,
+    //   ),
+    //   cardTheme: CardTheme(
+    //     color: lightScheme.background,
+    //     elevation: 0,
+    //     shadowColor: Colors.transparent,
+    //   ),
+    // );
+
+    // final darkTheme = ThemeData(
+    //   colorScheme: darkScheme,
+    //   useMaterial3: true,
+    //   scaffoldBackgroundColor: darkScheme.background,
+    //   appBarTheme: AppBarTheme(
+    //     backgroundColor: darkScheme.background,
+    //     foregroundColor: darkScheme.onSurface,
+    //   ),
+    //   textButtonTheme: TextButtonThemeData(
+    //     style: TextButton.styleFrom(foregroundColor: darkScheme.primary),
+    //   ),
+    //   cardTheme: CardTheme(
+    //     color: darkScheme.background,
+    //     elevation: 0,
+    //     shadowColor: Colors.transparent,
+    //   ),
+    // );
 
     return MaterialApp(
       title: 'LibreTrac',
@@ -103,3 +220,99 @@ class LibreTracApp extends ConsumerWidget {
     );
   }
 }
+
+// class LibreTracApp extends ConsumerStatefulWidget {
+//   const LibreTracApp({super.key});
+
+//   @override
+//   ConsumerState<LibreTracApp> createState() => _LibreTracAppState();
+// }
+
+// class _LibreTracAppState extends ConsumerState<LibreTracApp> {
+//   Color seed = Colors.purple;
+//   bool isLoading = true;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _loadCustomColor();
+//   }
+
+//   Future<Color?> getCustomColor(String key) async {
+//     final prefs = await SharedPreferences.getInstance();
+//     final hex = prefs.getString(key);
+//     if (hex == null) return null;
+//     try {
+//       return Color(int.parse(hex, radix: 16));
+//     } catch (_) {
+//       return null;
+//     }
+//   }
+
+//   Future<void> _loadCustomColor() async {
+//     final custom = await getCustomColor('primary_seed_color');
+//     if (mounted) {
+//       setState(() {
+//         seed = custom ?? Colors.purple;
+//         isLoading = false;
+//       });
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final mode = ref.watch(themeModeProvider);
+//     if (isLoading) return const SizedBox.shrink();
+
+//     final lightScheme = ColorScheme.fromSeed(
+//       seedColor: seed,
+//       brightness: Brightness.light,
+//     );
+//     final darkScheme = ColorScheme.fromSeed(
+//       seedColor: seed,
+//       brightness: Brightness.dark,
+//       surface: const Color(0xFF1A1A1A),
+//       background: const Color(0xFF121212),
+//     );
+
+//     final lightTheme = ThemeData(
+//       colorScheme: lightScheme,
+//       useMaterial3: true,
+//       appBarTheme: AppBarTheme(
+//         backgroundColor: lightScheme.primary,
+//         foregroundColor: lightScheme.onPrimary,
+//       ),
+//       cardTheme: CardTheme(
+//         color: lightScheme.background,
+//         elevation: 0,
+//         shadowColor: Colors.transparent,
+//       ),
+//     );
+
+//     final darkTheme = ThemeData(
+//       colorScheme: darkScheme,
+//       useMaterial3: true,
+//       scaffoldBackgroundColor: darkScheme.background,
+//       appBarTheme: AppBarTheme(
+//         backgroundColor: darkScheme.background,
+//         foregroundColor: darkScheme.onSurface,
+//       ),
+//       textButtonTheme: TextButtonThemeData(
+//         style: TextButton.styleFrom(foregroundColor: darkScheme.primary),
+//       ),
+//       cardTheme: CardTheme(
+//         color: darkScheme.background,
+//         elevation: 0,
+//         shadowColor: Colors.transparent,
+//       ),
+//     );
+
+//     return MaterialApp(
+//       title: 'LibreTrac',
+//       themeMode: mode,
+//       theme: lightTheme,
+//       darkTheme: darkTheme,
+//       home: const HomeScreen(),
+//     );
+//   }
+// }

@@ -8,13 +8,22 @@ import 'package:libretrac/providers/db_provider.dart';
 import 'package:libretrac/providers/theme_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  bool expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
+    
 
     Future<void> _clearMood(BuildContext ctx) async {
       final ok = await _confirm(ctx, 'Clear all mood data?');
@@ -55,11 +64,24 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Light theme'),
             subtitle: const Text('Toggle between light and dark mode'),
             value: themeMode == ThemeMode.light,
-            onChanged:
-                (v) =>
-                    ref.read(themeModeProvider.notifier).state =
-                        v ? ThemeMode.light : ThemeMode.dark,
+            onChanged: (v) {
+              final newMode = v ? ThemeMode.light : ThemeMode.dark;
+              ref.read(themeModeProvider.notifier).update(newMode);
+            },
           ),
+
+          const Divider(),
+          ListTile(
+            title: const Text('Accent Color'),
+            subtitle: const Text('Tap to expand and customize'),
+            trailing: Icon(expanded ? Icons.expand_less : Icons.expand_more),
+            onTap: () => setState(() => expanded = !expanded),
+          ),
+          if (expanded)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: const _AccentColorPicker(),
+            ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.backup),
@@ -93,6 +115,53 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _changeThemeColor(BuildContext context) async {
+    final color = await showDialog<Color>(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Pick a new theme color'),
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, Colors.blue),
+                    child: const Text('Blue'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, Colors.teal),
+                    child: const Text('Teal'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, Colors.deepOrange),
+                    child: const Text('Deep Orange'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, Colors.purple),
+                    child: const Text('Purple (default)'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+
+    if (color != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        'primary_seed_color',
+        color.value.toRadixString(16),
+      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Theme color saved! Restart app to apply.'),
+          ),
+        );
+      }
+    }
   }
 
   Future<bool> _confirm(BuildContext ctx, String msg) async {
@@ -153,5 +222,66 @@ class SettingsScreen extends ConsumerWidget {
         ctx,
       ).showSnackBar(const SnackBar(content: Text('Import complete')));
     }
+  }
+}
+
+class _AccentColorPicker extends ConsumerWidget {
+  const _AccentColorPicker({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selected = ref.watch(accentColorProvider);
+    final colors = [
+      Colors.brown.shade700,
+      Colors.pinkAccent,
+      Colors.purple,
+      Colors.deepPurpleAccent,
+      Colors.indigo,
+      Colors.blue,
+      Colors.lightBlue,
+      Colors.cyan,
+      Colors.green.shade900,
+      Colors.lightGreen,
+      Colors.amber.shade300,
+      Colors.orange,
+      Colors.red.shade600,
+      Colors.teal,
+      Colors.blueGrey,
+      Colors.deepOrangeAccent,
+    ];
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children:
+          colors.map((color) {
+            final isSelected = color.value == selected.value;
+            return GestureDetector(
+              onTap: () => ref.read(accentColorProvider.notifier).update(color),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border:
+                      isSelected
+                          ? Border.all(color: Colors.white, width: 3)
+                          : null,
+                ),
+                child:
+                    isSelected
+                        ? const Center(
+                          child: Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        )
+                        : null,
+              ),
+            );
+          }).toList(),
+    );
   }
 }
