@@ -103,6 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final window = ref.watch(moodWindowProvider);
     final AsyncValue<List<SleepEntry>> sleeps = ref.watch(sleepStreamProvider);
+    // final detailed = ref.watch(showAllCheckInsProvider);
 
     return PopScope(
       canPop: false, // () async => false,
@@ -115,39 +116,97 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               icon: const Icon(Icons.auto_awesome),
               onPressed: () => showTrendDialog(context, ref),
             ),
-            PopupMenuButton<MoodWindow>(
-              initialValue: window,
-              onSelected:
-                  (w) => ref.read(moodWindowProvider.notifier).state = w,
-              itemBuilder:
-                  (ctx) => [
-                    const PopupMenuItem(
-                      value: MoodWindow.week,
-                      child: Text('7 days'),
-                    ),
-                    const PopupMenuItem(
-                      value: MoodWindow.month,
-                      child: Text('1 month'),
-                    ),
-                    const PopupMenuItem(
-                      value: MoodWindow.threeMonths,
-                      child: Text('3 months'),
-                    ),
-                    const PopupMenuItem(
-                      value: MoodWindow.sixMonths,
-                      child: Text('6 months'),
-                    ),
-                  ],
+            PopupMenuButton<Object>(
               icon: const Icon(Icons.filter_alt),
+              onSelected: (value) {
+                if (value is MoodWindow) {
+                  ref.read(moodWindowProvider.notifier).state = value;
+                } else if (value == 'toggleDetailed') {
+                  ref
+                      .read(showAllCheckInsProvider.notifier)
+                      .update((prev) => !prev);
+                }
+              },
+              itemBuilder: (ctx) {
+                final detailed = ref.watch(showAllCheckInsProvider);
+                final selectedWindow = ref.watch(moodWindowProvider);
+
+                return [
+                  CheckedPopupMenuItem(
+                    value: MoodWindow.week,
+                    checked: selectedWindow == MoodWindow.week,
+                    child: const Text('7 days'),
+                  ),
+                  CheckedPopupMenuItem(
+                    value: MoodWindow.month,
+                    checked: selectedWindow == MoodWindow.month,
+                    child: const Text('1 month'),
+                  ),
+                  CheckedPopupMenuItem(
+                    value: MoodWindow.threeMonths,
+                    checked: selectedWindow == MoodWindow.threeMonths,
+                    child: const Text('3 months'),
+                  ),
+                  CheckedPopupMenuItem(
+                    value: MoodWindow.sixMonths,
+                    checked: selectedWindow == MoodWindow.sixMonths,
+                    child: const Text('6 months'),
+                  ),
+                  const PopupMenuDivider(),
+                  CheckedPopupMenuItem(
+                    value: 'toggleDetailed',
+                    checked: detailed,
+                    child: const Text('Detailed View'),
+                  ),
+                ];
+              },
             ),
+
+            // PopupMenuButton<MoodWindow>(
+            //   initialValue: window,
+            //   onSelected:
+            //       (w) => ref.read(moodWindowProvider.notifier).state = w,
+            //   itemBuilder:
+            //       (ctx) => [
+            //         const PopupMenuItem(
+            //           value: MoodWindow.week,
+            //           child: Text('7 days'),
+            //         ),
+            //         const PopupMenuItem(
+            //           value: MoodWindow.month,
+            //           child: Text('1 month'),
+            //         ),
+            //         const PopupMenuItem(
+            //           value: MoodWindow.threeMonths,
+            //           child: Text('3 months'),
+            //         ),
+            //         const PopupMenuItem(
+            //           value: MoodWindow.sixMonths,
+            //           child: Text('6 months'),
+            //         ),
+            //       ],
+            //   icon: const Icon(Icons.filter_alt),
+            // ),
           ],
         ),
         drawer: MainDrawer(() => setState(() {})),
         body: Consumer(
           builder: (context, ref, _) {
+            final detailed = ref.watch(showAllCheckInsProvider);
+
             final AsyncValue<List<MoodEntry>> moods = ref.watch(
-              filteredMoodEntriesProvider,
+              filteredMoodEntriesProvider((
+                window: window,
+                showAllCheckIns: detailed,
+              )),
             );
+
+            // final AsyncValue<List<MoodEntry>> moods = ref.watch(
+            //   filteredMoodEntriesProvider((
+            //     window: window,
+            //     showAllCheckIns: false, // or true if user chooses to view all
+            //   )),
+            // );
 
             return moods.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -206,6 +265,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             },
                           ),
                         ),
+
                         FutureBuilder(
                           future:
                               ref
@@ -216,8 +276,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             if (!snap.hasData || snap.data!.isEmpty) {
                               return const SizedBox.shrink();
                             }
-
-                            return CognitiveChart().showCognitiveChart(ref);
+                            return CognitiveChart().showCognitiveChart(
+                              ref,
+                              window,
+                              detailed,
+                            );
                           },
                         ),
                         const SizedBox(height: 16),

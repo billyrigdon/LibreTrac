@@ -212,7 +212,7 @@ extension BackupOps on AppDatabase {
 // NEW: enum + helper
 enum MoodWindow { week, month, threeMonths, sixMonths }
 
-extension _WindowDays on MoodWindow {
+extension WindowDays on MoodWindow {
   int get days => switch (this) {
     MoodWindow.week => 7,
     MoodWindow.month => 30,
@@ -241,23 +241,66 @@ extension MoodWindowExt on MoodWindow {
 final moodWindowProvider = StateProvider<MoodWindow>((_) => MoodWindow.week);
 
 /// Live list that honours the selected window.
-final filteredMoodEntriesProvider = StreamProvider.autoDispose<List<MoodEntry>>(
-  (ref) {
-    final db = ref.watch(dbProvider);
-    final window = ref.watch(moodWindowProvider);
-    final cutOff = DateTime.now().subtract(Duration(days: window.days));
+// final filteredMoodEntriesProvider = StreamProvider.autoDispose<List<MoodEntry>>(
+//   (ref) {
+//     final db = ref.watch(dbProvider);
+//     final window = ref.watch(moodWindowProvider);
+//     final cutOff = DateTime.now().subtract(Duration(days: window.days));
 
-    final query =
-        db.select(db.moodEntries)
-          ..where((t) => t.timestamp.isBiggerOrEqualValue(cutOff))
-          ..orderBy([
-            (t) =>
-                OrderingTerm(expression: t.timestamp, mode: OrderingMode.desc),
-          ]);
+//     final query =
+//         db.select(db.moodEntries)
+//           ..where((t) => t.timestamp.isBiggerOrEqualValue(cutOff))
+//           ..orderBy([
+//             (t) =>
+//                 OrderingTerm(expression: t.timestamp, mode: OrderingMode.desc),
+//           ]);
 
-    return query.watch();
-  },
-);
+//     return query.watch();
+//   },
+// );
+
+final showAllCheckInsProvider = StateProvider<bool>((ref) => false);
+
+final filteredMoodEntriesProvider = StreamProvider.autoDispose.family<
+  List<MoodEntry>,
+  ({MoodWindow window, bool showAllCheckIns})
+>((ref, params) {
+  final db = ref.watch(dbProvider);
+  final cutOff = DateTime.now().subtract(Duration(days: params.window.days));
+
+  final query =
+      db.select(db.moodEntries)
+        ..where((t) => t.timestamp.isBiggerOrEqualValue(cutOff))
+        ..orderBy([
+          (t) => OrderingTerm(expression: t.timestamp, mode: OrderingMode.desc),
+        ]);
+
+  return query.watch().map((entries) {
+    if (params.showAllCheckIns) return entries;
+
+    // Group by date (yyyy-MM-dd) and take the latest for each day
+    final Map<String, MoodEntry> latestPerDay = {};
+
+    for (final entry in entries) {
+      final dayKey =
+          DateTime(
+            entry.timestamp.year,
+            entry.timestamp.month,
+            entry.timestamp.day,
+          ).toIso8601String();
+      latestPerDay[dayKey] =
+          latestPerDay[dayKey] == null ||
+                  entry.timestamp.isAfter(latestPerDay[dayKey]!.timestamp)
+              ? entry
+              : latestPerDay[dayKey]!;
+    }
+
+    final result =
+        latestPerDay.values.toList()
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    return result;
+  });
+});
 
 /* ─────────────────────  TREND-QUERY HELPERS  ──────────────────────
    One-shot queries that the HomeScreen uses to build the payload
