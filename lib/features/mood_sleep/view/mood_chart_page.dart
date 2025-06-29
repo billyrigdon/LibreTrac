@@ -66,6 +66,7 @@ class MoodChartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('testing');
     return Column(
       children: [
         Wrap(

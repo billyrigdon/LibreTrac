@@ -24,19 +24,12 @@ part 'app_database.g.dart';
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  // AppDatabase() : super(_openConnection());
-
-  // ❶ private named ctor
   AppDatabase._() : super(_openConnection());
 
-  // ❷ single shared instance
   static final AppDatabase _instance = AppDatabase._();
 
-  // ❸ factory always returns the same object
   factory AppDatabase() => _instance;
 
-  @override
-  // int get schemaVersion => 1;
   @override
   int get schemaVersion => 2; // ← bumped
 

@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +29,7 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
   Future<void> _saveNotes() async {
     await ref
         .read(moodRepoProvider)
-        .update(widget.entry.copyWith(notes: Value(_notes.text.trim())));
+        .update(widget.entry.copyWith(notes: drift.Value(_notes.text.trim())));
     if (mounted) setState(() => _editing = false);
   }
 
@@ -64,14 +64,24 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
 
     final bars = [
       ('Energy', widget.entry.energy),
-      ('Happy', widget.entry.happiness),
-      ('Creative', widget.entry.creativity),
+      ('Happiness', widget.entry.happiness),
+      ('Creativity', widget.entry.creativity),
       ('Focus', widget.entry.focus),
-      ('Irritable', widget.entry.irritability),
+      ('Irritability', widget.entry.irritability),
       ('Anxiety', widget.entry.anxiety),
     ];
 
+    final Map<String, Color> moodColors = {
+      'Energy': Colors.teal,
+      'Happiness': Colors.orange,
+      'Creativity': Colors.purple,
+      'Focus': Colors.blue,
+      'Irritability': Colors.red,
+      'Anxiety': Colors.brown,
+    };
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(dateFmt.format(widget.entry.timestamp)),
         actions: [
@@ -83,13 +93,76 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
           IconButton(icon: const Icon(Icons.delete), onPressed: _delete),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            // ── Six-bar mood graph ────────────────────────────────
-            AspectRatio(
-              aspectRatio: 1.6,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Notes ────────────────────────────────────────────────
+          _editing
+              ? Padding(
+                padding: const EdgeInsets.only(
+                  top: 32.0,
+                  right: 8,
+                  left: 8,
+                  bottom: 0,
+                ),
+                child: TextField(
+                  controller: _notes,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes',
+                    border: OutlineInputBorder(),
+                  ),
+                  minLines: 10,
+                  maxLines: 10,
+                ),
+              )
+              : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Notes',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Text(
+                    //   _notes.text.isEmpty ? 'No notes.' : _notes.text,
+                    //   style: const TextStyle(fontSize: 22),
+                    //   textAlign: TextAlign.left,
+                    // ),
+                    SizedBox(
+                      height: 320,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: constraints.maxHeight,
+                              ),
+                              child: Text(
+                                _notes.text.isEmpty ? 'No notes.' : _notes.text,
+                                style: const TextStyle(fontSize: 22),
+                                textAlign: TextAlign.left,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          Expanded(child: Column()),
+          // ── Mood Bar Graph ───────────────────────────────────────
+          SizedBox(
+            height: 450,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12.0),
               child: BarChart(
                 BarChartData(
                   maxY: 10,
@@ -101,7 +174,9 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
                         barRods: [
                           BarChartRodData(
                             toY: bars[i].$2.toDouble(),
-                            width: 12,
+                            width: 30, // Thicker bars
+                            color: moodColors[bars[i].$1],
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ],
                       ),
@@ -110,18 +185,31 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: true),
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget:
+                            (value, meta) => Text(
+                              value.toInt().toString(),
+                              style: const TextStyle(
+                                fontSize: 10,
+                              ), // Smaller font size
+                            ),
+                        reservedSize: 14, // Optional: reduce space if needed ),
+                      ),
                     ),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 32,
+                        reservedSize: 36,
                         getTitlesWidget:
                             (value, _) => Transform.rotate(
-                              angle: -0.8,
-                              child: Text(
-                                bars[value.toInt()].$1,
-                                style: const TextStyle(fontSize: 10),
+                              angle: -0.0,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 12.0),
+                                child: Text(
+                                  bars[value.toInt()].$1,
+                                  style: const TextStyle(fontSize: 10),
+                                ),
                               ),
                             ),
                       ),
@@ -136,19 +224,9 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            // ── Editable notes ───────────────────────────────────
-            TextField(
-              controller: _notes,
-              readOnly: !_editing,
-              decoration: const InputDecoration(
-                labelText: 'Notes',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: null,
-            ),
-          ],
-        ),
+          ),
+          SizedBox(height: 24),
+        ],
       ),
     );
   }

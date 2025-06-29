@@ -6,8 +6,30 @@ import 'package:libretrac/features/home/view/home_screen.dart';
 import 'package:libretrac/providers/theme_provider.dart';
 import 'package:libretrac/services/mood_widget_service.dart';
 
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:libretrac/services/notification_service.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+// final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+//     FlutterLocalNotificationsPlugin();
+
+// Future<void> initializeNotifications() async {
+//   const AndroidInitializationSettings androidInit =
+//       AndroidInitializationSettings('@mipmap/ic_launcher');
+
+//   await flutterLocalNotificationsPlugin.initialize(
+//     const InitializationSettings(android: androidInit),
+//   );
+
+//   tz.initializeTimeZones();
+// }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // await NotificationService.init();
+  // await NotificationService.scheduleDailyReminders();
+
   await HomeWidget.registerBackgroundCallback(_widgetCallback);
 
   await dotenv.load(fileName: 'assets/.env');
@@ -15,14 +37,14 @@ void main() async {
 
   // 2 — kick the widget after the first frame so ProviderScope is ready
   WidgetsBinding.instance.addPostFrameCallback((_) {
-  MoodWidgetService.update();
+    MoodWidgetService.update();
   });
 }
 
 /// Called by the OS when the widget requests an update.
 @pragma('vm:entry-point')
 void _widgetCallback(Uri? _) async {
-await MoodWidgetService.update();
+  await MoodWidgetService.update();
 }
 
 class LibreTracApp extends ConsumerWidget {

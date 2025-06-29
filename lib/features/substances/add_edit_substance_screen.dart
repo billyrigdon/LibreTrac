@@ -39,6 +39,9 @@ class _AddEditSubstanceState extends ConsumerState<AddEditSubstanceScreen> {
   }
 
   Future<void> _save() async {
+    print(
+      '-------------------------------------------------------------------SAVING',
+    );
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _saving = true);
@@ -68,14 +71,21 @@ class _AddEditSubstanceState extends ConsumerState<AddEditSubstanceScreen> {
       }
 
       // ── Interaction check ──────────────────────────────────────────
-      final currentStack =
-          ref
-              .read(substancesStreamProvider)
-              .valueOrNull
-              ?.map((s) => s.name)
-              .toList() ??
-          <String>[];
+      // final currentStack =
+      //     ref
+      //         .read(substancesStreamProvider)
+      //         .valueOrNull
+      //         ?.map((s) => s.name)
+      //         .toList() ??
+      //     <String>[];
 
+      final db = ref.read(dbProvider);
+      final allSubstances = await db.select(db.substances).get();
+      final currentStack = allSubstances.map((s) => s.name).toList();
+      debugPrint('Current stack: $currentStack');
+
+      print(currentStack.toString());
+      print('--------------------------------------------------');
       final warnings = await OpenAIAPI.instance.checkInteractions(
         candidate: _name.text.trim(),
         candidateDosage:
@@ -90,13 +100,26 @@ class _AddEditSubstanceState extends ConsumerState<AddEditSubstanceScreen> {
               (dCtx) => AlertDialog(
                 title: const Text('Potential interactions detected'),
                 content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ...warnings.map(Text.new),
+                    ...warnings.map(
+                      (w) => Text(
+                        '• $w\n',
+                        textAlign: TextAlign.left,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(fontSize: 12),
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       kMedicalDisclaimer,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize:
+                            (Theme.of(context).textTheme.bodySmall?.fontSize ??
+                                12) -
+                            3,
                         fontStyle: FontStyle.italic,
                       ),
                     ),

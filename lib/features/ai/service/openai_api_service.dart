@@ -10,17 +10,31 @@ class OpenAIAPI {
   }
   static final instance = OpenAIAPI._();
 
-  Future<String> getSummary(String substanceName) async {
+  Future<String> getSubstanceProfile(
+    String substanceName,
+    List<String> currentStack, {
+    String? notes,
+  }) async {
+    final filteredStack =
+        currentStack
+            .where((s) => s.toLowerCase() != substanceName.toLowerCase())
+            .toList();
+
     final chat = await OpenAI.instance.chat.create(
       model: "gpt-4o-mini",
-      temperature: 0.7,
+      temperature: 0.5,
+      responseFormat: {"type": "json_object"},
       messages: [
         OpenAIChatCompletionChoiceMessageModel(
           role: OpenAIChatMessageRole.system,
           content: [
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
               "You are a clinical pharmacist. "
-              "Summaries must be ≤120 words, plain language.",
+              "Respond ONLY with valid JSON in the format:\n"
+              "{ \"benefits\": [\"...\"], \"cautions\": [\"...\"], "
+              "\"ingredients\": [\"...\"] if applicable, "
+              "\"interactsWith\": [\"...\"] (ONLY those from the stack that interact) }.\n"
+              "Take the user's notes into account if relevant.",
             ),
           ],
         ),
@@ -28,15 +42,70 @@ class OpenAIAPI {
           role: OpenAIChatMessageRole.user,
           content: [
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
-              "Summarize $substanceName.",
+              "Substance: $substanceName\n"
+              "User notes: ${notes ?? 'none'}\n"
+              "Current stack: ${filteredStack.join(', ')}.\n"
+              "Give its benefits, cautions, ingredients (if compound), and ONLY include interactions between the given substance and substances from the stack that are known to interact, not just all interactions in the stack.",
             ),
           ],
         ),
       ],
     );
 
-    return chat.choices.first.message.content!.first.text!.trim();
+    final raw = chat.choices.first.message.content!.first.text!.trim();
+
+    Map<String, dynamic> decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } catch (_) {
+      return '⚠️ Failed to parse substance info.';
+    }
+
+    final b = (decoded['benefits'] as List?)?.cast<String>() ?? [];
+    final c = (decoded['cautions'] as List?)?.cast<String>() ?? [];
+    final i = (decoded['ingredients'] as List?)?.cast<String>() ?? [];
+    final x = (decoded['interactsWith'] as List?)?.cast<String>() ?? [];
+
+    return [
+      '## ✅ Benefits',
+      if (b.isNotEmpty) ...b.map((e) => '- $e') else ['- None noted.'],
+      '\n## ⚠️ Cautions',
+      if (c.isNotEmpty) ...c.map((e) => '- $e') else ['- No known cautions.'],
+      if (i.isNotEmpty) ...['\n## 🧪 Ingredients', ...i.map((e) => '- $e')],
+      if (x.isNotEmpty) ...[
+        '\n## 🔗 Interactions with Your Stack',
+        ...x.map((e) => '- $e'),
+      ],
+    ].join('\n');
   }
+
+  // Future<String> getSummary(String substanceName) async {
+  //   final chat = await OpenAI.instance.chat.create(
+  //     model: "gpt-4o-mini",
+  //     temperature: 0.7,
+  //     messages: [
+  //       OpenAIChatCompletionChoiceMessageModel(
+  //         role: OpenAIChatMessageRole.system,
+  //         content: [
+  //           OpenAIChatCompletionChoiceMessageContentItemModel.text(
+  //             "You are a clinical pharmacist. "
+  //             "Summaries must be ≤120 words, plain language.",
+  //           ),
+  //         ],
+  //       ),
+  //       OpenAIChatCompletionChoiceMessageModel(
+  //         role: OpenAIChatMessageRole.user,
+  //         content: [
+  //           OpenAIChatCompletionChoiceMessageContentItemModel.text(
+  //             "Summarize $substanceName.",
+  //           ),
+  //         ],
+  //       ),
+  //     ],
+  //   );
+
+  //   return chat.choices.first.message.content!.first.text!.trim();
+  // }
 
   Future<bool> isIngestible(String name) async {
     final chat = await OpenAI.instance.chat.create(
@@ -49,12 +118,11 @@ class OpenAIAPI {
           content: [
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
               'Respond ONLY with valid JSON like {"edible": true}. '
-              'Definition of edible = humans INTENTIONALLY ingest it '
-              '(eat, drink, smoke, snort, inject) for nourishment, therapy, '
-              'or psychoactive use. If it\'s something such as lithium, consider it\'s medical use.'
-              'If people do NOT normally ingest it on '
-              'purpose (e.g. pillowcase, smartphone, shampoo, gasoline), '
-              'return false.  When unsure, return false.',
+              'Definition: edible = humans intentionally ingest it '
+              '(eat, drink, smoke, snort, inject) for nourishment, therapy, or psychoactive use. '
+              'Interpret emojis and slang. For example, "🚹 hormone" means testosterone, which is edible. '
+              'If it’s normally taken by mouth, injection, patch, or sublingually, it counts. '
+              'If unsure or clearly non-edible (e.g. "smartphone"), return false.',
             ),
           ],
         ),
@@ -83,7 +151,9 @@ class OpenAIAPI {
     required String candidate,
     required List<String> currentStack,
     String? candidateDosage,
+    String? notes,
   }) async {
+    print(currentStack.toString());
     final chat = await OpenAI.instance.chat.create(
       model: "gpt-4o-mini",
       temperature: 0,
@@ -94,9 +164,9 @@ class OpenAIAPI {
           content: [
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
               "You are a clinical drug-interaction checker. "
-              "Respond ONLY with a JSON array of warning strings. "
-              "If the candidate dosage exceeds typical adult upper limits, "
-              "also include a \"High dose\" warning. Return [] if no warnings.",
+              "Check for drug interactions between the candidate and the current stack. Only show the interactions between the candidate and the current stack, not the interactions within the stack"
+              "Include considerations based on user-provided notes if relevant. "
+              "Respond ONLY with a JSON array of warning strings. Return [] if none.",
             ),
           ],
         ),
@@ -105,9 +175,9 @@ class OpenAIAPI {
           content: [
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
               "Current stack: ${currentStack.join(', ')}. "
-              "Candidate: $candidate"
-              "${candidateDosage == null ? '' : ' at $candidateDosage'}. "
-              "List any interactions.",
+              "Candidate: $candidate${candidateDosage == null ? '' : ' at $candidateDosage'}. "
+              "${notes != null ? 'User notes: $notes. ' : ''}"
+              "Check for any interactions or cautions.",
             ),
           ],
         ),

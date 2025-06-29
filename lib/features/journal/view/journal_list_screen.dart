@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -73,7 +74,7 @@ class JournalListScreen extends ConsumerWidget {
                           ctx,
                           MaterialPageRoute(
                             builder:
-                                (_) => _SleepDetailScreen(entry: row.sleep!),
+                                (_) => SleepDetailScreen(entry: row.sleep!),
                           ),
                         );
                       } else {
@@ -126,43 +127,184 @@ class _JournalRow {
   final bool isSleep;
 }
 
-class _SleepDetailScreen extends StatelessWidget {
-  const _SleepDetailScreen({required this.entry});
+class SleepDetailScreen extends StatelessWidget {
+  const SleepDetailScreen({required this.entry, super.key});
   final SleepEntry entry;
 
   @override
   Widget build(BuildContext context) {
     final dateFmt = DateFormat.yMMMd().add_jm();
 
+    final bars = [
+      ('Hours Slept', entry.hoursSlept.clamp(0, 10)), // Clamp for graph range
+      (
+        'Quality',
+        (entry.quality.toDouble() * 2).clamp(0, 10),
+      ), // scale out of 10
+    ];
+
+    final colors = {'Hours Slept': Colors.indigo, 'Quality': Colors.green};
+
     return Scaffold(
       appBar: AppBar(title: const Text('Sleep Entry')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
+      resizeToAvoidBottomInset: false,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Title + Date ────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+            child: Text(
               dateFmt.format(entry.date),
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 16),
-            Text('${entry.hoursSlept.toStringAsFixed(1)} hours slept'),
-            Text('Quality: ${entry.quality}/5'),
-            const Divider(height: 32),
-            if (entry.dreamJournal != null &&
-                entry.dreamJournal!.trim().isNotEmpty)
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    entry.dreamJournal!,
-                    style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          // ── Dream Notes ────────────────────────────────
+          if (entry.dreamJournal != null &&
+              entry.dreamJournal!.trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Notes',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 300,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Text(
+                              entry.dreamJournal!,
+                              style: const TextStyle(fontSize: 22),
+                              textAlign: TextAlign.left,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('No dream notes for this night.'),
+            ),
+          // const Spacer(),
+          // ── Sleep Bar Graph ────────────────────────────────
+          SizedBox(
+            height: 450,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: BarChart(
+                BarChartData(
+                  maxY: 10,
+                  minY: 0,
+                  barGroups: [
+                    BarChartGroupData(
+                      x: 0,
+                      barRods: [
+                        BarChartRodData(
+                          toY: (entry.hoursSlept / 12.0) * 10.0,
+                          width: 150,
+                          color: Colors.indigo,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ],
+                    ),
+                    BarChartGroupData(
+                      x: 1,
+                      barRods: [
+                        BarChartRodData(
+                          toY: (entry.quality / 5.0) * 10.0,
+                          width: 150,
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ],
+                    ),
+                  ],
+                  gridData: FlGridData(show: false),
+                  borderData: FlBorderData(show: false),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 28,
+                        interval:
+                            1, // shows ticks every 2 units (for even spacing)
+                        getTitlesWidget: (value, _) {
+                          // Convert graph value back to hours (0–10 → 0–12)
+                          final hours = (value * 1.2);
+                          return Text(
+                            hours.toStringAsFixed(0),
+                            style: const TextStyle(fontSize: 10),
+                          );
+                        },
+                      ),
+                    ),
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 28,
+                        getTitlesWidget: (value, _) {
+                          // Only show labels at exact mapped positions
+                          const qualityTicks = {
+                            0: '0',
+                            2: '1',
+                            4: '2',
+                            6: '3',
+                            8: '4',
+                            10: '5',
+                          };
+                          if (qualityTicks.containsKey(value)) {
+                            return Text(
+                              qualityTicks[value]!,
+                              style: const TextStyle(fontSize: 10),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 36,
+                        getTitlesWidget: (value, _) {
+                          final labels = ['Hours Slept', 'Quality'];
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Text(
+                              labels[value.toInt()],
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                 ),
-              )
-            else
-              const Text('No dream notes for this night.'),
-          ],
-        ),
+              ),
+            ),
+          ),
+          // const SizedBox(height: 24),
+        ],
       ),
     );
   }

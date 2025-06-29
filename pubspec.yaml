@@ -52,6 +52,8 @@ dependencies:
   flutter_markdown: ^0.7.7+1
   home_widget: ^0.8.0
   flutter_dotenv: ^5.2.1
+  timezone: ^0.10.1
+  flutter_local_notifications: ^19.3.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1   # or latest
