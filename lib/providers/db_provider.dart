@@ -1,5 +1,10 @@
-import 'package:drift/drift.dart';
+import 'dart:convert';
+import 'dart:ui';
+
+import 'package:drift/drift.dart' as drift;
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/database/app_database.dart';
 
 /// Single shared DB instance
@@ -25,7 +30,7 @@ class SubstanceRepo {
   Future<int> stop(int id) {
     return (_db.update(_db.substances)..where(
       (t) => t.id.equals(id),
-    )).write(SubstancesCompanion(stoppedAt: Value(DateTime.now())));
+    )).write(SubstancesCompanion(stoppedAt: drift.Value(DateTime.now())));
   }
 }
 
@@ -78,39 +83,73 @@ final moodRepoProvider = Provider<MoodRepo>(
   (ref) => MoodRepo(ref.read(dbProvider)),
 );
 
-final journalEntriesStreamProvider = StreamProvider.autoDispose<
-  List<MoodEntry>
->((ref) {
-  final db = ref.watch(dbProvider);
+final journalEntriesStreamProvider =
+    StreamProvider.autoDispose<List<MoodEntry>>((ref) {
+      final db = ref.watch(dbProvider);
 
-  final query =
-      db.select(db.moodEntries)
-        ..where(
-          (tbl) =>
-              tbl.notes.isNotNull() & // notes IS NOT NULL
-              tbl.notes.length.isBiggerThanValue(0), // notes <> ''
-        )
-        ..orderBy([
-          (t) => OrderingTerm(expression: t.timestamp, mode: OrderingMode.desc),
-        ]);
+      final query =
+          db.select(db.moodEntries)
+            ..where(
+              (tbl) =>
+                  tbl.notes.isNotNull() & // notes IS NOT NULL
+                  tbl.notes.length.isBiggerThanValue(0), // notes <> ''
+            )
+            ..orderBy([
+              (t) => drift.OrderingTerm(
+                expression: t.timestamp,
+                mode: drift.OrderingMode.desc,
+              ),
+            ]);
 
-  return query.watch();
-});
+      return query.watch();
+    });
 
 /// Handy JSON backup / restore helpers for every current table.
 extension BackupOps on AppDatabase {
   /* ── EXPORT ─────────────────────────────────────────────────────────── */
   /* ── EXPORT ─────────────────────────────────────────────────────────── */
+  // Future<Map<String, dynamic>> exportData() async {
+  //   return {
+  //     'substances':
+  //         (await select(substances).get()).map((e) => e.toJson()).toList(),
+  //     'moodEntries':
+  //         (await select(moodEntries).get()).map((e) => e.toJson()).toList(),
+  //     'sleepEntries':
+  //         (await select(sleepEntries).get())
+  //             .map((e) => e.toJson())
+  //             .toList(), // ← NEW
+  //     'reactionResults':
+  //         (await select(reactionResults).get()).map((e) => e.toJson()).toList(),
+  //     'stroopResults':
+  //         (await select(stroopResults).get()).map((e) => e.toJson()).toList(),
+  //     'nBackResults':
+  //         (await select(nBackResults).get()).map((e) => e.toJson()).toList(),
+  //     'goNoGoResults':
+  //         (await select(goNoGoResults).get()).map((e) => e.toJson()).toList(),
+  //     'digitSpanResults':
+  //         (await select(digitSpanResults).get())
+  //             .map((e) => e.toJson())
+  //             .toList(),
+  //     'symbolSearchResults':
+  //         (await select(symbolSearchResults).get())
+  //             .map((e) => e.toJson())
+  //             .toList(),
+  //   };
+  // }
+
   Future<Map<String, dynamic>> exportData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final rawMetrics = prefs.getString('custom_metrics');
+    final customMetrics =
+        rawMetrics != null ? jsonDecode(rawMetrics) as List : [];
+
     return {
       'substances':
           (await select(substances).get()).map((e) => e.toJson()).toList(),
       'moodEntries':
           (await select(moodEntries).get()).map((e) => e.toJson()).toList(),
       'sleepEntries':
-          (await select(sleepEntries).get())
-              .map((e) => e.toJson())
-              .toList(), // ← NEW
+          (await select(sleepEntries).get()).map((e) => e.toJson()).toList(),
       'reactionResults':
           (await select(reactionResults).get()).map((e) => e.toJson()).toList(),
       'stroopResults':
@@ -127,11 +166,21 @@ extension BackupOps on AppDatabase {
           (await select(symbolSearchResults).get())
               .map((e) => e.toJson())
               .toList(),
+
+      // ← NEW
+      'customMetrics': customMetrics,
     };
   }
 
   /* ── IMPORT (⚠ overwrites everything) ───────────────────────────────── */
   Future<void> importData(Map<String, dynamic> json) async {
+    // Load customMetrics if present
+    final metricList = json['customMetrics'];
+    if (metricList != null && metricList is List) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('custom_metrics', jsonEncode(metricList));
+    }
+
     await transaction(() async {
       // 1. wipe
       await batch(
@@ -151,8 +200,8 @@ extension BackupOps on AppDatabase {
       // 2. helper – takes raw JSON → companion → insert
       Future<void> _addAll<L, D>(
         List<dynamic>? list,
-        Insertable<D> Function(Map<String, dynamic>) toCompanion,
-        TableInfo<Table, D> table,
+        drift.Insertable<D> Function(Map<String, dynamic>) toCompanion,
+        drift.TableInfo<drift.Table, D> table,
       ) async {
         if (list == null) return;
         for (final row in list) {
@@ -272,7 +321,10 @@ final filteredMoodEntriesProvider = StreamProvider.autoDispose.family<
       db.select(db.moodEntries)
         ..where((t) => t.timestamp.isBiggerOrEqualValue(cutOff))
         ..orderBy([
-          (t) => OrderingTerm(expression: t.timestamp, mode: OrderingMode.desc),
+          (t) => drift.OrderingTerm(
+            expression: t.timestamp,
+            mode: drift.OrderingMode.desc,
+          ),
         ]);
 
   return query.watch().map((entries) {
@@ -363,3 +415,73 @@ final substancesActiveSinceProvider = FutureProvider.autoDispose
 final sleepStreamProvider = StreamProvider.autoDispose(
   (ref) => ref.watch(dbProvider).watchAllSleep(),
 );
+
+class CustomMetric {
+  final String name;
+  final Color color;
+
+  CustomMetric({required this.name, required this.color});
+
+  Map<String, dynamic> toJson() => {'name': name, 'color': color.value};
+
+  factory CustomMetric.fromJson(Map<String, dynamic> json) =>
+      CustomMetric(name: json['name'], color: Color(json['color']));
+}
+
+final customMetricsProvider =
+    StateNotifierProvider<CustomMetricsNotifier, List<CustomMetric>>((ref) {
+      return CustomMetricsNotifier(); // implement loading/saving here
+    });
+
+class CustomMetricsNotifier extends StateNotifier<List<CustomMetric>> {
+  static const _prefsKey = 'custom_metrics';
+
+  CustomMetricsNotifier() : super([]) {
+    _loadMetrics();
+  }
+
+  Future<void> _loadMetrics() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_prefsKey);
+    if (raw != null) {
+      final List decoded = jsonDecode(raw);
+      state =
+          decoded
+              .map((e) => CustomMetric.fromJson(e as Map<String, dynamic>))
+              .toList();
+    } else {
+      // Optional: Load defaults if first launch
+      state = [
+        CustomMetric(name: 'Energy', color: Colors.teal),
+        CustomMetric(name: 'Happiness', color: Colors.orange),
+        CustomMetric(name: 'Focus', color: Colors.blue),
+      ];
+      _save();
+    }
+  }
+
+  Future<void> _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    final encoded = jsonEncode(state.map((e) => e.toJson()).toList());
+    await prefs.setString(_prefsKey, encoded);
+  }
+
+  void addMetric(CustomMetric metric) {
+    if (state.length >= 6) return; // max 6
+    state = [...state, metric];
+    _save();
+  }
+
+  void updateMetric(int index, CustomMetric updated) {
+    final copy = [...state];
+    copy[index] = updated;
+    state = copy;
+    _save();
+  }
+
+  void deleteMetric(int index) {
+    final copy = [...state]..removeAt(index);
+    state = copy;
+    _save();
+  }
+}

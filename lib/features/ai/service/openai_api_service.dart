@@ -124,11 +124,10 @@ class OpenAIAPI {
     String? candidateDosage,
     String? notes,
   }) async {
-    print(currentStack.toString());
     final chat = await OpenAI.instance.chat.create(
       model: "gpt-4o-mini",
-      temperature: 0,
-      responseFormat: {"type": "json_object"}, // keep strict JSON
+      temperature: 2,
+      responseFormat: {"type": "json_object"},
       messages: [
         OpenAIChatCompletionChoiceMessageModel(
           role: OpenAIChatMessageRole.system,

@@ -1,13 +1,11 @@
 import 'package:drift/drift.dart';
+import 'package:libretrac/core/database/type_converters.dart';
 
 class MoodEntries extends Table {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get timestamp => dateTime()();
-  IntColumn get energy => integer()();
-  IntColumn get happiness => integer()();
-  IntColumn get creativity => integer()();
-  IntColumn get focus => integer()();
-  IntColumn get irritability => integer()();
-  IntColumn get anxiety => integer()();
+  TextColumn get customMetrics =>
+      text().map(const MetricsConverter()).nullable()();
+
   TextColumn get notes => text().nullable()();
 }

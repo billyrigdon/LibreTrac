@@ -429,67 +429,16 @@ class $MoodEntriesTable extends MoodEntries
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _energyMeta = const VerificationMeta('energy');
   @override
-  late final GeneratedColumn<int> energy = GeneratedColumn<int>(
-    'energy',
+  late final GeneratedColumnWithTypeConverter<Map<String, int>?, String>
+  customMetrics = GeneratedColumn<String>(
+    'custom_metrics',
     aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _happinessMeta = const VerificationMeta(
-    'happiness',
-  );
-  @override
-  late final GeneratedColumn<int> happiness = GeneratedColumn<int>(
-    'happiness',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _creativityMeta = const VerificationMeta(
-    'creativity',
-  );
-  @override
-  late final GeneratedColumn<int> creativity = GeneratedColumn<int>(
-    'creativity',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _focusMeta = const VerificationMeta('focus');
-  @override
-  late final GeneratedColumn<int> focus = GeneratedColumn<int>(
-    'focus',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _irritabilityMeta = const VerificationMeta(
-    'irritability',
-  );
-  @override
-  late final GeneratedColumn<int> irritability = GeneratedColumn<int>(
-    'irritability',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _anxietyMeta = const VerificationMeta(
-    'anxiety',
-  );
-  @override
-  late final GeneratedColumn<int> anxiety = GeneratedColumn<int>(
-    'anxiety',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  ).withConverter<Map<String, int>?>(
+    $MoodEntriesTable.$convertercustomMetricsn,
   );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
@@ -501,17 +450,7 @@ class $MoodEntriesTable extends MoodEntries
     requiredDuringInsert: false,
   );
   @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    timestamp,
-    energy,
-    happiness,
-    creativity,
-    focus,
-    irritability,
-    anxiety,
-    notes,
-  ];
+  List<GeneratedColumn> get $columns => [id, timestamp, customMetrics, notes];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -534,57 +473,6 @@ class $MoodEntriesTable extends MoodEntries
       );
     } else if (isInserting) {
       context.missing(_timestampMeta);
-    }
-    if (data.containsKey('energy')) {
-      context.handle(
-        _energyMeta,
-        energy.isAcceptableOrUnknown(data['energy']!, _energyMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_energyMeta);
-    }
-    if (data.containsKey('happiness')) {
-      context.handle(
-        _happinessMeta,
-        happiness.isAcceptableOrUnknown(data['happiness']!, _happinessMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_happinessMeta);
-    }
-    if (data.containsKey('creativity')) {
-      context.handle(
-        _creativityMeta,
-        creativity.isAcceptableOrUnknown(data['creativity']!, _creativityMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_creativityMeta);
-    }
-    if (data.containsKey('focus')) {
-      context.handle(
-        _focusMeta,
-        focus.isAcceptableOrUnknown(data['focus']!, _focusMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_focusMeta);
-    }
-    if (data.containsKey('irritability')) {
-      context.handle(
-        _irritabilityMeta,
-        irritability.isAcceptableOrUnknown(
-          data['irritability']!,
-          _irritabilityMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_irritabilityMeta);
-    }
-    if (data.containsKey('anxiety')) {
-      context.handle(
-        _anxietyMeta,
-        anxiety.isAcceptableOrUnknown(data['anxiety']!, _anxietyMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_anxietyMeta);
     }
     if (data.containsKey('notes')) {
       context.handle(
@@ -611,36 +499,12 @@ class $MoodEntriesTable extends MoodEntries
             DriftSqlType.dateTime,
             data['${effectivePrefix}timestamp'],
           )!,
-      energy:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}energy'],
-          )!,
-      happiness:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}happiness'],
-          )!,
-      creativity:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}creativity'],
-          )!,
-      focus:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}focus'],
-          )!,
-      irritability:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}irritability'],
-          )!,
-      anxiety:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}anxiety'],
-          )!,
+      customMetrics: $MoodEntriesTable.$convertercustomMetricsn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}custom_metrics'],
+        ),
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -652,27 +516,22 @@ class $MoodEntriesTable extends MoodEntries
   $MoodEntriesTable createAlias(String alias) {
     return $MoodEntriesTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<Map<String, int>, String> $convertercustomMetrics =
+      const MetricsConverter();
+  static TypeConverter<Map<String, int>?, String?> $convertercustomMetricsn =
+      NullAwareTypeConverter.wrap($convertercustomMetrics);
 }
 
 class MoodEntry extends DataClass implements Insertable<MoodEntry> {
   final int id;
   final DateTime timestamp;
-  final int energy;
-  final int happiness;
-  final int creativity;
-  final int focus;
-  final int irritability;
-  final int anxiety;
+  final Map<String, int>? customMetrics;
   final String? notes;
   const MoodEntry({
     required this.id,
     required this.timestamp,
-    required this.energy,
-    required this.happiness,
-    required this.creativity,
-    required this.focus,
-    required this.irritability,
-    required this.anxiety,
+    this.customMetrics,
     this.notes,
   });
   @override
@@ -680,12 +539,11 @@ class MoodEntry extends DataClass implements Insertable<MoodEntry> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['timestamp'] = Variable<DateTime>(timestamp);
-    map['energy'] = Variable<int>(energy);
-    map['happiness'] = Variable<int>(happiness);
-    map['creativity'] = Variable<int>(creativity);
-    map['focus'] = Variable<int>(focus);
-    map['irritability'] = Variable<int>(irritability);
-    map['anxiety'] = Variable<int>(anxiety);
+    if (!nullToAbsent || customMetrics != null) {
+      map['custom_metrics'] = Variable<String>(
+        $MoodEntriesTable.$convertercustomMetricsn.toSql(customMetrics),
+      );
+    }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
@@ -696,46 +554,71 @@ class MoodEntry extends DataClass implements Insertable<MoodEntry> {
     return MoodEntriesCompanion(
       id: Value(id),
       timestamp: Value(timestamp),
-      energy: Value(energy),
-      happiness: Value(happiness),
-      creativity: Value(creativity),
-      focus: Value(focus),
-      irritability: Value(irritability),
-      anxiety: Value(anxiety),
+      customMetrics:
+          customMetrics == null && nullToAbsent
+              ? const Value.absent()
+              : Value(customMetrics),
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
     );
   }
 
-  factory MoodEntry.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return MoodEntry(
-      id: serializer.fromJson<int>(json['id']),
-      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
-      energy: serializer.fromJson<int>(json['energy']),
-      happiness: serializer.fromJson<int>(json['happiness']),
-      creativity: serializer.fromJson<int>(json['creativity']),
-      focus: serializer.fromJson<int>(json['focus']),
-      irritability: serializer.fromJson<int>(json['irritability']),
-      anxiety: serializer.fromJson<int>(json['anxiety']),
-      notes: serializer.fromJson<String?>(json['notes']),
-    );
+  factory MoodEntry.fromJson(Map<String, dynamic> json) {
+    DateTime _parseTimestamp(dynamic value) {
+      if (value is String) {
+        return DateTime.parse(value);
+      } else if (value is int) {
+        // Handle Unix timestamp in milliseconds
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      } else {
+        throw FormatException('Unsupported timestamp format: $value');
+      }
+    }
+
+    final timestamp = _parseTimestamp(json['timestamp']);
+
+    if (json.containsKey('customMetrics')) {
+      final rawMetrics = json['customMetrics'];
+      final Map<String, int> parsedMetrics = {};
+
+      if (rawMetrics is Map) {
+        rawMetrics.forEach((key, value) {
+          parsedMetrics[key.toString()] = (value as num).toInt();
+        });
+      }
+
+      return MoodEntry(
+        id: json['id'] as int,
+        timestamp: timestamp,
+        customMetrics: parsedMetrics,
+        notes: json['notes'] as String?,
+      );
+    } else {
+      // Legacy fallback
+      final legacyMetrics = <String, int>{
+        'Energy': json['energy'] ?? 5,
+        'Happiness': json['happiness'] ?? 5,
+        'Creativity': json['creativity'] ?? 5,
+        'Focus': json['focus'] ?? 5,
+        'Irritability': json['irritability'] ?? 5,
+        'Anxiety': json['anxiety'] ?? 5,
+      };
+      return MoodEntry(
+        id: json['id'] as int,
+        timestamp: timestamp,
+        customMetrics: legacyMetrics,
+        notes: json['notes'] as String?,
+      );
+    }
   }
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'timestamp': serializer.toJson<DateTime>(timestamp),
-      'energy': serializer.toJson<int>(energy),
-      'happiness': serializer.toJson<int>(happiness),
-      'creativity': serializer.toJson<int>(creativity),
-      'focus': serializer.toJson<int>(focus),
-      'irritability': serializer.toJson<int>(irritability),
-      'anxiety': serializer.toJson<int>(anxiety),
+      'customMetrics': serializer.toJson<Map<String, int>?>(customMetrics),
       'notes': serializer.toJson<String?>(notes),
     };
   }
@@ -743,38 +626,23 @@ class MoodEntry extends DataClass implements Insertable<MoodEntry> {
   MoodEntry copyWith({
     int? id,
     DateTime? timestamp,
-    int? energy,
-    int? happiness,
-    int? creativity,
-    int? focus,
-    int? irritability,
-    int? anxiety,
+    Value<Map<String, int>?> customMetrics = const Value.absent(),
     Value<String?> notes = const Value.absent(),
   }) => MoodEntry(
     id: id ?? this.id,
     timestamp: timestamp ?? this.timestamp,
-    energy: energy ?? this.energy,
-    happiness: happiness ?? this.happiness,
-    creativity: creativity ?? this.creativity,
-    focus: focus ?? this.focus,
-    irritability: irritability ?? this.irritability,
-    anxiety: anxiety ?? this.anxiety,
+    customMetrics:
+        customMetrics.present ? customMetrics.value : this.customMetrics,
     notes: notes.present ? notes.value : this.notes,
   );
   MoodEntry copyWithCompanion(MoodEntriesCompanion data) {
     return MoodEntry(
       id: data.id.present ? data.id.value : this.id,
       timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
-      energy: data.energy.present ? data.energy.value : this.energy,
-      happiness: data.happiness.present ? data.happiness.value : this.happiness,
-      creativity:
-          data.creativity.present ? data.creativity.value : this.creativity,
-      focus: data.focus.present ? data.focus.value : this.focus,
-      irritability:
-          data.irritability.present
-              ? data.irritability.value
-              : this.irritability,
-      anxiety: data.anxiety.present ? data.anxiety.value : this.anxiety,
+      customMetrics:
+          data.customMetrics.present
+              ? data.customMetrics.value
+              : this.customMetrics,
       notes: data.notes.present ? data.notes.value : this.notes,
     );
   }
@@ -784,102 +652,51 @@ class MoodEntry extends DataClass implements Insertable<MoodEntry> {
     return (StringBuffer('MoodEntry(')
           ..write('id: $id, ')
           ..write('timestamp: $timestamp, ')
-          ..write('energy: $energy, ')
-          ..write('happiness: $happiness, ')
-          ..write('creativity: $creativity, ')
-          ..write('focus: $focus, ')
-          ..write('irritability: $irritability, ')
-          ..write('anxiety: $anxiety, ')
+          ..write('customMetrics: $customMetrics, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    timestamp,
-    energy,
-    happiness,
-    creativity,
-    focus,
-    irritability,
-    anxiety,
-    notes,
-  );
+  int get hashCode => Object.hash(id, timestamp, customMetrics, notes);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MoodEntry &&
           other.id == this.id &&
           other.timestamp == this.timestamp &&
-          other.energy == this.energy &&
-          other.happiness == this.happiness &&
-          other.creativity == this.creativity &&
-          other.focus == this.focus &&
-          other.irritability == this.irritability &&
-          other.anxiety == this.anxiety &&
+          other.customMetrics == this.customMetrics &&
           other.notes == this.notes);
 }
 
 class MoodEntriesCompanion extends UpdateCompanion<MoodEntry> {
   final Value<int> id;
   final Value<DateTime> timestamp;
-  final Value<int> energy;
-  final Value<int> happiness;
-  final Value<int> creativity;
-  final Value<int> focus;
-  final Value<int> irritability;
-  final Value<int> anxiety;
+  final Value<Map<String, int>?> customMetrics;
   final Value<String?> notes;
   const MoodEntriesCompanion({
     this.id = const Value.absent(),
     this.timestamp = const Value.absent(),
-    this.energy = const Value.absent(),
-    this.happiness = const Value.absent(),
-    this.creativity = const Value.absent(),
-    this.focus = const Value.absent(),
-    this.irritability = const Value.absent(),
-    this.anxiety = const Value.absent(),
+    this.customMetrics = const Value.absent(),
     this.notes = const Value.absent(),
   });
   MoodEntriesCompanion.insert({
     this.id = const Value.absent(),
     required DateTime timestamp,
-    required int energy,
-    required int happiness,
-    required int creativity,
-    required int focus,
-    required int irritability,
-    required int anxiety,
+    this.customMetrics = const Value.absent(),
     this.notes = const Value.absent(),
-  }) : timestamp = Value(timestamp),
-       energy = Value(energy),
-       happiness = Value(happiness),
-       creativity = Value(creativity),
-       focus = Value(focus),
-       irritability = Value(irritability),
-       anxiety = Value(anxiety);
+  }) : timestamp = Value(timestamp);
   static Insertable<MoodEntry> custom({
     Expression<int>? id,
     Expression<DateTime>? timestamp,
-    Expression<int>? energy,
-    Expression<int>? happiness,
-    Expression<int>? creativity,
-    Expression<int>? focus,
-    Expression<int>? irritability,
-    Expression<int>? anxiety,
+    Expression<String>? customMetrics,
     Expression<String>? notes,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (timestamp != null) 'timestamp': timestamp,
-      if (energy != null) 'energy': energy,
-      if (happiness != null) 'happiness': happiness,
-      if (creativity != null) 'creativity': creativity,
-      if (focus != null) 'focus': focus,
-      if (irritability != null) 'irritability': irritability,
-      if (anxiety != null) 'anxiety': anxiety,
+      if (customMetrics != null) 'custom_metrics': customMetrics,
       if (notes != null) 'notes': notes,
     });
   }
@@ -887,23 +704,13 @@ class MoodEntriesCompanion extends UpdateCompanion<MoodEntry> {
   MoodEntriesCompanion copyWith({
     Value<int>? id,
     Value<DateTime>? timestamp,
-    Value<int>? energy,
-    Value<int>? happiness,
-    Value<int>? creativity,
-    Value<int>? focus,
-    Value<int>? irritability,
-    Value<int>? anxiety,
+    Value<Map<String, int>?>? customMetrics,
     Value<String?>? notes,
   }) {
     return MoodEntriesCompanion(
       id: id ?? this.id,
       timestamp: timestamp ?? this.timestamp,
-      energy: energy ?? this.energy,
-      happiness: happiness ?? this.happiness,
-      creativity: creativity ?? this.creativity,
-      focus: focus ?? this.focus,
-      irritability: irritability ?? this.irritability,
-      anxiety: anxiety ?? this.anxiety,
+      customMetrics: customMetrics ?? this.customMetrics,
       notes: notes ?? this.notes,
     );
   }
@@ -917,23 +724,10 @@ class MoodEntriesCompanion extends UpdateCompanion<MoodEntry> {
     if (timestamp.present) {
       map['timestamp'] = Variable<DateTime>(timestamp.value);
     }
-    if (energy.present) {
-      map['energy'] = Variable<int>(energy.value);
-    }
-    if (happiness.present) {
-      map['happiness'] = Variable<int>(happiness.value);
-    }
-    if (creativity.present) {
-      map['creativity'] = Variable<int>(creativity.value);
-    }
-    if (focus.present) {
-      map['focus'] = Variable<int>(focus.value);
-    }
-    if (irritability.present) {
-      map['irritability'] = Variable<int>(irritability.value);
-    }
-    if (anxiety.present) {
-      map['anxiety'] = Variable<int>(anxiety.value);
+    if (customMetrics.present) {
+      map['custom_metrics'] = Variable<String>(
+        $MoodEntriesTable.$convertercustomMetricsn.toSql(customMetrics.value),
+      );
     }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
@@ -946,12 +740,7 @@ class MoodEntriesCompanion extends UpdateCompanion<MoodEntry> {
     return (StringBuffer('MoodEntriesCompanion(')
           ..write('id: $id, ')
           ..write('timestamp: $timestamp, ')
-          ..write('energy: $energy, ')
-          ..write('happiness: $happiness, ')
-          ..write('creativity: $creativity, ')
-          ..write('focus: $focus, ')
-          ..write('irritability: $irritability, ')
-          ..write('anxiety: $anxiety, ')
+          ..write('customMetrics: $customMetrics, ')
           ..write('notes: $notes')
           ..write(')'))
         .toString();
@@ -3715,24 +3504,14 @@ typedef $$MoodEntriesTableCreateCompanionBuilder =
     MoodEntriesCompanion Function({
       Value<int> id,
       required DateTime timestamp,
-      required int energy,
-      required int happiness,
-      required int creativity,
-      required int focus,
-      required int irritability,
-      required int anxiety,
+      Value<Map<String, int>?> customMetrics,
       Value<String?> notes,
     });
 typedef $$MoodEntriesTableUpdateCompanionBuilder =
     MoodEntriesCompanion Function({
       Value<int> id,
       Value<DateTime> timestamp,
-      Value<int> energy,
-      Value<int> happiness,
-      Value<int> creativity,
-      Value<int> focus,
-      Value<int> irritability,
-      Value<int> anxiety,
+      Value<Map<String, int>?> customMetrics,
       Value<String?> notes,
     });
 
@@ -3755,34 +3534,10 @@ class $$MoodEntriesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get energy => $composableBuilder(
-    column: $table.energy,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get happiness => $composableBuilder(
-    column: $table.happiness,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get creativity => $composableBuilder(
-    column: $table.creativity,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get focus => $composableBuilder(
-    column: $table.focus,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get irritability => $composableBuilder(
-    column: $table.irritability,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get anxiety => $composableBuilder(
-    column: $table.anxiety,
-    builder: (column) => ColumnFilters(column),
+  ColumnWithTypeConverterFilters<Map<String, int>?, Map<String, int>, String>
+  get customMetrics => $composableBuilder(
+    column: $table.customMetrics,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<String> get notes => $composableBuilder(
@@ -3810,33 +3565,8 @@ class $$MoodEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get energy => $composableBuilder(
-    column: $table.energy,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get happiness => $composableBuilder(
-    column: $table.happiness,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get creativity => $composableBuilder(
-    column: $table.creativity,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get focus => $composableBuilder(
-    column: $table.focus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get irritability => $composableBuilder(
-    column: $table.irritability,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get anxiety => $composableBuilder(
-    column: $table.anxiety,
+  ColumnOrderings<String> get customMetrics => $composableBuilder(
+    column: $table.customMetrics,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3861,27 +3591,11 @@ class $$MoodEntriesTableAnnotationComposer
   GeneratedColumn<DateTime> get timestamp =>
       $composableBuilder(column: $table.timestamp, builder: (column) => column);
 
-  GeneratedColumn<int> get energy =>
-      $composableBuilder(column: $table.energy, builder: (column) => column);
-
-  GeneratedColumn<int> get happiness =>
-      $composableBuilder(column: $table.happiness, builder: (column) => column);
-
-  GeneratedColumn<int> get creativity => $composableBuilder(
-    column: $table.creativity,
+  GeneratedColumnWithTypeConverter<Map<String, int>?, String>
+  get customMetrics => $composableBuilder(
+    column: $table.customMetrics,
     builder: (column) => column,
   );
-
-  GeneratedColumn<int> get focus =>
-      $composableBuilder(column: $table.focus, builder: (column) => column);
-
-  GeneratedColumn<int> get irritability => $composableBuilder(
-    column: $table.irritability,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get anxiety =>
-      $composableBuilder(column: $table.anxiety, builder: (column) => column);
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
@@ -3921,44 +3635,24 @@ class $$MoodEntriesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<DateTime> timestamp = const Value.absent(),
-                Value<int> energy = const Value.absent(),
-                Value<int> happiness = const Value.absent(),
-                Value<int> creativity = const Value.absent(),
-                Value<int> focus = const Value.absent(),
-                Value<int> irritability = const Value.absent(),
-                Value<int> anxiety = const Value.absent(),
+                Value<Map<String, int>?> customMetrics = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => MoodEntriesCompanion(
                 id: id,
                 timestamp: timestamp,
-                energy: energy,
-                happiness: happiness,
-                creativity: creativity,
-                focus: focus,
-                irritability: irritability,
-                anxiety: anxiety,
+                customMetrics: customMetrics,
                 notes: notes,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required DateTime timestamp,
-                required int energy,
-                required int happiness,
-                required int creativity,
-                required int focus,
-                required int irritability,
-                required int anxiety,
+                Value<Map<String, int>?> customMetrics = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
               }) => MoodEntriesCompanion.insert(
                 id: id,
                 timestamp: timestamp,
-                energy: energy,
-                happiness: happiness,
-                creativity: creativity,
-                focus: focus,
-                irritability: irritability,
-                anxiety: anxiety,
+                customMetrics: customMetrics,
                 notes: notes,
               ),
           withReferenceMapper:

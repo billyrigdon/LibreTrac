@@ -61,14 +61,23 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
   Widget build(BuildContext ctx) {
     final dateFmt = DateFormat.yMMMd().add_jm();
 
-    final bars = [
-      ('Energy', widget.entry.energy),
-      ('Happiness', widget.entry.happiness),
-      ('Creativity', widget.entry.creativity),
-      ('Focus', widget.entry.focus),
-      ('Irritability', widget.entry.irritability),
-      ('Anxiety', widget.entry.anxiety),
-    ];
+    final customMetrics = widget.entry.customMetrics ?? {};
+    final metricDefs = ref.watch(customMetricsProvider);
+
+    final bars =
+        metricDefs
+            .where((m) => customMetrics.containsKey(m.name))
+            .map((m) => (m.name, customMetrics[m.name]!, m.color))
+            .toList();
+
+    // final bars = [
+    //   ('Energy', widget.entry.energy),
+    //   ('Happiness', widget.entry.happiness),
+    //   ('Creativity', widget.entry.creativity),
+    //   ('Focus', widget.entry.focus),
+    //   ('Irritability', widget.entry.irritability),
+    //   ('Anxiety', widget.entry.anxiety),
+    // ];
 
     final Map<String, Color> moodColors = {
       'Energy': Colors.teal,
@@ -168,8 +177,8 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
                         barRods: [
                           BarChartRodData(
                             toY: bars[i].$2.toDouble(),
-                            width: 30, // Thicker bars
-                            color: moodColors[bars[i].$1],
+                            width: 30,
+                            color: bars[i].$3, // color from CustomMetric
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ],

@@ -1,46 +1,42 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:libretrac/core/database/app_database.dart';
+import 'package:libretrac/providers/db_provider.dart';
 
 class MoodChartPage extends StatelessWidget {
   MoodChartPage({
     required this.ordered,
     required this.selectedMetrics,
-    required this.moodColors,
+    // required this.moodColors,
     required this.allMetrics,
     required this.onMetricToggle,
+    required this.customMetrics,
     super.key,
   });
 
   final List<MoodEntry> ordered;
   final Set<String> selectedMetrics;
-  final Map<String, Color> moodColors;
-  final List<String> allMetrics;
+  // final Map<String, Color> moodColors;
+  // final List<String> allMetrics;
+  final List<CustomMetric> allMetrics;
+
   final void Function(String metric, bool isSelected) onMetricToggle;
+  final List<CustomMetric>? customMetrics;
 
   List<LineChartBarData> _generateMoodLines(List<MoodEntry> entries) {
     final List<LineChartBarData> lines = [];
 
     final metrics =
-        selectedMetrics.isEmpty
-            ? allMetrics
-                .toSet() // default when the app is freshly launched
-            : selectedMetrics;
+        selectedMetrics.isEmpty ? allMetrics.toSet() : selectedMetrics;
 
-    for (final metric in metrics) {
+    for (final metric in allMetrics.where(
+      (m) => selectedMetrics.contains(m.name),
+    )) {
       final spots = <FlSpot>[];
 
       for (int i = 0; i < entries.length; i++) {
         final entry = entries[i];
-        final double? value = switch (metric) {
-          'Energy' => entry.energy.toDouble(),
-          'Happiness' => entry.happiness.toDouble(),
-          'Creativity' => entry.creativity.toDouble(),
-          'Focus' => entry.focus.toDouble(),
-          'Irritability' => entry.irritability.toDouble(),
-          'Anxiety' => entry.anxiety.toDouble(),
-          _ => null,
-        };
+        final value = entry.customMetrics?[metric.name]?.toDouble();
 
         if (value != null) {
           spots.add(FlSpot(i.toDouble(), value));
@@ -53,7 +49,7 @@ class MoodChartPage extends StatelessWidget {
             spots: spots,
             isCurved: true,
             barWidth: 3,
-            color: moodColors[metric],
+            color: metric.color,
             dotData: FlDotData(show: false),
             belowBarData: BarAreaData(show: false),
           ),
@@ -63,6 +59,52 @@ class MoodChartPage extends StatelessWidget {
 
     return lines;
   }
+
+  // List<LineChartBarData> _generateMoodLines(List<MoodEntry> entries) {
+  //   final List<LineChartBarData> lines = [];
+
+  //   final metrics =
+  //       selectedMetrics.isEmpty
+  //           ? allMetrics
+  //               .toSet() // default when the app is freshly launched
+  //           : selectedMetrics;
+
+  //   for (final metric in metrics) {
+  //     final spots = <FlSpot>[];
+
+  //     for (int i = 0; i < entries.length; i++) {
+  //       final entry = entries[i];
+  //       final double? value = switch (metric) {
+  //         'Energy' => entry.energy.toDouble(),
+  //         'Happiness' => entry.happiness.toDouble(),
+  //         'Creativity' => entry.creativity.toDouble(),
+  //         'Focus' => entry.focus.toDouble(),
+  //         'Irritability' => entry.irritability.toDouble(),
+  //         'Anxiety' => entry.anxiety.toDouble(),
+  //         _ => null,
+  //       };
+
+  //       if (value != null) {
+  //         spots.add(FlSpot(i.toDouble(), value));
+  //       }
+  //     }
+
+  //     if (spots.isNotEmpty) {
+  //       lines.add(
+  //         LineChartBarData(
+  //           spots: spots,
+  //           isCurved: true,
+  //           barWidth: 3,
+  //           color: moodColors[metric],
+  //           dotData: FlDotData(show: false),
+  //           belowBarData: BarAreaData(show: false),
+  //         ),
+  //       );
+  //     }
+  //   }
+
+  //   return lines;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -74,12 +116,12 @@ class MoodChartPage extends StatelessWidget {
           spacing: 8,
           children:
               allMetrics.map((metric) {
-                final selected = selectedMetrics.contains(metric);
+                final selected = selectedMetrics.contains(metric.name);
                 return FilterChip(
-                  label: Text(metric),
+                  label: Text(metric.name),
                   selected: selected,
-                  selectedColor: moodColors[metric]?.withOpacity(.30),
-                  onSelected: (value) => onMetricToggle(metric, value),
+                  selectedColor: metric.color.withOpacity(.30),
+                  onSelected: (value) => onMetricToggle(metric.name, value),
                 );
               }).toList(),
         ),

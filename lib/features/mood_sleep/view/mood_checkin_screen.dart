@@ -14,16 +14,16 @@ class MoodCheckInScreen extends ConsumerStatefulWidget {
 }
 
 class _MoodCheckInScreenState extends ConsumerState<MoodCheckInScreen> {
-  final Map<String, int> _moodValues = {
-    'Energy': 5,
-    'Happiness': 5,
-    'Creativity': 5,
-    'Focus': 5,
-    'Irritability': 5,
-    'Anxiety': 5,
-  };
+  late Map<String, int> _moodValues;
 
   final TextEditingController _notesController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final customMetrics = ref.read(customMetricsProvider);
+    _moodValues = {for (final metric in customMetrics) metric.name: 5};
+  }
 
   void _submitMood() async {
     final db = ref.read(dbProvider);
@@ -33,19 +33,14 @@ class _MoodCheckInScreenState extends ConsumerState<MoodCheckInScreen> {
         .insert(
           MoodEntriesCompanion.insert(
             timestamp: DateTime.now(),
-            energy: _moodValues['Energy']!,
-            happiness: _moodValues['Happiness']!,
-            creativity: _moodValues['Creativity']!,
-            focus: _moodValues['Focus']!,
-            irritability: _moodValues['Irritability']!,
-            anxiety: _moodValues['Anxiety']!,
+            customMetrics: drift.Value(_moodValues),
             notes: drift.Value(
               _notesController.text.isEmpty ? null : _notesController.text,
             ),
           ),
         );
 
-    await MoodWidgetService.update(); // call right after inserting a row
+    // await MoodWidgetService.update(); // call right after inserting a row
 
     if (mounted) {
       ScaffoldMessenger.of(
@@ -67,27 +62,31 @@ class _MoodCheckInScreenState extends ConsumerState<MoodCheckInScreen> {
           children: [
             Text('Today: $now', style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 12),
-            ..._moodValues.keys.map(
-              (mood) => Column(
+            ...ref.watch(customMetricsProvider).map((metric) {
+              final name = metric.name;
+              final color = metric.color;
+              final value = _moodValues[name]!;
+
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('$mood: ${_moodValues[mood]}'),
+                  Text('$name: $value'),
                   Slider(
-                    value: _moodValues[mood]!.toDouble(),
+                    value: value.toDouble(),
                     min: 0,
                     max: 10,
                     divisions: 10,
-                    label: _moodValues[mood].toString(),
-                    onChanged: (value) {
-                      setState(() {
-                        _moodValues[mood] = value.round();
-                      });
+                    label: value.toString(),
+                    activeColor: color,
+                    onChanged: (v) {
+                      setState(() => _moodValues[name] = v.round());
                     },
                   ),
                   const SizedBox(height: 8),
                 ],
-              ),
-            ),
+              );
+            }),
+
             const SizedBox(height: 8),
             TextField(
               controller: _notesController,

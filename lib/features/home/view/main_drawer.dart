@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:libretrac/features/home/view/home_screen.dart';
 import 'package:libretrac/features/journal/view/journal_list_screen.dart';
 import 'package:libretrac/features/settings/view/settings_screen.dart';
 import 'package:libretrac/features/substances/substance_list_screen.dart';
@@ -38,6 +39,16 @@ class MainDrawer extends StatelessWidget {
                 );
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Edit Metrics'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const EditMetricsScreen()),
+                );
+              },
+            ),
+
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text('Settings'),

@@ -6,6 +6,7 @@ import 'package:libretrac/core/database/mood_entries.dart';
 import 'package:libretrac/core/database/reaction_results.dart';
 import 'package:libretrac/core/database/sleep_entries.dart';
 import 'package:libretrac/core/database/substances.dart';
+import 'package:libretrac/core/database/type_converters.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 part 'app_database.g.dart';
@@ -39,7 +40,8 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (m, from, to) async {
       if (from == 1) {
         // coming from the old build
-        await m.createTable(substances);
+        // await m.createTable(substances);
+        await m.alterTable(TableMigration(moodEntries));
       }
     },
   );

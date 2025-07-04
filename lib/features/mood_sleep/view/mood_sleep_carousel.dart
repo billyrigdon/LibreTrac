@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libretrac/core/database/app_database.dart';
 import 'package:libretrac/features/mood_sleep/view/mood_chart_page.dart';
 import 'package:libretrac/features/mood_sleep/view/sleep_chart_page.dart';
@@ -15,6 +16,7 @@ class MoodSleepCarousel extends StatelessWidget {
     required this.moodColors,
     required this.allMetrics,
     required this.onMetricToggle,
+    required this.customMetrics,
     required this.window,
     super.key,
   });
@@ -23,8 +25,10 @@ class MoodSleepCarousel extends StatelessWidget {
   final List<SleepEntry> sleepEntries;
   final List<MoodEntry> orderedMood;
   final Set<String> selectedMetrics;
+  final List<CustomMetric>? customMetrics;
+
   final Map<String, Color> moodColors;
-  final List<String> allMetrics;
+  final List<CustomMetric> allMetrics;
   final void Function(String metric, bool isSelected) onMetricToggle;
   final MoodWindow window;
 
@@ -51,9 +55,10 @@ class MoodSleepCarousel extends StatelessWidget {
             MoodChartPage(
               ordered: mood,
               selectedMetrics: selectedMetrics,
-              moodColors: moodColors,
-              allMetrics: allMetrics,
+              // moodColors: moodColors,
+              allMetrics: allMetrics, //ref.watch(customMetricsProvider),
               onMetricToggle: onMetricToggle,
+              customMetrics: customMetrics,
             )
           else
             const OnboardCard(

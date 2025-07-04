@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libretrac/features/ai/view/trend_analysis_dialog.dart';
 import 'package:libretrac/features/cognitive/view/cognitive_chart.dart';
@@ -23,32 +24,35 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final List<String> allMetrics = [
-    'Energy',
-    'Happiness',
-    'Creativity',
-    'Focus',
-    'Irritability',
-    'Anxiety',
-  ];
+  // final List<String> allMetrics = [
+  //   'Energy',
+  //   'Happiness',
+  //   'Creativity',
+  //   'Focus',
+  //   'Irritability',
+  //   'Anxiety',
+  // ];
 
-  final Set<String> selectedMetrics = {
-    'Happiness',
-    'Energy',
-    'Anxiety',
-    'Creativity',
-    'Focus',
-    'Irritability',
-  };
+  // final Set<String> selectedMetrics = {
+  //   'Happiness',
+  //   'Energy',
+  //   'Anxiety',
+  //   'Creativity',
+  //   'Focus',
+  //   'Irritability',
+  // };
 
-  final Map<String, Color> moodColors = {
-    'Energy': Colors.teal,
-    'Happiness': Colors.orange,
-    'Creativity': Colors.purple,
-    'Focus': Colors.blue,
-    'Irritability': Colors.red,
-    'Anxiety': Colors.brown,
-  };
+  // final Map<String, Color> moodColors = {
+  //   'Energy': Colors.teal,
+  //   'Happiness': Colors.orange,
+  //   'Creativity': Colors.purple,
+  //   'Focus': Colors.blue,
+  //   'Irritability': Colors.red,
+  //   'Anxiety': Colors.brown,
+  // };
+
+  Set<String> selectedMetrics = {};
+  Map<String, int>? customMetrics = {};
 
   @override
   void initState() {
@@ -104,6 +108,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final window = ref.watch(moodWindowProvider);
     final AsyncValue<List<SleepEntry>> sleeps = ref.watch(sleepStreamProvider);
     // final detailed = ref.watch(showAllCheckInsProvider);
+    final customMetrics = ref.watch(customMetricsProvider);
+
+    final List<String> allMetrics = customMetrics.map((e) => e.name).toList();
+    final Map<String, Color> moodColors = {
+      for (final metric in customMetrics) metric.name: metric.color,
+    };
+
+    if (selectedMetrics.isEmpty && customMetrics.isNotEmpty) {
+      selectedMetrics = allMetrics.toSet(); // default: all enabled
+    }
 
     return PopScope(
       canPop: false, // () async => false,
@@ -161,32 +175,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ];
               },
             ),
-
-            // PopupMenuButton<MoodWindow>(
-            //   initialValue: window,
-            //   onSelected:
-            //       (w) => ref.read(moodWindowProvider.notifier).state = w,
-            //   itemBuilder:
-            //       (ctx) => [
-            //         const PopupMenuItem(
-            //           value: MoodWindow.week,
-            //           child: Text('7 days'),
-            //         ),
-            //         const PopupMenuItem(
-            //           value: MoodWindow.month,
-            //           child: Text('1 month'),
-            //         ),
-            //         const PopupMenuItem(
-            //           value: MoodWindow.threeMonths,
-            //           child: Text('3 months'),
-            //         ),
-            //         const PopupMenuItem(
-            //           value: MoodWindow.sixMonths,
-            //           child: Text('6 months'),
-            //         ),
-            //       ],
-            //   icon: const Icon(Icons.filter_alt),
-            // ),
           ],
         ),
         drawer: MainDrawer(() => setState(() {})),
@@ -269,17 +257,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             orderedMood: ordered,
                             selectedMetrics: selectedMetrics,
                             moodColors: moodColors,
-                            allMetrics: allMetrics,
+                            allMetrics: ref.watch(customMetricsProvider),
                             window: window,
+                            customMetrics: customMetrics,
                             onMetricToggle: (metric, isSelected) {
-                              setState(
-                                () =>
-                                    isSelected
-                                        ? selectedMetrics.add(metric)
-                                        : selectedMetrics.length > 1
-                                        ? selectedMetrics.remove(metric)
-                                        : null,
-                              );
+                              setState(() {
+                                if (isSelected) {
+                                  selectedMetrics.add(metric);
+                                } else if (selectedMetrics.length > 1) {
+                                  selectedMetrics.remove(metric);
+                                }
+                              });
                             },
                           ),
                         ),
@@ -332,6 +320,112 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class EditMetricsScreen extends ConsumerStatefulWidget {
+  const EditMetricsScreen({super.key});
+
+  @override
+  ConsumerState<EditMetricsScreen> createState() => _EditMetricsScreenState();
+}
+
+class _EditMetricsScreenState extends ConsumerState<EditMetricsScreen> {
+  void _showMetricDialog({CustomMetric? existing, int? index}) {
+    final controller = TextEditingController(text: existing?.name ?? '');
+    Color selectedColor = existing?.color ?? Colors.blue;
+
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: Text(existing == null ? 'Add Metric' : 'Edit Metric'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(labelText: 'Metric Name'),
+                ),
+                const SizedBox(height: 16),
+                BlockPicker(
+                  pickerColor: selectedColor,
+                  onColorChanged: (color) => selectedColor = color,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.pop(context),
+              ),
+              ElevatedButton(
+                child: const Text('Save'),
+                onPressed: () {
+                  final name = controller.text.trim();
+                  if (name.isEmpty) return;
+                  final metric = CustomMetric(name: name, color: selectedColor);
+
+                  final notifier = ref.read(customMetricsProvider.notifier);
+                  if (existing == null) {
+                    notifier.addMetric(metric);
+                  } else {
+                    notifier.updateMetric(index!, metric);
+                  }
+
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final metrics = ref.watch(customMetricsProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Edit Mood Metrics'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Add Metric',
+            onPressed:
+                metrics.length >= 6
+                    ? null
+                    : () => _showMetricDialog(), // limit to 6
+          ),
+        ],
+      ),
+      body: ListView.builder(
+        itemCount: metrics.length,
+        itemBuilder: (context, i) {
+          final metric = metrics[i];
+          return ListTile(
+            title: Text(metric.name),
+            leading: CircleAvatar(backgroundColor: metric.color),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed:
+                      () => _showMetricDialog(existing: metric, index: i),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    ref.read(customMetricsProvider.notifier).deleteMetric(i);
+                  },
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
