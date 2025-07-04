@@ -35,8 +35,8 @@ class MoodSleepCarousel extends StatelessWidget {
     final sleepsW =
         sleepEntries.where((e) => e.createdAt.isAfter(cutoff)).toList();
 
-    final hasMood = mood.length > 2;
-    final hasSleep = sleepsW.length > 2;
+    final hasMood = true; // mood.length > 2;
+    final hasSleep = true; // sleepsW.length > 2;
 
     return SizedBox(
       height: 350,

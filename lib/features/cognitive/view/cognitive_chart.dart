@@ -148,12 +148,12 @@ class CognitiveChart {
                 //   );
                 // },
                 builder: (_, snap) {
-                  if (!snap.hasData || snap.data!.isEmpty) {
-                    return Card(
-                      elevation: 2,
-                      child: Center(child: Text('No ${kind.label} data yet.')),
-                    );
-                  }
+                  // if (!snap.hasData || snap.data!.isEmpty) {
+                  //   return Card(
+                  //     elevation: 2,
+                  //     child: Center(child: Text('No ${kind.label} data yet.')),
+                  //   );
+                  // }
 
                   final cutoff = DateTime.now().subtract(
                     Duration(days: window.days + 1),

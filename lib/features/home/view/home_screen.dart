@@ -201,18 +201,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               )),
             );
 
-            // final AsyncValue<List<MoodEntry>> moods = ref.watch(
-            //   filteredMoodEntriesProvider((
-            //     window: window,
-            //     showAllCheckIns: false, // or true if user chooses to view all
-            //   )),
-            // );
-
             return moods.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, __) => Center(child: Text('Error: $e')),
               data: (entries) {
-                final hasEnoughData = entries.length > 2;
+                bool hasEnoughData = true;
                 final ordered = [...entries] // copy
                 ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
@@ -225,7 +218,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           height: 350,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.sentiment_satisfied_alt,
                                 size: 80,
@@ -239,6 +232,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   fontSize: 16,
                                   color: Colors.grey,
                                 ),
+                              ),
+                              SizedBox(height: 24),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  ElevatedButton.icon(
+                                    icon: Icon(Icons.edit),
+                                    label: Text('Mood Check-In'),
+                                    onPressed: () async {
+                                      await Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder:
+                                              (_) => const MoodCheckInScreen(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  SizedBox(width: 12),
+                                  ElevatedButton.icon(
+                                    icon: Icon(Icons.flash_on),
+                                    label: Text('Cognitive Tests'),
+                                    onPressed: _showCognitiveSheet,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -273,9 +291,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   .select(ref.read(dbProvider).reactionResults)
                                   .get(),
                           builder: (context, snap) {
-                            if (!snap.hasData || snap.data!.isEmpty) {
-                              return const SizedBox.shrink();
-                            }
+                            // if (!snap.hasData || snap.data!.isEmpty) {
+                            //   return const SizedBox.shrink();
+                            // }
                             return CognitiveChart().showCognitiveChart(
                               ref,
                               window,
