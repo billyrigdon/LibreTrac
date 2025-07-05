@@ -31,22 +31,22 @@ void main() async {
   // await NotificationService.init();
   // await NotificationService.scheduleDailyReminders();
 
-  // await HomeWidget.registerBackgroundCallback(_widgetCallback);
+  await HomeWidget.registerBackgroundCallback(_widgetCallback);
 
   await dotenv.load(fileName: 'assets/.env');
   runApp(ProviderScope(child: const LibreTracApp()));
 
   // 2 — kick the widget after the first frame so ProviderScope is ready
-  // WidgetsBinding.instance.addPostFrameCallback((_) {
-  // MoodWidgetService.update();
-  // });
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+  MoodWidgetService.update();
+  });
 }
 
 /// Called by the OS when the widget requests an update.
-// @pragma('vm:entry-point')
-// void _widgetCallback(Uri? _) async {
-//   await MoodWidgetService.update();
-// }
+@pragma('vm:entry-point')
+void _widgetCallback(Uri? _) async {
+  await MoodWidgetService.update();
+}
 
 class LibreTracApp extends ConsumerWidget {
   const LibreTracApp({super.key});

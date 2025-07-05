@@ -172,6 +172,23 @@ extension BackupOps on AppDatabase {
     };
   }
 
+  Future<Map<String, dynamic>> exportSharedPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys();
+
+    final Map<String, dynamic> allPrefs = {};
+
+    for (final key in keys) {
+      final value = prefs.get(key);
+      allPrefs[key] = value;
+    }
+
+    return allPrefs;
+  }
+
+  
+
+
   /* ── IMPORT (⚠ overwrites everything) ───────────────────────────────── */
   Future<void> importData(Map<String, dynamic> json) async {
     // Load customMetrics if present

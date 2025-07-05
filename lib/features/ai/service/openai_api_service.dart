@@ -81,7 +81,7 @@ class OpenAIAPI {
   Future<bool> isIngestible(String name) async {
     final chat = await OpenAI.instance.chat.create(
       model: 'gpt-4o-mini',
-      temperature: 0,
+      temperature: 0.2,
       responseFormat: {'type': 'json_object'},
       messages: [
         OpenAIChatCompletionChoiceMessageModel(
@@ -90,7 +90,7 @@ class OpenAIAPI {
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
               'Respond ONLY with valid JSON like {"edible": true}. '
               'Definition: edible = humans intentionally ingest it '
-              '(eat, drink, smoke, snort, inject, topicals, suppository) for nourishment, therapy, or psychoactive use. '
+              '(eat, drink, smoke, snort, inject, topicals, suppository, implant) for nourishment, therapy, health reasons, or psychoactive use. '
               'Interpret emojis and slang. For example, "🚹 hormone" means testosterone, which is edible. '
               'If it’s normally taken by mouth, injection, patch, or sublingually, it counts. '
               'If unsure or clearly non-edible (e.g. "smartphone"), return false.',
@@ -126,7 +126,7 @@ class OpenAIAPI {
   }) async {
     final chat = await OpenAI.instance.chat.create(
       model: "gpt-4o-mini",
-      temperature: 2,
+      temperature: 0.2,
       responseFormat: {"type": "json_object"},
       messages: [
         OpenAIChatCompletionChoiceMessageModel(

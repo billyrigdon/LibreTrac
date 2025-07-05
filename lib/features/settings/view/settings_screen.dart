@@ -23,7 +23,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
-    
 
     Future<void> _clearMood(BuildContext ctx) async {
       final ok = await _confirm(ctx, 'Clear all mood data?');
@@ -92,6 +91,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading: const Icon(Icons.import_export),
             title: const Text('Import data'),
             onTap: () => _importData(context, ref),
+          ),
+          ListTile(
+            leading: const Icon(Icons.backup),
+            title: const Text('Export preferences'),
+            onTap: () => _exportPrefs(context),
+          ),
+          ListTile(
+            leading: const Icon(Icons.import_export),
+            title: const Text('Import preferences'),
+            onTap: () => _importPrefs(context),
           ),
           const Divider(),
           ListTile(
@@ -197,6 +206,88 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await Share.shareXFiles([
       XFile(file.path),
     ], text: 'LibreTrac backup – keep this file safe!');
+  }
+
+  Future<void> _exportPrefs(BuildContext ctx) async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys();
+
+    final Map<String, dynamic> prefsJson = {};
+    for (final key in keys) {
+      prefsJson[key] = prefs.get(key);
+    }
+
+    final tmpDir = await getTemporaryDirectory();
+    final file = File(
+      '${tmpDir.path}/shared_prefs_backup_${DateTime.now().toIso8601String()}.json',
+    );
+    await file.writeAsString(jsonEncode(prefsJson));
+
+    await Share.shareXFiles([
+      XFile(file.path),
+    ], text: 'LibreTrac SharedPreferences backup – keep this file safe!');
+  }
+
+  Future<void> _importPrefs(BuildContext ctx) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
+    if (result == null) return;
+
+    final ok = await showDialog<bool>(
+      context: ctx,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Confirm Import'),
+            content: const Text(
+              'This will overwrite all current SharedPreferences data with the backup file. Continue?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Import'),
+              ),
+            ],
+          ),
+    );
+
+    if (ok != true) return;
+
+    final file = File(result.files.single.path!);
+    final jsonBlob =
+        jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+    final prefs = await SharedPreferences.getInstance();
+
+    for (final entry in jsonBlob.entries) {
+      final key = entry.key;
+      final value = entry.value;
+
+      if (value is bool) {
+        await prefs.setBool(key, value);
+      } else if (value is int) {
+        await prefs.setInt(key, value);
+      } else if (value is double) {
+        await prefs.setDouble(key, value);
+      } else if (value is String) {
+        await prefs.setString(key, value);
+      } else if (value is List) {
+        if (value.every((e) => e is String)) {
+          await prefs.setStringList(key, List<String>.from(value));
+        }
+      }
+    }
+
+    // Optional: notify user
+    if (ctx.mounted) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(content: Text('SharedPreferences import complete')),
+      );
+    }
   }
 
   Future<void> _importData(BuildContext ctx, WidgetRef ref) async {

@@ -40,8 +40,8 @@ class MainDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Edit Metrics'),
+              leading: const Icon(Icons.auto_graph),
+              title: const Text('Metrics'),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const EditMetricsScreen()),
