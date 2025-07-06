@@ -55,6 +55,7 @@ dependencies:
   timezone: ^0.10.1
   flutter_local_notifications: ^19.3.0
   flutter_colorpicker: ^1.1.0
+  lottie: ^3.3.1
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1   # or latest

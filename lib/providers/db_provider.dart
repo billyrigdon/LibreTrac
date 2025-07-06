@@ -186,8 +186,10 @@ extension BackupOps on AppDatabase {
     return allPrefs;
   }
 
-  
-
+  Future<List<MoodEntry>> getMoodEntriesBetween(DateTime from, DateTime to) {
+    return (select(moodEntries)
+      ..where((tbl) => tbl.timestamp.isBetweenValues(from, to))).get();
+  }
 
   /* ── IMPORT (⚠ overwrites everything) ───────────────────────────────── */
   Future<void> importData(Map<String, dynamic> json) async {

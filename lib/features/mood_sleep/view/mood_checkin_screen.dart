@@ -1,7 +1,9 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:libretrac/features/mood_sleep/view/streak_dialog.dart';
 import 'package:libretrac/services/mood_widget_service.dart';
+import 'package:libretrac/services/streak_popup_service.dart';
 import '../../../core/database/app_database.dart';
 import '../../../providers/db_provider.dart';
 import 'package:intl/intl.dart';
@@ -40,7 +42,22 @@ class _MoodCheckInScreenState extends ConsumerState<MoodCheckInScreen> {
           ),
         );
 
-    // await MoodWidgetService.update(); // call right after inserting a row
+    await MoodWidgetService.update(); // call right after inserting a row
+
+    final shown = await StreakService.hasShownToday();
+    if (!shown) {
+      final streak = await StreakService.updateStreak();
+      await StreakService.markShownToday();
+
+      // Show your streak dialog
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          builder: (_) => StreakDialog(streakCount: streak),
+        );
+      }
+    }
+    
 
     if (mounted) {
       ScaffoldMessenger.of(

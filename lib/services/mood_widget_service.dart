@@ -5,26 +5,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:libretrac/core/database/app_database.dart';
 
-/// Generates a 300 × 300 px PNG every time you call [update] and
-/// pushes it into the RemoteViews `<ImageView android:id="@+id/widget_image">`.
-///
-/// Call [MoodWidgetService.update()]
-///   • once at app start-up (see `main.dart` below)
-///   • immediately after every new mood check-in.
 class MoodWidgetService {
   static final db = AppDatabase();
-  // Same colours you already use on the Home screen :contentReference[oaicite:1]{index=1}
-  static const _metricColors = {
-    'energy': Colors.teal,
-    'happiness': Colors.orange,
-    'creativity': Colors.purple,
-    'focus': Colors.blue,
-    'irritability': Colors.red,
-    'anxiety': Colors.brown,
-  };
 
   static Future<void> update() async {
-    // ── 1. Fetch the seven most-recent rows ────────────────────────────
     try {
       final rows =
           await (db.select(db.moodEntries)
@@ -38,8 +22,6 @@ class MoodWidgetService {
               .get();
 
       if (rows.isEmpty) {
-        // Nothing to draw – still notify the widget so it clears itself
-        // tell Android which provider to ping
         await HomeWidget.updateWidget(
           name: 'MoodWidgetProvider', // <-- here
           qualifiedAndroidName: 'com.example.libretrac.MoodWidgetProvider',
@@ -47,18 +29,15 @@ class MoodWidgetService {
         return;
       }
 
-      final ordered = rows.reversed.toList(); // oldest → newest (left→right)
+      final ordered = rows.reversed.toList();
       const Size _bitmapSize = Size(272, 110);
-      // ── 2. Build the chart widget off-screen ───────────────────────────
-      //  ----  build the headless chart widget  ----
+
       final chartWidget = Directionality(
-        // ① text direction
         textDirection: TextDirection.ltr,
         child: MediaQuery(
-          // ② minimal MediaQuery
           data: const MediaQueryData(
-            size: _bitmapSize, // fl_chart needs a non-zero size
-            devicePixelRatio: 1.0, // any reasonable dpi
+            size: _bitmapSize,
+            devicePixelRatio: 1.0,
           ),
           child: SizedBox(
             // ③ 300×300 canvas
@@ -103,9 +82,6 @@ class MoodWidgetService {
         logicalSize: const Size(380, 160),
       );
 
-      // Notify the launcher that the bitmap changed
-      // lib/services/mood_widget_service.dart
-      // ...
       await HomeWidget.updateWidget(
         name: 'MoodWidgetProvider',
         qualifiedAndroidName: 'com.example.libretrac.MoodWidgetProvider',
@@ -115,12 +91,10 @@ class MoodWidgetService {
     }
   }
 
-  /// Builds six LineChartBarData traces (colour-coded).
   static List<LineChartBarData> _buildLines(List<MoodEntry> entries) {
     final lines = <LineChartBarData>[];
     final metricToColor = <String, Color>{};
 
-    // Step 1: Get all metric keys (both standard and custom)
     final allMetrics = <String>{};
     for (final entry in entries) {
       allMetrics.addAll(entry.customMetrics?.keys ?? []);
@@ -154,7 +128,6 @@ class MoodWidgetService {
           fallbackColors[colorIndex++ % fallbackColors.length];
     }
 
-    // Step 3: Build lines
     for (final metric in allMetrics) {
       final spots = <FlSpot>[];
 
