@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ import 'package:libretrac/providers/theme_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:collection/collection.dart'; // for firstWhereOrNull
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -85,23 +87,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.backup),
             title: const Text('Export data'),
-            onTap: () => _exportData(context, ref),
+            onTap: () => _exportEverything(context, ref),
           ),
           ListTile(
             leading: const Icon(Icons.import_export),
             title: const Text('Import data'),
-            onTap: () => _importData(context, ref),
+            onTap: () => _importEverything(context, ref),
           ),
-          ListTile(
-            leading: const Icon(Icons.backup),
-            title: const Text('Export preferences'),
-            onTap: () => _exportPrefs(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.import_export),
-            title: const Text('Import preferences'),
-            onTap: () => _importPrefs(context),
-          ),
+          // ListTile(
+          //   leading: const Icon(Icons.backup),
+          //   title: const Text('Export preferences'),
+          //   onTap: () => _exportPrefs(context),
+          // ),
+          // ListTile(
+          //   leading: const Icon(Icons.import_export),
+          //   title: const Text('Import preferences'),
+          //   onTap: () => _importPrefs(context),
+          // ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.delete_outline, color: Colors.red),
@@ -186,7 +188,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onPressed: () => Navigator.pop(ctx, false),
                   ),
                   ElevatedButton(
-                    child: const Text('Delete'),
+                    child: const Text('Continue'),
                     onPressed: () => Navigator.pop(ctx, true),
                   ),
                 ],
@@ -195,43 +197,80 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         true;
   }
 
-  Future<void> _exportData(BuildContext ctx, WidgetRef ref) async {
-    final dbJson = await ref.read(dbProvider).exportData();
-    final tmpDir = await getTemporaryDirectory();
-    final file = File(
-      '${tmpDir.path}/libretrac_backup_${DateTime.now().toIso8601String()}.json',
-    );
-    await file.writeAsString(jsonEncode(dbJson));
-
-    await Share.shareXFiles([
-      XFile(file.path),
-    ], text: 'LibreTrac backup – keep this file safe!');
-  }
-
-  Future<void> _exportPrefs(BuildContext ctx) async {
+  Future<void> _exportEverything(BuildContext ctx, WidgetRef ref) async {
+    final db = ref.read(dbProvider);
+    final dbJson = await db.exportData();
     final prefs = await SharedPreferences.getInstance();
-    final keys = prefs.getKeys();
+    final prefsJson = await db.exportSharedPrefs();
 
-    final Map<String, dynamic> prefsJson = {};
-    for (final key in keys) {
-      prefsJson[key] = prefs.get(key);
+    final archive = Archive();
+
+    // Replace full path with 'profile.jpg' if exists
+    final profilePath = prefs.getString('user_profile_picture');
+    if (profilePath != null && File(profilePath).existsSync()) {
+      final profileFile = File(profilePath);
+      final bytes = profileFile.readAsBytesSync();
+      final ext = profilePath.split('.').last;
+      final archiveFile = ArchiveFile('profile.$ext', bytes.length, bytes);
+      archive.addFile(archiveFile);
+
+      // Override the picture path in prefs
+      prefsJson['user_profile_picture'] = 'profile.$ext';
     }
 
+    // Add data and prefs JSON
+    archive.addFile(
+      ArchiveFile('data.json', 0, utf8.encode(jsonEncode(dbJson))),
+    );
+    archive.addFile(
+      ArchiveFile('prefs.json', 0, utf8.encode(jsonEncode(prefsJson))),
+    );
+
+    final zipBytes = ZipEncoder().encode(archive)!;
     final tmpDir = await getTemporaryDirectory();
     final file = File(
-      '${tmpDir.path}/shared_prefs_backup_${DateTime.now().toIso8601String()}.json',
+      '${tmpDir.path}/libretrac_backup_${DateTime.now().toIso8601String()}.zip',
     );
-    await file.writeAsString(jsonEncode(prefsJson));
+    await file.writeAsBytes(zipBytes);
 
-    await Share.shareXFiles([
-      XFile(file.path),
-    ], text: 'LibreTrac SharedPreferences backup – keep this file safe!');
+    await Share.shareXFiles(
+      [XFile(file.path)],
+      text:
+          'LibreTrac backup – contains all data, prefs, and your profile picture',
+    );
   }
 
-  Future<void> _importPrefs(BuildContext ctx) async {
+  // Future<void> _exportEverything(BuildContext ctx, WidgetRef ref) async {
+  //   final db = ref.read(dbProvider);
+  //   final dbJson = await db.exportData();
+  //   final prefsJson = await db.exportSharedPrefs();
+
+  //   final archive =
+  //       Archive()
+  //         ..addFile(
+  //           ArchiveFile('data.json', 0, utf8.encode(jsonEncode(dbJson))),
+  //         )
+  //         ..addFile(
+  //           ArchiveFile('prefs.json', 0, utf8.encode(jsonEncode(prefsJson))),
+  //         );
+
+  //   final zipBytes = ZipEncoder().encode(archive)!;
+
+  //   final tmpDir = await getTemporaryDirectory();
+  //   final file = File(
+  //     '${tmpDir.path}/libretrac_backup_${DateTime.now().toIso8601String()}.zip',
+  //   );
+  //   await file.writeAsBytes(zipBytes);
+
+  //   await Share.shareXFiles([
+  //     XFile(file.path),
+  //   ], text: 'LibreTrac backup – contains all data and settings');
+  // }
+
+  Future<void> _importEverything(BuildContext ctx, WidgetRef ref) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['json'],
+      allowedExtensions: ['zip'],
     );
     if (result == null) return;
 
@@ -241,7 +280,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           (ctx) => AlertDialog(
             title: const Text('Confirm Import'),
             content: const Text(
-              'This will overwrite all current SharedPreferences data with the backup file. Continue?',
+              'This will overwrite all data and preferences. Continue?',
             ),
             actions: [
               TextButton(
@@ -258,12 +297,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (ok != true) return;
 
-    final file = File(result.files.single.path!);
-    final jsonBlob =
-        jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-    final prefs = await SharedPreferences.getInstance();
+    final zipFile = File(result.files.single.path!);
+    final zipBytes = zipFile.readAsBytesSync();
+    final archive = ZipDecoder().decodeBytes(zipBytes);
 
-    for (final entry in jsonBlob.entries) {
+    final dataFile = archive.files.firstWhere((f) => f.name == 'data.json');
+    final prefsFile = archive.files.firstWhere((f) => f.name == 'prefs.json');
+
+    final dataJson =
+        jsonDecode(utf8.decode(dataFile.content)) as Map<String, dynamic>;
+    final prefsJson =
+        jsonDecode(utf8.decode(prefsFile.content)) as Map<String, dynamic>;
+
+    // Import DB
+    await ref.read(dbProvider).importData(dataJson);
+
+    // Import SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    for (final entry in prefsJson.entries) {
       final key = entry.key;
       final value = entry.value;
 
@@ -275,38 +326,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         await prefs.setDouble(key, value);
       } else if (value is String) {
         await prefs.setString(key, value);
-      } else if (value is List) {
-        if (value.every((e) => e is String)) {
-          await prefs.setStringList(key, List<String>.from(value));
-        }
+      } else if (value is List && value.every((e) => e is String)) {
+        await prefs.setStringList(key, List<String>.from(value));
       }
     }
 
-    // Optional: notify user
-    if (ctx.mounted) {
-      ScaffoldMessenger.of(ctx).showSnackBar(
-        const SnackBar(content: Text('SharedPreferences import complete')),
-      );
+    final profileFile = archive.files.firstWhereOrNull(
+      (f) => f.name.startsWith('profile.') && f.isFile,
+    );
+
+    if (profileFile != null) {
+      final tmpDir = await getTemporaryDirectory();
+      final ext = profileFile.name.split('.').last;
+      final newPath = '${tmpDir.path}/restored_profile.$ext';
+      final restoredFile = File(newPath)
+        ..writeAsBytesSync(profileFile.content as List<int>);
+
+      // Update prefs before restoring
+      prefsJson['user_profile_picture'] = newPath;
     }
-  }
-
-  Future<void> _importData(BuildContext ctx, WidgetRef ref) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['json'],
-    );
-    if (result == null) return;
-
-    final ok = await _confirm(
-      ctx,
-      'This will overwrite ALL current data. Continue?',
-    );
-    if (!ok) return;
-
-    final file = File(result.files.single.path!);
-    final jsonBlob =
-        jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-    await ref.read(dbProvider).importData(jsonBlob);
 
     if (ctx.mounted) {
       ScaffoldMessenger.of(
@@ -314,6 +352,127 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ).showSnackBar(const SnackBar(content: Text('Import complete')));
     }
   }
+
+  //   Future<void> _exportData(BuildContext ctx, WidgetRef ref) async {
+  //     final dbJson = await ref.read(dbProvider).exportData();
+  //     final tmpDir = await getTemporaryDirectory();
+  //     final file = File(
+  //       '${tmpDir.path}/libretrac_backup_${DateTime.now().toIso8601String()}.json',
+  //     );
+  //     await file.writeAsString(jsonEncode(dbJson));
+
+  //     await Share.shareXFiles([
+  //       XFile(file.path),
+  //     ], text: 'LibreTrac backup – keep this file safe!');
+  //   }
+
+  //   Future<void> _exportPrefs(BuildContext ctx) async {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final keys = prefs.getKeys();
+
+  //     final Map<String, dynamic> prefsJson = {};
+  //     for (final key in keys) {
+  //       prefsJson[key] = prefs.get(key);
+  //     }
+
+  //     final tmpDir = await getTemporaryDirectory();
+  //     final file = File(
+  //       '${tmpDir.path}/shared_prefs_backup_${DateTime.now().toIso8601String()}.json',
+  //     );
+  //     await file.writeAsString(jsonEncode(prefsJson));
+
+  //     await Share.shareXFiles([
+  //       XFile(file.path),
+  //     ], text: 'LibreTrac SharedPreferences backup – keep this file safe!');
+  //   }
+
+  //   Future<void> _importPrefs(BuildContext ctx) async {
+  //     final result = await FilePicker.platform.pickFiles(
+  //       type: FileType.custom,
+  //       allowedExtensions: ['json'],
+  //     );
+  //     if (result == null) return;
+
+  //     final ok = await showDialog<bool>(
+  //       context: ctx,
+  //       builder:
+  //           (ctx) => AlertDialog(
+  //             title: const Text('Confirm Import'),
+  //             content: const Text(
+  //               'This will overwrite all current SharedPreferences data with the backup file. Continue?',
+  //             ),
+  //             actions: [
+  //               TextButton(
+  //                 onPressed: () => Navigator.pop(ctx, false),
+  //                 child: const Text('Cancel'),
+  //               ),
+  //               TextButton(
+  //                 onPressed: () => Navigator.pop(ctx, true),
+  //                 child: const Text('Import'),
+  //               ),
+  //             ],
+  //           ),
+  //     );
+
+  //     if (ok != true) return;
+
+  //     final file = File(result.files.single.path!);
+  //     final jsonBlob =
+  //         jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+  //     final prefs = await SharedPreferences.getInstance();
+
+  //     for (final entry in jsonBlob.entries) {
+  //       final key = entry.key;
+  //       final value = entry.value;
+
+  //       if (value is bool) {
+  //         await prefs.setBool(key, value);
+  //       } else if (value is int) {
+  //         await prefs.setInt(key, value);
+  //       } else if (value is double) {
+  //         await prefs.setDouble(key, value);
+  //       } else if (value is String) {
+  //         await prefs.setString(key, value);
+  //       } else if (value is List) {
+  //         if (value.every((e) => e is String)) {
+  //           await prefs.setStringList(key, List<String>.from(value));
+  //         }
+  //       }
+  //     }
+
+  //     // Optional: notify user
+  //     if (ctx.mounted) {
+  //       ScaffoldMessenger.of(ctx).showSnackBar(
+  //         const SnackBar(content: Text('SharedPreferences import complete')),
+  //       );
+  //     }
+  //   }
+
+  //   Future<void> _importData(BuildContext ctx, WidgetRef ref) async {
+  //     final result = await FilePicker.platform.pickFiles(
+  //       type: FileType.custom,
+  //       allowedExtensions: ['json'],
+  //     );
+  //     if (result == null) return;
+
+  //     final ok = await _confirm(
+  //       ctx,
+  //       'This will overwrite ALL current data. Continue?',
+  //     );
+  //     if (!ok) return;
+
+  //     final file = File(result.files.single.path!);
+  //     final jsonBlob =
+  //         jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+  //     await ref.read(dbProvider).importData(jsonBlob);
+
+  //     if (ctx.mounted) {
+  //       ScaffoldMessenger.of(
+  //         ctx,
+  //       ).showSnackBar(const SnackBar(content: Text('Import complete')));
+  //     }
+  //   }
+  // }
 }
 
 class _AccentColorPicker extends ConsumerWidget {
