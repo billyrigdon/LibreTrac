@@ -42,7 +42,7 @@ class _MoodCheckInScreenState extends ConsumerState<MoodCheckInScreen> {
           ),
         );
 
-    await MoodWidgetService.update();
+    // await MoodWidgetService.update();
 
     final shown = await StreakService.hasShownToday();
     if (!shown) {
@@ -56,7 +56,7 @@ class _MoodCheckInScreenState extends ConsumerState<MoodCheckInScreen> {
         );
       }
     }
-    
+
     if (mounted) {
       ScaffoldMessenger.of(
         context,

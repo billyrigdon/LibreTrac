@@ -6,7 +6,7 @@ import 'package:libretrac/features/home/view/home_screen.dart';
 import 'package:libretrac/providers/theme_provider.dart';
 import 'package:libretrac/services/mood_widget_service.dart';
 
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:libretrac/services/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -31,22 +31,22 @@ void main() async {
   // await NotificationService.init();
   // await NotificationService.scheduleDailyReminders();
 
-  await HomeWidget.registerBackgroundCallback(_widgetCallback);
+  // await HomeWidget.registerBackgroundCallback(_widgetCallback);
 
   await dotenv.load(fileName: 'assets/.env');
   runApp(ProviderScope(child: const LibreTracApp()));
 
   // 2 — kick the widget after the first frame so ProviderScope is ready
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-  MoodWidgetService.update();
-  });
+  // WidgetsBinding.instance.addPostFrameCallback((_) {
+  // MoodWidgetService.update();
+  // });
 }
 
 /// Called by the OS when the widget requests an update.
-@pragma('vm:entry-point')
-void _widgetCallback(Uri? _) async {
-  await MoodWidgetService.update();
-}
+// @pragma('vm:entry-point')
+// void _widgetCallback(Uri? _) async {
+// await MoodWidgetService.update();
+// }
 
 class LibreTracApp extends ConsumerWidget {
   const LibreTracApp({super.key});
@@ -93,7 +93,7 @@ class LibreTracApp extends ConsumerWidget {
       radioTheme: RadioThemeData(
         fillColor: MaterialStateProperty.all(lightScheme.primary),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: lightScheme.background,
         elevation: 0,
         shadowColor: Colors.transparent,
@@ -114,7 +114,7 @@ class LibreTracApp extends ConsumerWidget {
         color: lightScheme.primary,
         linearTrackColor: lightScheme.primary.withOpacity(0.2),
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         indicatorColor: lightScheme.primary,
         labelColor: lightScheme.primary,
         unselectedLabelColor: lightScheme.onSurface.withOpacity(0.6),
@@ -149,7 +149,7 @@ class LibreTracApp extends ConsumerWidget {
       radioTheme: RadioThemeData(
         fillColor: MaterialStateProperty.all(darkScheme.primary),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: darkScheme.background,
         elevation: 0,
         shadowColor: Colors.transparent,
@@ -171,7 +171,7 @@ class LibreTracApp extends ConsumerWidget {
         color: darkScheme.primary,
         linearTrackColor: darkScheme.primary.withOpacity(0.2),
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         indicatorColor: darkScheme.primary,
         labelColor: darkScheme.primary,
         unselectedLabelColor: darkScheme.onSurface.withOpacity(0.6),
