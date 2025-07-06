@@ -207,7 +207,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     // Replace full path with 'profile.jpg' if exists
     final profilePath = prefs.getString('user_profile_picture');
+    debugPrint(profilePath);
     if (profilePath != null && File(profilePath).existsSync()) {
+      debugPrint('saving');
       final profileFile = File(profilePath);
       final bytes = profileFile.readAsBytesSync();
       final ext = profilePath.split('.').last;
@@ -239,33 +241,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           'LibreTrac backup – contains all data, prefs, and your profile picture',
     );
   }
-
-  // Future<void> _exportEverything(BuildContext ctx, WidgetRef ref) async {
-  //   final db = ref.read(dbProvider);
-  //   final dbJson = await db.exportData();
-  //   final prefsJson = await db.exportSharedPrefs();
-
-  //   final archive =
-  //       Archive()
-  //         ..addFile(
-  //           ArchiveFile('data.json', 0, utf8.encode(jsonEncode(dbJson))),
-  //         )
-  //         ..addFile(
-  //           ArchiveFile('prefs.json', 0, utf8.encode(jsonEncode(prefsJson))),
-  //         );
-
-  //   final zipBytes = ZipEncoder().encode(archive)!;
-
-  //   final tmpDir = await getTemporaryDirectory();
-  //   final file = File(
-  //     '${tmpDir.path}/libretrac_backup_${DateTime.now().toIso8601String()}.zip',
-  //   );
-  //   await file.writeAsBytes(zipBytes);
-
-  //   await Share.shareXFiles([
-  //     XFile(file.path),
-  //   ], text: 'LibreTrac backup – contains all data and settings');
-  // }
 
   Future<void> _importEverything(BuildContext ctx, WidgetRef ref) async {
     final result = await FilePicker.platform.pickFiles(
@@ -309,9 +284,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final prefsJson =
         jsonDecode(utf8.decode(prefsFile.content)) as Map<String, dynamic>;
 
-    // Import DB
-    await ref.read(dbProvider).importData(dataJson);
-
     // Import SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     for (final entry in prefsJson.entries) {
@@ -331,20 +303,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
     }
 
+    for (final f in archive.files) {
+      debugPrint('File in archive: ${f.name}');
+    }
+
     final profileFile = archive.files.firstWhereOrNull(
-      (f) => f.name.startsWith('profile.') && f.isFile,
+      (f) => f.name.startsWith('profile.'), // <- removed isFile check
     );
 
     if (profileFile != null) {
+      print('import img');
       final tmpDir = await getTemporaryDirectory();
       final ext = profileFile.name.split('.').last;
       final newPath = '${tmpDir.path}/restored_profile.$ext';
       final restoredFile = File(newPath)
         ..writeAsBytesSync(profileFile.content as List<int>);
 
-      // Update prefs before restoring
-      prefsJson['user_profile_picture'] = newPath;
+      // Actually update SharedPreferences
+      await prefs.setString('user_profile_picture', newPath);
     }
+    await ref.read(customMetricsProvider.notifier).reload();
+    await ref.read(userProfileProvider.notifier).reload();
+    await ref.read(themeModeProvider.notifier).reload();
+    await ref.read(accentColorProvider.notifier).reload();
+    // Import DB
+    await ref.read(dbProvider).importData(dataJson);
 
     if (ctx.mounted) {
       ScaffoldMessenger.of(

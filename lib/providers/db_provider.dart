@@ -485,6 +485,8 @@ class CustomMetricsNotifier extends StateNotifier<List<CustomMetric>> {
     _loadMetrics();
   }
 
+  Future<void> reload() => _loadMetrics();
+
   Future<void> _loadMetrics() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_prefsKey);
@@ -594,6 +596,10 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
       height: height,
       weight: weight,
     );
+  }
+
+  Future<void> reload() async {
+    await _load();
   }
 
   Future<void> setUsername(String val) async {

@@ -324,7 +324,7 @@ class WeeklyMoodBarChart extends ConsumerWidget {
               barGroups: barGroups,
               titlesData: FlTitlesData(
                 leftTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: true),
+                  sideTitles: SideTitles(showTitles: false),
                 ),
                 rightTitles: AxisTitles(
                   sideTitles: SideTitles(showTitles: false),

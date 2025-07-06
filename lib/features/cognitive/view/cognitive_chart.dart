@@ -48,12 +48,16 @@ class CognitiveChart {
                   final cutoff = DateTime.now().subtract(
                     Duration(days: window.days + 1),
                   );
-                  final rows =
-                      snap.data!
-                          .where((r) => r.timestamp.isAfter(cutoff))
-                          .toList()
-                        ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
+                  var rows = [];
+
+                  if (snap.data != null) {
+                    rows =
+                        snap.data!
+                            .where((r) => r.timestamp.isAfter(cutoff))
+                            .toList()
+                          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+                  }
                   // Condense: Keep only the latest per day unless few results or detailed is on
                   List<dynamic> processed;
                   if (detailed || rows.length <= window.days) {

@@ -18,6 +18,10 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     _load();
   }
 
+  reload() async {
+    await _load();
+  }
+
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getString(_key);
@@ -52,7 +56,6 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   }
 }
 
-
 final accentColorProvider = StateNotifierProvider<AccentColorNotifier, Color>(
   (ref) => AccentColorNotifier(),
 );
@@ -62,6 +65,10 @@ class AccentColorNotifier extends StateNotifier<Color> {
 
   AccentColorNotifier() : super(Colors.purple) {
     _load();
+  }
+
+  reload() async {
+    await _load();
   }
 
   Future<void> _load() async {
