@@ -42,14 +42,13 @@ class _MoodCheckInScreenState extends ConsumerState<MoodCheckInScreen> {
           ),
         );
 
-    await MoodWidgetService.update(); // call right after inserting a row
+    await MoodWidgetService.update();
 
     final shown = await StreakService.hasShownToday();
     if (!shown) {
       final streak = await StreakService.updateStreak();
       await StreakService.markShownToday();
 
-      // Show your streak dialog
       if (context.mounted) {
         await showDialog(
           context: context,
@@ -58,7 +57,6 @@ class _MoodCheckInScreenState extends ConsumerState<MoodCheckInScreen> {
       }
     }
     
-
     if (mounted) {
       ScaffoldMessenger.of(
         context,

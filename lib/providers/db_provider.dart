@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:libretrac/features/cognitive/model/cog_test_kind.dart';
+import 'package:libretrac/services/streak_popup_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/database/app_database.dart';
 
@@ -504,3 +506,290 @@ class CustomMetricsNotifier extends StateNotifier<List<CustomMetric>> {
     _save();
   }
 }
+
+// final userProfileProvider =
+//     StateNotifierProvider<UserProfileNotifier, UserProfile>(
+//       (ref) => UserProfileNotifier(),
+//     );
+
+// class UserProfile {
+//   final String username;
+//   final String? profilePicturePath;
+
+//   UserProfile({required this.username, this.profilePicturePath});
+// }
+
+final userProfileProvider =
+    StateNotifierProvider<UserProfileNotifier, UserProfile>(
+      (ref) => UserProfileNotifier(),
+    );
+
+class UserProfile {
+  final String username;
+  final String? profilePicturePath;
+  final String? bloodType;
+  final String? birthday;
+  final String? height;
+  final String? weight;
+
+  UserProfile({
+    required this.username,
+    this.profilePicturePath,
+    this.bloodType,
+    this.birthday,
+    this.height,
+    this.weight,
+  });
+}
+
+class UserProfileNotifier extends StateNotifier<UserProfile> {
+  static const _usernameKey = 'user_profile_username';
+  static const _pictureKey = 'user_profile_picture';
+  static const _bloodTypeKey = 'user_profile_blood_type';
+  static const _birthdayKey = 'user_profile_birthday';
+  static const _heightKey = 'user_profile_height';
+  static const _weightKey = 'user_profile_weight';
+
+  UserProfileNotifier() : super(UserProfile(username: 'LibreUser')) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final username = prefs.getString(_usernameKey) ?? 'LibreUser';
+    final pic = prefs.getString(_pictureKey);
+    final bloodType = prefs.getString(_bloodTypeKey);
+    final birthday = prefs.getString(_birthdayKey);
+    final height = prefs.getString(_heightKey);
+    final weight = prefs.getString(_weightKey);
+    state = UserProfile(
+      username: username,
+      profilePicturePath: pic,
+      bloodType: bloodType,
+      birthday: birthday,
+      height: height,
+      weight: weight,
+    );
+  }
+
+  Future<void> setUsername(String val) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_usernameKey, val);
+    state = state.copyWith(username: val);
+  }
+
+  Future<void> setPicturePath(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_pictureKey, path);
+    state = state.copyWith(profilePicturePath: path);
+  }
+
+  Future<void> setBloodType(String val) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_bloodTypeKey, val);
+    state = state.copyWith(bloodType: val);
+  }
+
+  Future<void> setBirthday(String val) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_birthdayKey, val);
+    state = state.copyWith(birthday: val);
+  }
+
+  Future<void> setHeight(String val) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_heightKey, val);
+    state = state.copyWith(height: val);
+  }
+
+  Future<void> setWeight(String val) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_weightKey, val);
+    state = state.copyWith(weight: val);
+  }
+}
+
+extension on UserProfile {
+  UserProfile copyWith({
+    String? username,
+    String? profilePicturePath,
+    String? bloodType,
+    String? birthday,
+    String? height,
+    String? weight,
+  }) {
+    return UserProfile(
+      username: username ?? this.username,
+      profilePicturePath: profilePicturePath ?? this.profilePicturePath,
+      bloodType: bloodType ?? this.bloodType,
+      birthday: birthday ?? this.birthday,
+      height: height ?? this.height,
+      weight: weight ?? this.weight,
+    );
+  }
+}
+
+final streakCountProvider = FutureProvider<int>((ref) async {
+  return await StreakService.updateStreak();
+});
+
+// class UserProfileNotifier extends StateNotifier<UserProfile> {
+//   static const _usernameKey = 'user_profile_username';
+//   static const _pictureKey = 'user_profile_picture';
+
+//   UserProfileNotifier() : super(UserProfile(username: 'LibreUser')) {
+//     _load();
+//   }
+
+//   Future<void> _load() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     final username = prefs.getString(_usernameKey) ?? 'LibreUser';
+//     final pic = prefs.getString(_pictureKey);
+//     state = UserProfile(username: username, profilePicturePath: pic);
+//   }
+
+//   Future<void> setUsername(String newName) async {
+//     final prefs = await SharedPreferences.getInstance();
+//     await prefs.setString(_usernameKey, newName);
+//     state = UserProfile(
+//       username: newName,
+//       profilePicturePath: state.profilePicturePath,
+//     );
+//   }
+
+//   Future<void> setPicturePath(String path) async {
+//     final prefs = await SharedPreferences.getInstance();
+//     await prefs.setString(_pictureKey, path);
+//     state = UserProfile(username: state.username, profilePicturePath: path);
+//   }
+// }
+
+final weeklyMoodAverageProvider = FutureProvider<double>((ref) async {
+  final db = ref.watch(dbProvider);
+  final oneWeekAgo = DateTime.now().subtract(const Duration(days: 7));
+  final entries = await db.moodEntriesSince(oneWeekAgo);
+
+  int totalScore = 0;
+  int metricCount = 0;
+
+  for (final entry in entries) {
+    final metrics = entry.customMetrics;
+    if (metrics != null) {
+      for (final score in metrics.values) {
+        totalScore += score;
+        metricCount++;
+      }
+    }
+  }
+
+  if (metricCount == 0) return 0;
+
+  return totalScore / metricCount;
+});
+
+final weeklyMoodMetricAveragesProvider = FutureProvider<Map<String, double>>((
+  ref,
+) async {
+  final db = ref.watch(dbProvider);
+  final oneWeekAgo = DateTime.now().subtract(const Duration(days: 7));
+  final entries = await db.moodEntriesSince(oneWeekAgo);
+
+  final Map<String, List<int>> metricValues = {};
+
+  for (final entry in entries) {
+    final metrics = entry.customMetrics;
+    if (metrics != null) {
+      for (final entry in metrics.entries) {
+        metricValues.putIfAbsent(entry.key, () => []).add(entry.value);
+      }
+    }
+  }
+
+  final Map<String, double> averages = {};
+  metricValues.forEach((key, values) {
+    final sum = values.reduce((a, b) => a + b);
+    averages[key] = sum / values.length;
+  });
+
+  return averages;
+});
+
+final cognitiveTopScoresProvider = FutureProvider<Map<CogTestKind, String>>((
+  ref,
+) async {
+  final db = ref.watch(dbProvider);
+  final results = <CogTestKind, String>{};
+
+  for (final kind in CogTestKind.values) {
+    final table = kind.table(db);
+    final rows = await db.select(table as dynamic).get();
+
+    if (rows.isEmpty) continue;
+
+    rows.sort((a, b) {
+      final aScore = kind.y(a);
+      final bScore = kind.y(b);
+      return kind.lowerIsBetter
+          ? aScore.compareTo(bScore)
+          : bScore.compareTo(aScore);
+    });
+
+    final best = rows.first;
+    final d = best.timestamp;
+    final dateStr = '${d.month}/${d.day}';
+
+    String scoreStr;
+
+    switch (kind) {
+      case CogTestKind.reaction:
+        scoreStr = '${best.averageTime.toStringAsFixed(0)}ms avg';
+        break;
+      case CogTestKind.stroop:
+        scoreStr =
+            'Δ${best.deltaMs.toStringAsFixed(0)}ms '
+            '(In: ${best.incongruentMs.toStringAsFixed(0)}ms, '
+            'Con: ${best.congruentMs.toStringAsFixed(0)}ms)';
+        break;
+      case CogTestKind.nBack:
+        scoreStr = '${best.correct}/${best.trials} correct';
+        break;
+      case CogTestKind.goNoGo:
+        scoreStr =
+            '${best.meanRt.toStringAsFixed(0)}ms avg, '
+            '${best.omissionErrors} omissions, '
+            '${best.commissionErrors} commissions';
+        break;
+      case CogTestKind.digitSpan:
+        scoreStr = 'Span: ${best.bestSpan}';
+        break;
+      case CogTestKind.symbolSearch:
+        scoreStr =
+            '${best.hits}/${best.total}, '
+            '${best.meanRt.toStringAsFixed(0)}ms avg';
+        break;
+    }
+
+    results[kind] = '$scoreStr on $dateStr';
+  }
+
+  return results;
+});
+
+final weeklySleepStatsProvider =
+    FutureProvider<({int avgDuration, int entryCount})>((ref) async {
+      final db = ref.watch(dbProvider);
+      final oneWeekAgo = DateTime.now().subtract(const Duration(days: 7));
+      final entries = await db.sleepEntriesSince(oneWeekAgo);
+
+      if (entries.isEmpty) {
+        return (avgDuration: 0, entryCount: 0);
+      }
+
+      final totalDuration = entries
+          .map((e) => e.hoursSlept)
+          .reduce((a, b) => a + b);
+
+      final avg = totalDuration ~/ entries.length;
+
+      return (avgDuration: avg, entryCount: entries.length);
+    });

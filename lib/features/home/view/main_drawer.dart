@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:libretrac/features/home/view/home_screen.dart';
 import 'package:libretrac/features/journal/view/journal_list_screen.dart';
+import 'package:libretrac/features/profile/view/profile_view.dart';
 import 'package:libretrac/features/settings/view/settings_screen.dart';
 import 'package:libretrac/features/substances/substance_list_screen.dart';
 
@@ -15,6 +16,17 @@ class MainDrawer extends StatelessWidget {
         child: ListView(
           children: [
             SizedBox(height: 20),
+            ListTile(
+              leading: const Icon(Icons.verified_user),
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.pop(context); // close drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileView()),
+                );
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.local_pharmacy),
               title: const Text('Medications/Supplements'),

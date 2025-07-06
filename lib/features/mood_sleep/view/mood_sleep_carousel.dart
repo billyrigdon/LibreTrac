@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libretrac/core/database/app_database.dart';
 import 'package:libretrac/features/mood_sleep/view/mood_chart_page.dart';
 import 'package:libretrac/features/mood_sleep/view/sleep_chart_page.dart';
+import 'package:libretrac/features/profile/view/profile_view.dart';
 import 'package:libretrac/features/shared/onboard/onboard_card.dart';
 import 'package:libretrac/features/shared/physics/scroll_physics.dart';
 import 'package:libretrac/providers/db_provider.dart';
@@ -42,37 +43,44 @@ class MoodSleepCarousel extends StatelessWidget {
     final hasMood = true; // mood.length > 2;
     final hasSleep = true; // sleepsW.length > 2;
 
-    return SizedBox(
-      height: 350,
-      child: PageView(
-        physics: const TighterPageScrollPhysics(),
-        pageSnapping: true, // default, keeps the snap
-        controller: PageController(
-          viewportFraction: 1.0, // full-width pages
-        ), // padEnds
-        children: [
-          if (hasMood)
-            MoodChartPage(
-              ordered: mood,
-              selectedMetrics: selectedMetrics,
-              // moodColors: moodColors,
-              allMetrics: allMetrics, //ref.watch(customMetricsProvider),
-              onMetricToggle: onMetricToggle,
-              customMetrics: customMetrics,
-            )
-          else
-            const OnboardCard(
-              icon: Icons.sentiment_satisfied_alt,
-              text: 'Keep checking in daily to see your mood trends!',
-            ),
-          if (hasSleep)
-            SleepChartPage(entries: sleepsW)
-          else
-            const OnboardCard(
-              icon: Icons.bedtime,
-              text: 'Log your sleep for at least 3 nights to unlock trends!',
-            ),
-        ],
+    return GestureDetector(
+      onTap:
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfileView()),
+          ),
+      child: SizedBox(
+        height: 350,
+        child: PageView(
+          physics: const TighterPageScrollPhysics(),
+          pageSnapping: true, // default, keeps the snap
+          controller: PageController(
+            viewportFraction: 1.0, // full-width pages
+          ), // padEnds
+          children: [
+            if (hasMood)
+              MoodChartPage(
+                ordered: mood,
+                selectedMetrics: selectedMetrics,
+                // moodColors: moodColors,
+                allMetrics: allMetrics, //ref.watch(customMetricsProvider),
+                onMetricToggle: onMetricToggle,
+                customMetrics: customMetrics,
+              )
+            else
+              const OnboardCard(
+                icon: Icons.sentiment_satisfied_alt,
+                text: 'Keep checking in daily to see your mood trends!',
+              ),
+            if (hasSleep)
+              SleepChartPage(entries: sleepsW)
+            else
+              const OnboardCard(
+                icon: Icons.bedtime,
+                text: 'Log your sleep for at least 3 nights to unlock trends!',
+              ),
+          ],
+        ),
       ),
     );
   }
