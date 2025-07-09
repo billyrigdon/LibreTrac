@@ -41,6 +41,7 @@ class SubstanceRepo {
 
 final substanceRepoProvider = Provider<SubstanceRepo>(
   (ref) => SubstanceRepo(ref.read(dbProvider)),
+
 );
 
 final activeSubstancesStreamProvider =
@@ -436,6 +437,31 @@ extension TrendQueries on AppDatabase {
           t.addedAt.isSmallerOrEqualValue(now) &
           (t.stoppedAt.isNull() | t.stoppedAt.isBiggerOrEqualValue(since)),
     )).get();
+  }
+
+  Future<List<StroopResult>> stroopResultsSince(DateTime since) {
+    return (select(stroopResults)
+      ..where((t) => t.timestamp.isBiggerOrEqualValue(since))).get();
+  }
+
+  Future<List<NBackResult>> nBackResultsSince(DateTime since) {
+    return (select(nBackResults)
+      ..where((t) => t.timestamp.isBiggerOrEqualValue(since))).get();
+  }
+
+  Future<List<GoNoGoResult>> goNoGoResultsSince(DateTime since) {
+    return (select(goNoGoResults)
+      ..where((t) => t.timestamp.isBiggerOrEqualValue(since))).get();
+  }
+
+  Future<List<DigitSpanResult>> digitSpanResultsSince(DateTime since) {
+    return (select(digitSpanResults)
+      ..where((t) => t.timestamp.isBiggerOrEqualValue(since))).get();
+  }
+
+  Future<List<SymbolSearchResult>> symbolSearchResultsSince(DateTime since) {
+    return (select(symbolSearchResults)
+      ..where((t) => t.timestamp.isBiggerOrEqualValue(since))).get();
   }
 }
 

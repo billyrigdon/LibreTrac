@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:libretrac/core/database/app_database.dart';
+import 'package:libretrac/core/database/extensions/extensions.dart';
 
 class OpenAIAPI {
   OpenAIAPI._() {
@@ -213,23 +214,38 @@ class TrendRequest {
   TrendRequest({
     required this.since,
     required this.moods,
-    required this.cognitive,
+    required this.reactions,
+    required this.stroop,
+    required this.nBack,
+    required this.goNoGo,
+    required this.digitSpan,
+    required this.symbolSearch,
     required this.substances,
     required this.sleeps,
   });
 
   final DateTime since;
   final List<MoodEntry> moods;
-  final List<ReactionResult> cognitive;
+  final List<ReactionResult> reactions;
+  final List<StroopResult> stroop;
+  final List<NBackResult> nBack;
+  final List<GoNoGoResult> goNoGo;
+  final List<DigitSpanResult> digitSpan;
+  final List<SymbolSearchResult> symbolSearch;
   final List<Substance> substances;
   final List<SleepEntry> sleeps;
 
   Map<String, dynamic> toMap() => {
     'since': since.toIso8601String(),
-    'moodEntries': moods.map((m) => m.toJson()).toList(),
-    'cognitiveResults': cognitive.map((c) => c.toJson()).toList(),
-    'substances': substances.map((s) => s.toJson()).toList(),
-    'sleeps': sleeps.map((s) => s.toJson()).toList(),
+    'moodEntries': moods.map((m) => m.toExportJson()).toList(),
+    'reactionResults': reactions.map((c) => c.toExportJson()).toList(),
+    'stroopResults': stroop.map((s) => s.toExportJson()).toList(),
+    'nBackResults': nBack.map((n) => n.toExportJson()).toList(),
+    'goNoGoResults': goNoGo.map((g) => g.toExportJson()).toList(),
+    'digitSpanResults': digitSpan.map((d) => d.toExportJson()).toList(),
+    'symbolSearchResults': symbolSearch.map((s) => s.toExportJson()).toList(),
+    'substances': substances.map((s) => s.toExportJson()).toList(),
+    'sleeps': sleeps.map((s) => s.toExportJson()).toList(),
   };
 
   String toPrettyJson() => const JsonEncoder.withIndent('  ').convert(toMap());

@@ -12,6 +12,8 @@ import 'package:libretrac/features/cognitive/view/symbol_search_test.dart';
 import 'package:libretrac/features/home/view/main_drawer.dart';
 import 'package:libretrac/features/mood_sleep/view/mood_sleep_carousel.dart';
 import 'package:libretrac/features/mood_sleep/view/sleep_checkin_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import '../../../core/database/app_database.dart';
 import '../../../providers/db_provider.dart';
 import '../../mood_sleep/view/mood_checkin_screen.dart';
@@ -53,11 +55,113 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Set<String> selectedMetrics = {};
   Map<String, int>? customMetrics = {};
+  final GlobalKey _sleepPopupKey = GlobalKey();
+  bool _showSleepShowcase = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybePromptSleep());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final done = await OnboardingPrefs.isComplete();
+      if (!done) {
+        _startTutorial();
+      } else {
+        _maybePromptSleep();
+      }
+    });
+  }
+
+  void _startTutorial() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Welcome to LibreTrac!'),
+            content: const Text(
+              'This is your personalized mood, sleep, and cognition tracker. Let’s take a quick tour!',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  await OnboardingPrefs.markComplete();
+                  Navigator.of(context).pop();
+                  _maybePromptSleep();
+                },
+                child: const Text('Skip'),
+              ),
+
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Future.delayed(
+                    const Duration(milliseconds: 300),
+                    _showSleepIntro,
+                  );
+                },
+                child: const Text('Start'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showSleepIntro() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Daily Sleep Check-In'),
+            content: const Text(
+              'Each morning when you open LibreTrac, we’ll prompt you to reflect on your sleep. '
+              'It’s quick, simple, and helps us spot patterns that matter.\n\nReady to try it out?',
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await Future.delayed(const Duration(milliseconds: 300));
+                  await showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => const SleepCheckinDialog(),
+                  );
+                  await Future.delayed(const Duration(milliseconds: 300));
+                  _startShowcaseStep2(); // highlights mood check-in
+                },
+                child: const Text('Continue'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _startShowcaseStep2() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Nice Work!'),
+            content: const Text(
+              'Great job! Now let’s start tracking your mood for the day.',
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const EditMetricsScreen(onboarding: true),
+                    ),
+                  );
+                },
+                child: const Text('Continue'),
+              ),
+            ],
+          ),
+    );
   }
 
   Future<void> _maybePromptSleep() async {
@@ -65,10 +169,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final today = await db.entryFor(DateTime.now());
     if (today != null) return; // already logged
     if (!mounted) return;
+
     await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => const SleepCheckinDialog(),
+    );
+  }
+
+  _showSleepTutorial() async {
+    return Visibility(
+      visible: true, // create a bool flag if needed
+      child: Showcase(
+        key: _sleepPopupKey,
+        title: 'Sleep Check-In',
+        description: 'Every morning, LibreTrac will ask how you slept.',
+        child: Card(
+          child: ListTile(
+            title: Text('Sleep Popup Example'),
+            trailing: ElevatedButton(onPressed: () {}, child: Text('Log')),
+          ),
+        ),
+      ),
     );
   }
 
@@ -326,13 +448,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 class EditMetricsScreen extends ConsumerStatefulWidget {
-  const EditMetricsScreen({super.key});
+  final bool onboarding;
+  const EditMetricsScreen({super.key, this.onboarding = false});
 
   @override
   ConsumerState<EditMetricsScreen> createState() => _EditMetricsScreenState();
 }
 
 class _EditMetricsScreenState extends ConsumerState<EditMetricsScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.onboarding) {
+        _showIntroDialog();
+      }
+    });
+  }
+
+  void _showIntroDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Customize Your Mood Metrics'),
+            content: const Text(
+              'LibreTrac lets you customize exactly what aspects of your mood you’d like to track! '
+              'Feel free to change the defaults, add your own, or just continue if you like what you see.',
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Got it!'),
+              ),
+            ],
+          ),
+    );
+  }
+
   void _showMetricDialog({CustomMetric? existing, int? index}) {
     final controller = TextEditingController(text: existing?.name ?? '');
     Color selectedColor = existing?.color ?? Colors.blue;
@@ -390,43 +547,83 @@ class _EditMetricsScreenState extends ConsumerState<EditMetricsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Mood Metrics'),
+        automaticallyImplyLeading: !widget.onboarding, // hide back
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
             tooltip: 'Add Metric',
-            onPressed:
-                metrics.length >= 6
-                    ? null
-                    : () => _showMetricDialog(), // limit to 6
+            onPressed: metrics.length >= 6 ? null : () => _showMetricDialog(),
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: metrics.length,
-        itemBuilder: (context, i) {
-          final metric = metrics[i];
-          return ListTile(
-            title: Text(metric.name),
-            leading: CircleAvatar(backgroundColor: metric.color),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed:
-                      () => _showMetricDialog(existing: metric, index: i),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    ref.read(customMetricsProvider.notifier).deleteMetric(i);
-                  },
-                ),
-              ],
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: metrics.length,
+              itemBuilder: (context, i) {
+                final metric = metrics[i];
+                return ListTile(
+                  title: Text(metric.name),
+                  leading: CircleAvatar(backgroundColor: metric.color),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed:
+                            () => _showMetricDialog(existing: metric, index: i),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          ref
+                              .read(customMetricsProvider.notifier)
+                              .deleteMetric(i);
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
+          ),
+          if (widget.onboarding)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: ElevatedButton(
+                onPressed: () {
+                  // Next step in onboarding: navigate to mood check-in
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (_) => const MoodCheckInScreen(onboarding: true),
+                    ),
+                  );
+                },
+                child: const Text('Continue to Mood Tracking'),
+              ),
+            ),
+        ],
       ),
     );
+  }
+}
+
+class OnboardingPrefs {
+  static const _key = 'onboarding_complete';
+
+  static Future<bool> isComplete() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_key) ?? false;
+  }
+
+  static Future<void> markComplete() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_key, true);
+  }
+
+  static Future<void> reset() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_key);
   }
 }

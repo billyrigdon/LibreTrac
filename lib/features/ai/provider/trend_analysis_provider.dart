@@ -20,20 +20,42 @@ final analysisProvider = FutureProvider.autoDispose<String?>((ref) async {
   final since = DateTime.now().subtract(Duration(days: range.days));
 
   final db = ref.read(dbProvider);
+
   final moods = await db.moodEntriesSince(since);
-  final cog = await db.reactionResultsSince(since);
-  final subs = await db.substancesActiveSince(since);
+  final reactions = await db.reactionResultsSince(since);
+  final stroop = await db.stroopResultsSince(since);
+  final nBack = await db.nBackResultsSince(since);
+  final goNoGo = await db.goNoGoResultsSince(since);
+  final digitSpan = await db.digitSpanResultsSince(since);
+  final symbolSearch = await db.symbolSearchResultsSince(since);
+  final substances = await db.substancesActiveSince(since);
   final sleeps = await db.sleepEntriesSince(since);
 
-  if (moods.isEmpty && cog.isEmpty) return null;
+  // If there's nothing to analyze, return null
+  final hasData =
+      moods.isNotEmpty ||
+      reactions.isNotEmpty ||
+      stroop.isNotEmpty ||
+      nBack.isNotEmpty ||
+      goNoGo.isNotEmpty ||
+      digitSpan.isNotEmpty ||
+      symbolSearch.isNotEmpty;
+
+  if (!hasData) return null;
 
   final api = OpenAIAPI.instance;
+
   return api.analyzeTrends(
     TrendRequest(
       since: since,
       moods: moods,
-      cognitive: cog,
-      substances: subs,
+      reactions: reactions,
+      stroop: stroop,
+      nBack: nBack,
+      goNoGo: goNoGo,
+      digitSpan: digitSpan,
+      symbolSearch: symbolSearch,
+      substances: substances,
       sleeps: sleeps,
     ),
   );

@@ -9,6 +9,7 @@ import 'package:libretrac/services/mood_widget_service.dart';
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:libretrac/services/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -31,22 +32,22 @@ void main() async {
   // await NotificationService.init();
   // await NotificationService.scheduleDailyReminders();
 
-  // await HomeWidget.registerBackgroundCallback(_widgetCallback);
+  await HomeWidget.registerBackgroundCallback(_widgetCallback);
 
   await dotenv.load(fileName: 'assets/.env');
   runApp(ProviderScope(child: const LibreTracApp()));
 
   // 2 — kick the widget after the first frame so ProviderScope is ready
-  // WidgetsBinding.instance.addPostFrameCallback((_) {
-  // MoodWidgetService.update();
-  // });
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    MoodWidgetService.update();
+  });
 }
 
 /// Called by the OS when the widget requests an update.
 // @pragma('vm:entry-point')
-// void _widgetCallback(Uri? _) async {
-// await MoodWidgetService.update();
-// }
+void _widgetCallback(Uri? _) async {
+  await MoodWidgetService.update();
+}
 
 class LibreTracApp extends ConsumerWidget {
   const LibreTracApp({super.key});
@@ -211,15 +212,22 @@ class LibreTracApp extends ConsumerWidget {
     //   ),
     // );
 
-    return MaterialApp(
-      title: 'LibreTrac',
-      themeMode: mode,
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      home: const HomeScreen(),
+    return ShowCaseWidget(
+      builder: (context) {
+        return MaterialApp(
+          title: 'LibreTrac',
+          themeMode: mode,
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          home: const HomeScreen(),
+        );
+      }
     );
   }
 }
+
+
+
 
 // class LibreTracApp extends ConsumerStatefulWidget {
 //   const LibreTracApp({super.key});

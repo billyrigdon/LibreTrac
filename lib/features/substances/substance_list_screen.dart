@@ -93,7 +93,8 @@ class _SubstanceListScreenState extends ConsumerState<SubstanceListScreen> {
                     ctx,
                     items[i],
                     allNames: items.map((e) => e.name).toList(),
-                    deletable: false,
+                    deletable: true,
+                    permaDeletable: true,
                   ),
             );
           }
@@ -152,6 +153,7 @@ class _SubstanceListScreenState extends ConsumerState<SubstanceListScreen> {
     Substance s, {
     required List<String> allNames,
     bool deletable = true,
+    bool permaDeletable = false,
     Key? key,
   }) {
     return ListTile(
@@ -162,9 +164,39 @@ class _SubstanceListScreenState extends ConsumerState<SubstanceListScreen> {
           deletable
               ? IconButton(
                 icon: const Icon(Icons.delete),
-                onPressed: () => ref.read(substanceRepoProvider).stop(s.id),
+                onPressed: () async {
+                  if (permaDeletable) {
+                    final confirm = await showDialog<bool>(
+                      context: ctx,
+                      builder:
+                          (_) => AlertDialog(
+                            title: const Text('Permanently delete?'),
+                            content: const Text(
+                              'This will completely remove the substance and its history. Are you sure?',
+                            ),
+                            actions: [
+                              TextButton(
+                                child: const Text('Cancel'),
+                                onPressed: () => Navigator.pop(ctx, false),
+                              ),
+                              TextButton(
+                                child: const Text('Delete'),
+                                onPressed: () => Navigator.pop(ctx, true),
+                              ),
+                            ],
+                          ),
+                    );
+
+                    if (confirm == true) {
+                      await ref.read(substanceRepoProvider).delete(s.id);
+                    }
+                  } else {
+                    await ref.read(substanceRepoProvider).stop(s.id);
+                  }
+                },
               )
               : null,
+
       onTap:
           () => Navigator.push(
             ctx,
