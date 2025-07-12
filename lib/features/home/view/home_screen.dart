@@ -194,6 +194,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  void _showCheckInSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder:
+          (context) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'Choose Check-In Type',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.mood),
+                  title: const Text('Mood Check-In'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const MoodCheckInScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.bedtime),
+                  title: const Text('Sleep Check-In'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => const SleepCheckinDialog(),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
   void _showCognitiveSheet() {
     showModalBottomSheet(
       context: context,
@@ -249,11 +298,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           actions: [
             IconButton(
               tooltip: 'Analyze Trends',
-              icon: const Icon(Icons.auto_awesome),
+              icon: Image.asset(
+                'assets/icons/ai_analysis.png',
+                width: 24,
+                height: 24,
+                color: Colors.white,
+              ),
               onPressed: () => showTrendDialog(context, ref),
             ),
             PopupMenuButton<Object>(
-              icon: const Icon(Icons.filter_alt),
+              icon: const Icon(Icons.remove_red_eye_outlined),
               onSelected: (value) {
                 if (value is MoodWindow) {
                   ref.read(moodWindowProvider.notifier).state = value;
@@ -393,7 +447,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             },
                           ),
                         ),
-
                         FutureBuilder(
                           future:
                               ref
@@ -401,9 +454,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   .select(ref.read(dbProvider).reactionResults)
                                   .get(),
                           builder: (context, snap) {
-                            // if (!snap.hasData || snap.data!.isEmpty) {
-                            //   return const SizedBox.shrink();
-                            // }
                             return CognitiveChart().showCognitiveChart(
                               ref,
                               window,
@@ -415,22 +465,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            ElevatedButton.icon(
-                              icon: const Icon(Icons.edit),
-                              label: const Text('Mood Check-In'),
-                              onPressed: () async {
-                                await Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const MoodCheckInScreen(),
-                                  ),
-                                );
-                              },
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                icon: const Icon(Icons.edit),
+                                label: const Text('Check-In'),
+                                onPressed: _showCheckInSheet,
+                              ),
                             ),
                             const SizedBox(width: 12),
-                            ElevatedButton.icon(
-                              icon: const Icon(Icons.flash_on),
-                              label: const Text('Cognitive Tests'),
-                              onPressed: _showCognitiveSheet,
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                icon: const Icon(Icons.flash_on),
+                                label: const Text('Cognitive Tests'),
+                                onPressed: _showCognitiveSheet,
+                              ),
                             ),
                           ],
                         ),

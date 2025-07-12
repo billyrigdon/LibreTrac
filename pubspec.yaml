@@ -67,7 +67,8 @@ dev_dependencies:
 
 flutter_icons:
   android: true
-  ios: false          # flip to true later if/when you add iOS
+  ios: true
+  remove_alpha_ios: true  # flip to true later if/when you add iOS
   image_path: assets/icons/app_icon.png
   adaptive_icon_background: "#555555"   # dark-teal backdrop
   adaptive_icon_foreground: assets/icons/app_icon.png

@@ -70,14 +70,6 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
             .map((m) => (m.name, customMetrics[m.name]!, m.color))
             .toList();
 
-    // final bars = [
-    //   ('Energy', widget.entry.energy),
-    //   ('Happiness', widget.entry.happiness),
-    //   ('Creativity', widget.entry.creativity),
-    //   ('Focus', widget.entry.focus),
-    //   ('Irritability', widget.entry.irritability),
-    //   ('Anxiety', widget.entry.anxiety),
-    // ];
 
     final Map<String, Color> moodColors = {
       'Energy': Colors.teal,
@@ -129,13 +121,6 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Notes',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
-                      ),
-                    ),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 320,
@@ -149,7 +134,7 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
                               ),
                               child: Text(
                                 _notes.text.isEmpty ? 'No notes.' : _notes.text,
-                                style: const TextStyle(fontSize: 22),
+                                style: const TextStyle(fontSize: 18),
                                 textAlign: TextAlign.left,
                               ),
                             ),
@@ -165,7 +150,7 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
           SizedBox(
             height: 450,
             child: Padding(
-              padding: const EdgeInsets.only(right: 12.0),
+              padding: const EdgeInsets.only(right: 12.0, bottom: 24),
               child: BarChart(
                 BarChartData(
                   maxY: 10,
@@ -228,7 +213,7 @@ class _JournalDetailScreenState extends ConsumerState<JournalDetailScreen> {
               ),
             ),
           ),
-          SizedBox(height: 24),
+          // SizedBox(height: 48),
         ],
       ),
     );

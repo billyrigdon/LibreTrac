@@ -138,10 +138,6 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
           if (editing)
             Column(
               children: [
-                TextField(
-                  controller: bloodTypeController,
-                  decoration: const InputDecoration(labelText: "Blood Type"),
-                ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: birthdayController,
@@ -167,8 +163,8 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (profile.bloodType?.isNotEmpty ?? false)
-                  Text('🩸 Blood Type: ${profile.bloodType}'),
+                // if (profile.bloodType?.isNotEmpty ?? false)
+                // Text('🩸 Blood Type: ${profile.bloodType}'),
                 if (profile.birthday?.isNotEmpty ?? false)
                   Text('🎂 Birthday: ${profile.birthday}'),
                 if (profile.height?.isNotEmpty ?? false)

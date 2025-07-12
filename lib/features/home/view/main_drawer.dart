@@ -17,7 +17,7 @@ class MainDrawer extends StatelessWidget {
           children: [
             SizedBox(height: 20),
             ListTile(
-              leading: const Icon(Icons.verified_user),
+              leading: const Icon(Icons.person),
               title: const Text('Profile'),
               onTap: () {
                 Navigator.pop(context); // close drawer
@@ -41,8 +41,8 @@ class MainDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.note),
-              title: const Text('Journals'),
+              leading: const Icon(Icons.mood),
+              title: const Text('Check-ins'),
               onTap: () {
                 Navigator.pop(context); // close drawer
                 Navigator.push(

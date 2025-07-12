@@ -563,55 +563,20 @@ class MoodEntry extends DataClass implements Insertable<MoodEntry> {
     );
   }
 
-  factory MoodEntry.fromJson(Map<String, dynamic> json) {
-    DateTime _parseTimestamp(dynamic value) {
-      if (value is String) {
-        return DateTime.parse(value);
-      } else if (value is int) {
-        // Handle Unix timestamp in milliseconds
-        return DateTime.fromMillisecondsSinceEpoch(value);
-      } else {
-        throw FormatException('Unsupported timestamp format: $value');
-      }
-    }
-
-    final timestamp = _parseTimestamp(json['timestamp']);
-
-    if (json.containsKey('customMetrics')) {
-      final rawMetrics = json['customMetrics'];
-      final Map<String, int> parsedMetrics = {};
-
-      if (rawMetrics is Map) {
-        rawMetrics.forEach((key, value) {
-          parsedMetrics[key.toString()] = (value as num).toInt();
-        });
-      }
-
-      return MoodEntry(
-        id: json['id'] as int,
-        timestamp: timestamp,
-        customMetrics: parsedMetrics,
-        notes: json['notes'] as String?,
-      );
-    } else {
-      // Legacy fallback
-      final legacyMetrics = <String, int>{
-        'Energy': json['energy'] ?? 5,
-        'Happiness': json['happiness'] ?? 5,
-        'Creativity': json['creativity'] ?? 5,
-        'Focus': json['focus'] ?? 5,
-        'Irritability': json['irritability'] ?? 5,
-        'Anxiety': json['anxiety'] ?? 5,
-      };
-      return MoodEntry(
-        id: json['id'] as int,
-        timestamp: timestamp,
-        customMetrics: legacyMetrics,
-        notes: json['notes'] as String?,
-      );
-    }
+  factory MoodEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MoodEntry(
+      id: serializer.fromJson<int>(json['id']),
+      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
+      customMetrics: serializer.fromJson<Map<String, int>?>(
+        json['customMetrics'],
+      ),
+      notes: serializer.fromJson<String?>(json['notes']),
+    );
   }
-
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;

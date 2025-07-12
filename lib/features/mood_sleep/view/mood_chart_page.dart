@@ -26,9 +26,6 @@ class MoodChartPage extends StatelessWidget {
   List<LineChartBarData> _generateMoodLines(List<MoodEntry> entries) {
     final List<LineChartBarData> lines = [];
 
-    final metrics =
-        selectedMetrics.isEmpty ? allMetrics.toSet() : selectedMetrics;
-
     for (final metric in allMetrics.where(
       (m) => selectedMetrics.contains(m.name),
     )) {
@@ -152,14 +149,22 @@ class MoodChartPage extends StatelessWidget {
                       interval: 2,
                     ),
                   ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      reservedSize: 42,
+                      showTitles: true,
+                      interval: 2,
+                    ),
+                  ),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       interval: 1,
                       getTitlesWidget: (value, _) {
                         final i = value.toInt();
-                        if (i < 0 || i >= ordered.length)
+                        if (i < 0 || i >= ordered.length) {
                           return const SizedBox();
+                        }
                         final d = ordered[i].timestamp;
                         return Text(
                           '${d.month}/${d.day}',

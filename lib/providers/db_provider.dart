@@ -41,7 +41,6 @@ class SubstanceRepo {
 
 final substanceRepoProvider = Provider<SubstanceRepo>(
   (ref) => SubstanceRepo(ref.read(dbProvider)),
-
 );
 
 final activeSubstancesStreamProvider =
@@ -93,19 +92,12 @@ final journalEntriesStreamProvider =
     StreamProvider.autoDispose<List<MoodEntry>>((ref) {
       final db = ref.watch(dbProvider);
 
-      final query =
-          db.select(db.moodEntries)
-            ..where(
-              (tbl) =>
-                  tbl.notes.isNotNull() & // notes IS NOT NULL
-                  tbl.notes.length.isBiggerThanValue(0), // notes <> ''
-            )
-            ..orderBy([
-              (t) => drift.OrderingTerm(
-                expression: t.timestamp,
-                mode: drift.OrderingMode.desc,
-              ),
-            ]);
+      final query = db.select(db.moodEntries)..orderBy([
+        (t) => drift.OrderingTerm(
+          expression: t.timestamp,
+          mode: drift.OrderingMode.desc,
+        ),
+      ]);
 
       return query.watch();
     });
@@ -192,6 +184,41 @@ extension BackupOps on AppDatabase {
     return allPrefs;
   }
 
+  // MoodEntry moodEntryFromJson(Map<String, dynamic> json) {
+  //   final rawMetrics = json['customMetrics'];
+  //   Map<String, int>? customMetrics;
+
+  //   if (rawMetrics is Map<String, dynamic>) {
+  //     customMetrics = rawMetrics.map((k, v) => MapEntry(k, v as int));
+  //   }
+
+  //   return MoodEntry(
+  //     id: json['id'] as int,
+  //     timestamp: DateTime.parse(json['timestamp']),
+  //     customMetrics: customMetrics,
+  //     notes: json['notes'],
+  //   );
+  // }
+
+  MoodEntry moodEntryFromJson(Map<String, dynamic> json) {
+    final rawMetrics = json['customMetrics'];
+    Map<String, int>? customMetrics;
+
+    if (rawMetrics is Map<String, dynamic>) {
+      customMetrics = rawMetrics.map((k, v) => MapEntry(k, v as int));
+    }
+
+    return MoodEntry(
+      id: json['id'] as int,
+      timestamp:
+          json['timestamp'] is int
+              ? DateTime.fromMillisecondsSinceEpoch(json['timestamp'] as int)
+              : DateTime.parse(json['timestamp'] as String),
+      customMetrics: customMetrics,
+      notes: json['notes'] as String?,
+    );
+  }
+
   Future<File> exportAllToZip(AppDatabase db) async {
     final dataJson = await db.exportData();
     final prefsJson = await db.exportSharedPrefs();
@@ -262,9 +289,10 @@ extension BackupOps on AppDatabase {
       );
       await _addAll(
         json['moodEntries'],
-        (m) => MoodEntry.fromJson(m).toCompanion(true),
+        (m) => moodEntryFromJson(m).toCompanion(true),
         moodEntries,
       );
+
       await _addAll(
         json['reactionResults'],
         (m) => ReactionResult.fromJson(m).toCompanion(true),
@@ -486,6 +514,12 @@ final substancesActiveSinceProvider = FutureProvider.autoDispose
 final sleepStreamProvider = StreamProvider.autoDispose(
   (ref) => ref.watch(dbProvider).watchAllSleep(),
 );
+
+enum JournalFilter { all, notesOnly }
+
+final journalFilterProvider = StateProvider<JournalFilter>((ref) {
+  return JournalFilter.all;
+});
 
 class CustomMetric {
   final String name;

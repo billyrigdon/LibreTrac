@@ -25,7 +25,7 @@ class CognitiveChart {
           height: 220,
           child: PageView.builder(
             itemCount: CogTestKind.values.length,
-            controller: PageController(viewportFraction: .92),
+            controller: PageController(viewportFraction: .92, keepPage: true),
             itemBuilder: (ctx, index) {
               final kind = CogTestKind.values[index];
               final db = ref.read(dbProvider);
@@ -116,55 +116,69 @@ class CognitiveChart {
                           ),
                           const SizedBox(height: 6),
                           Expanded(
-                            child: LineChart(
-                              LineChartData(
-                                lineTouchData: LineTouchData(
-                                  enabled: false,
-                                  handleBuiltInTouches: false,
-                                ),
-                                minY: 0,
-                                maxY: 100,
-                                minX: 0,
-                                maxX: (spots.length - 1).toDouble(),
-                                gridData: FlGridData(show: true),
-                                titlesData: FlTitlesData(
-                                  leftTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      reservedSize: 42,
-                                      interval: 50,
+                            child: RepaintBoundary(
+                              child: LineChart(
+                                LineChartData(
+                                  clipData: FlClipData.all(),
+                                  lineTouchData: LineTouchData(
+                                    enabled: false,
+                                    handleBuiltInTouches: false,
+                                  ),
+                                  minY: 0,
+                                  maxY: 105,
+                                  minX: 0,
+                                  maxX: (spots.length - 1).toDouble(),
+                                  gridData: FlGridData(show: true),
+                                  titlesData: FlTitlesData(
+                                    rightTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        maxIncluded: false,
+                                        showTitles: true,
+                                        reservedSize: 42,
+                                        interval: 50,
+                                      ),
+                                    ),
+                                    leftTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        maxIncluded: false,
+                                        showTitles: true,
+                                        reservedSize: 42,
+                                        interval: 50,
+                                      ),
+                                    ),
+                                    topTitles: AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    bottomTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        interval: 1,
+                                        getTitlesWidget: (value, _) {
+                                          final i = value.toInt();
+                                          if (i < 0 || i >= processed.length) {
+                                            return const SizedBox.shrink();
+                                          }
+                                          final d = processed[i].timestamp;
+                                          return Text(
+                                            '${d.month}/${d.day}',
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     ),
                                   ),
-                                  topTitles: AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                  bottomTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      interval: 1,
-                                      getTitlesWidget: (value, _) {
-                                        final i = value.toInt();
-                                        if (i < 0 || i >= processed.length) {
-                                          return const SizedBox.shrink();
-                                        }
-                                        final d = processed[i].timestamp;
-                                        return Text(
-                                          '${d.month}/${d.day}',
-                                          style: const TextStyle(fontSize: 10),
-                                        );
-                                      },
+                                  lineBarsData: [
+                                    LineChartBarData(
+                                      spots: spots,
+                                      isCurved: true,
+                                      color: Colors.amber,
+                                      barWidth: 3,
+                                      dotData: FlDotData(show: false),
                                     ),
-                                  ),
+                                  ],
                                 ),
-                                lineBarsData: [
-                                  LineChartBarData(
-                                    spots: spots,
-                                    isCurved: true,
-                                    color: Colors.amber,
-                                    barWidth: 3,
-                                    dotData: FlDotData(show: false),
-                                  ),
-                                ],
                               ),
                             ),
                           ),

@@ -60,6 +60,11 @@ class AppDatabase extends _$AppDatabase {
     return (select(sleepEntries)
       ..where((t) => t.date.isBetweenValues(start, end))).getSingleOrNull();
   }
+
+  Future<void> updateSleepEntry(SleepEntry entry) {
+    return (update(sleepEntries)
+      ..where((tbl) => tbl.id.equals(entry.id))).write(entry);
+  }
 }
 
 LazyDatabase _openConnection() {
